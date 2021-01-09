@@ -19,7 +19,7 @@ public abstract class JuiBase<UIType> : Singleton<UIType> where UIType : JuiBase
             _gameObject.SetActive(true);
             isShow = true;
             OnShow();
-            JUIManager.Instance.UpdateHandler += OnUpdate;
+            JuiManager.Instance.UpdateHandler += OnUpdate;
         }
     }
     public virtual void Hide()
@@ -29,14 +29,14 @@ public abstract class JuiBase<UIType> : Singleton<UIType> where UIType : JuiBase
             _gameObject.SetActive(false);
             isShow = false;
             OnHide();
-            JUIManager.Instance.UpdateHandler -= OnUpdate;
+            JuiManager.Instance.UpdateHandler -= OnUpdate;
         }
     }
 
     public JuiBase()
     {
         //寻找场景内存在的游戏物体
-        _transform = JUIManager.Instance.transform.Find(uiPath);
+        _transform = JuiManager.Instance.transform.Find(uiPath);
         if(_transform == null)
         {
             _transform = Add(resPath);
@@ -48,7 +48,7 @@ public abstract class JuiBase<UIType> : Singleton<UIType> where UIType : JuiBase
         //初始状态就显示直接添加事件
         if (isShow)
         {
-            JUIManager.Instance.UpdateHandler += OnUpdate;
+            JuiManager.Instance.UpdateHandler += OnUpdate;
         }
         this.OnCreate();
         if (IsShow)
