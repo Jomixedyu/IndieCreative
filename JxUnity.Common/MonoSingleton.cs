@@ -5,7 +5,10 @@ using UnityEngine;
 public class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>
 {
     private static T mInstance = null;
-
+    public static bool HasInstance
+    {
+        get => mInstance != null;
+    }
     public static T Instance
     {
         get => GetInstance();
