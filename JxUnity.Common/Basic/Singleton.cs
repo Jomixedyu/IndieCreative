@@ -3,13 +3,13 @@
 public class Singleton<T> : IDisposable where T : class, new()
 {
     private static T mInstance;
-    public static bool HasInstance
-    {
-        get => mInstance != null;
-    }
     public static T Instance
     {
         get => GetInstance();
+    }
+    public static bool HasInstance
+    {
+        get => mInstance != null;
     }
     public static T GetInstance()
     {

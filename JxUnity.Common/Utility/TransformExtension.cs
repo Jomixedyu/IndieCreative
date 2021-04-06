@@ -125,13 +125,29 @@ public static class TransformExtension
     /// 移除所有子物体
     /// </summary>
     /// <param name="component"></param>
-    public static void RemoveAllChild(this Component component)
+    public static void RemoveChildren(this Component component)
     {
         Transform transform = component.transform;
         for (int i = 0; i < transform.childCount; i++)
         {
-            UnityEngine.Object.Destroy(transform.GetChild(i));
+            UnityEngine.Object.Destroy(transform.GetChild(i).gameObject);
         }
+    }
+
+    public static Transform CreateChild(this Transform _this, string name = "GameObject", Type[] components = null)
+    {
+        GameObject go;
+        if(components == null)
+        {
+            go = new GameObject(name);
+        }
+        else
+        {
+            go = new GameObject(name, components);
+        }
+        go.layer = _this.gameObject.layer;
+        go.transform.SetParent(_this);
+        return go.transform;
     }
 }
 
