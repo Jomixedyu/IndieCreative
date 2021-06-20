@@ -132,6 +132,21 @@ public abstract class JuiBase
         return f.GetComponent<TComponent>();
     }
 
+    /// <summary>
+    /// 显示隐藏switch切换
+    /// </summary>
+    public virtual void Switch()
+    {
+        if (isShow)
+        {
+            Hide();
+        }
+        else
+        {
+            Show();
+        }
+    }
+
     protected virtual void OnCreate() { }
     protected virtual void OnShow() { }
     protected virtual void OnHide() { }

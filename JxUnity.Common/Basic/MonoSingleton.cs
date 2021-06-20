@@ -29,8 +29,8 @@ public class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>
                 GameObject parent = GameObject.Find("__System");
                 if (parent == null)
                 {
-                    GameObject _System = new GameObject("__System");
-                    DontDestroyOnLoad(_System);
+                    parent = new GameObject("__System");
+                    DontDestroyOnLoad(parent);
                 }
                 go.transform.parent = parent.transform;
             }
