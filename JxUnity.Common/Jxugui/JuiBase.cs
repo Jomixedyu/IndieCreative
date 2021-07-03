@@ -105,6 +105,11 @@ public abstract class JuiBase
             this.attribute.UiPath = this.GetType().Name;
         }
 
+        this.Create();
+    }
+
+    public void Create()
+    {
         //寻找场景内存在的游戏物体
         _transform = JuiManager.Instance.transform.Find(this.attribute.UiPath);
         if (_transform == null)
@@ -134,6 +139,16 @@ public abstract class JuiBase
         {
             this.OnShow();
         }
+    }
+    
+    public void Destroy()
+    {
+        this.OnDestroy();
+
+        UnityEngine.Object.Destroy(_gameObject);
+
+        _gameObject = null;
+        _transform = null;
     }
 
     private object GetBindElementObject(Transform tran, Type type)
@@ -258,4 +273,5 @@ public abstract class JuiBase
     protected virtual void OnShow() { }
     protected virtual void OnHide() { }
     protected virtual void OnUpdate() { }
+    protected virtual void OnDestroy() { }
 }
