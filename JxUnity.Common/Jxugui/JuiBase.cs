@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections;
+using System.Reflection;
+using UnityEngine;
 
 
 public abstract class JuiBase
@@ -8,68 +11,68 @@ public abstract class JuiBase
     public GameObject gameObject { get => _gameObject; }
     public Transform transform { get => _transform; }
 
-    public abstract string uiPath { get; }
-    public virtual string resPath { get; }
-    /// <summary>
-    /// 为true则面板可以被设置为Focus
-    /// </summary>
-    protected bool isDialogMode = true;
+    private JuiPanelAttribute attribute = null;
+
     public bool IsFocus
     {
         get
         {
-            return JuiManager.Instance.Peek() == this.GetType();
+            return JuiManager.Instance.GetFocus() == this.GetType();
         }
     }
 
-    protected bool isShow = false;
+    private bool isShow = false;
     public bool IsShow { get => isShow; }
 
     private bool isNextFrame = false;
 
     public virtual void Show()
     {
-        if (!isShow)
+        if (!this.isShow)
         {
             _gameObject.SetActive(true);
-            isShow = true;
+            this.isShow = true;
 
-            if (isDialogMode)
+            JuiManager.Instance.Push(this.GetType());
+
+            this.OnShow();
+            this.isNextFrame = false;
+            if (this.attribute.EnableUpdate)
             {
-                JuiManager.Instance.Push(this.GetType());
+                JuiManager.Instance.UpdateHandler += Internel_OnUpdate;
             }
-            
-            OnShow();
-            isNextFrame = false;
-            JuiManager.Instance.UpdateHandler += Internel_OnUpdate;
         }
     }
+    //public void ShowDialog(JuiBase parent)
+    //{
+    //TODO
+    //}
     private void Internel_OnUpdate()
     {
-        if (!isNextFrame)
+        if (!this.isNextFrame)
         {
-            isNextFrame = true;
+            this.isNextFrame = true;
             return;
         }
         this.OnUpdate();
     }
 
     /// <summary>
-    /// 除了取消激活物体外的隐藏工作
+    /// 逻辑上隐藏，但并不取消激活物体
     /// </summary>
     protected void SetHide()
     {
-        if (isShow)
+        if (this.isShow)
         {
-            isShow = false;
+            this.isShow = false;
 
-            if (isDialogMode)
+            JuiManager.Instance.Pop(this.GetType());
+
+            this.OnHide();
+            if (this.attribute.EnableUpdate)
             {
-                JuiManager.Instance.Pop(this.GetType());
+                JuiManager.Instance.UpdateHandler -= Internel_OnUpdate;
             }
-
-            OnHide();
-            JuiManager.Instance.UpdateHandler -= Internel_OnUpdate;
         }
     }
     protected void InactiveHide()
@@ -78,53 +81,157 @@ public abstract class JuiBase
     }
     public virtual void Hide()
     {
-        if (isShow)
+        if (this.isShow)
         {
-            SetHide();
-            InactiveHide();
+            this.SetHide();
+            this.InactiveHide();
         }
     }
 
     public JuiBase()
     {
-        //寻找场景内存在的游戏物体
-        _transform = JuiManager.Instance.transform.Find(uiPath);
-        if(_transform == null)
+        object[] attrs = this.GetType().GetCustomAttributes(typeof(JuiPanelAttribute), false);
+        if (attrs.Length == 0)
         {
-            _transform = Add(resPath);
-            if (_transform == null)
-                Debug.LogError("没有找到该UI节点: " + uiPath);
+            this.attribute = new JuiPanelAttribute();
+        }
+        else
+        {
+            this.attribute = attrs[0] as JuiPanelAttribute;
+        }
+
+        if (this.attribute.UiPath == null)
+        {
+            this.attribute.UiPath = this.GetType().Name;
+        }
+
+        //寻找场景内存在的游戏物体
+        _transform = JuiManager.Instance.transform.Find(this.attribute.UiPath);
+        if (_transform == null)
+        {
+            var prefab = this.LoadResource(this.attribute.ResourcePath);
+            var goinst = UnityEngine.Object.Instantiate(prefab, this.transform);
+            goinst.name = this.GetType().Name;
+            _transform = goinst.transform;
         }
         _gameObject = _transform.gameObject;
-        isShow = _gameObject.activeSelf;
-        //初始状态就显示直接添加事件
-        this.OnCreate();
-        if (isShow)
+        this.isShow = _gameObject.activeSelf;
+        if (this.isShow)
         {
-            if (isDialogMode)
+            JuiManager.Instance.Push(this.GetType());
+            if (this.attribute.EnableUpdate)
             {
-                JuiManager.Instance.Push(this.GetType());
+                JuiManager.Instance.UpdateHandler += Internel_OnUpdate;
             }
-            this.OnShow();
-            JuiManager.Instance.UpdateHandler += OnUpdate;
         }
         JuiManager.Instance.AddUI(this);
+
+        //绑定元素
+        this.AutoBindElement();
+
+        this.OnCreate();
+        if (this.isShow)
+        {
+            this.OnShow();
+        }
     }
+
+    private object GetBindElementObject(Transform tran, Type type)
+    {
+        if (tran == null)
+        {
+            return null;
+        }
+        if (type.IsSubclassOf(typeof(Transform)))
+        {
+            return tran;
+        }
+        else if (type.IsSubclassOf(typeof(UnityEngine.Component)))
+        {
+            return tran.GetComponent(type);
+        }
+        else if (type.IsSubclassOf(typeof(GameObject)))
+        {
+            return tran.transform;
+        }
+        return null;
+    }
+    private void AutoBindElement()
+    {
+        var fields = this.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        foreach (FieldInfo field in fields)
+        {
+            Type type = field.FieldType;
+            if (field.IsDefined(typeof(JuiElementAttribute)))
+            {
+                JuiElementAttribute attr = field.GetCustomAttribute<JuiElementAttribute>();
+                string path = attr.Path != null ? attr.Path : field.Name;
+
+                Transform tran = transform.Find(path);
+                if (tran == null)
+                {
+                    Debug.LogWarning(string.Format("JuiElementBinder: {0}.{1} not found.", this.GetType().Name, field.Name));
+                    continue;
+                }
+
+                object obj = GetBindElementObject(tran, type);
+                field.SetValue(this, obj);
+
+            }
+            else if (field.IsDefined(typeof(JuiElementArrayAttribute)))
+            {
+                JuiElementArrayAttribute attr = field.GetCustomAttribute<JuiElementArrayAttribute>();
+                string path = attr.Path != null ? attr.Path : field.Name;
+
+                Transform tran = transform.Find(path);
+                if (tran == null)
+                {
+                    Debug.LogWarning(string.Format("JuiElementBinder: {0}.{1} not found.", this.GetType().Name, field.Name));
+                    continue;
+                }
+                object fieldInst = null;
+
+                if (type.IsArray)
+                {
+                    fieldInst = Array.CreateInstance(attr.ElementType, tran.childCount);
+                    Array arr = (Array)fieldInst;
+                    for (int i = 0; i < tran.childCount; i++)
+                    {
+                        object inst = GetBindElementObject(tran.GetChild(i), attr.ElementType);
+                        arr.SetValue(inst, i);
+                    }
+                }
+                else if (typeof(IList).IsAssignableFrom(type))
+                {
+                    fieldInst = Activator.CreateInstance(type);
+                    IList list = (IList)fieldInst;
+                    foreach (Transform childTransform in tran)
+                    {
+                        object inst = GetBindElementObject(childTransform, attr.ElementType);
+                        list.Add(inst);
+                    }
+                }
+                field.SetValue(this, fieldInst);
+            }
+        }
+    }
+
     /// <summary>
-    /// 动态添加至场景，需要实现
+    /// 获取资源
     /// </summary>
     /// <param name="path"></param>
-    protected Transform Add(string path)
+    protected virtual GameObject LoadResource(string path)
     {
-        throw new System.NotImplementedException();
+        return JuiManager.Instance.LoadResource(path);
     }
+
     /// <summary>
     /// 获取子物体上的组件
     /// </summary>
     /// <typeparam name="TComponent"></typeparam>
     /// <param name="path"></param>
     /// <returns></returns>
-    protected TComponent GetComponent<TComponent>(string path = "") where TComponent : Component
+    protected TComponent GetComponentInChild<TComponent>(string path = "") where TComponent : Component
     {
         Transform f = transform;
         if (!string.IsNullOrEmpty(path))
@@ -133,17 +240,17 @@ public abstract class JuiBase
     }
 
     /// <summary>
-    /// 显示隐藏switch切换
+    /// 显示隐藏切换
     /// </summary>
     public virtual void Switch()
     {
-        if (isShow)
+        if (this.isShow)
         {
-            Hide();
+            this.Hide();
         }
         else
         {
-            Show();
+            this.Show();
         }
     }
 
