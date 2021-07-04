@@ -24,7 +24,8 @@ public class JuiManager : MonoSingleton<JuiManager>
             {
                 if (item.GetCustomAttribute<JuiPanelAttribute>().IsPreBind)
                 {
-                    var method = item.BaseType.GetMethod("GetInstance", BindingFlags.Public | BindingFlags.Static);
+                    Type genericType = typeof(JuiSingleton<>).MakeGenericType(new Type[] { item });
+                    var method = genericType.GetMethod("GetInstance", BindingFlags.Public | BindingFlags.Static);
                     method.Invoke(null, null);
                 }
             }

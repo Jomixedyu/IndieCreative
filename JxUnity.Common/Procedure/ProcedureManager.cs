@@ -33,10 +33,10 @@ public class ProcedureManager : Singleton<ProcedureManager>
     {
         if (!procedure.HasState(typeName))
         {
-            XLogger.LogError("无法找到Procedure: " + typeName);
+            Debug.LogError("无法找到Procedure: " + typeName);
             return;
         }
-        XLogger.Log("修改Procedure: " + typeName);
+        Debug.Log("修改Procedure: " + typeName);
         this.procedure.ChangeState(typeName);
     }
     public void ChangePrevProcedure()
