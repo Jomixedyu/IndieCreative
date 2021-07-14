@@ -89,7 +89,7 @@ public class GameObjectPool : IDisposable
         return unusedList.Count;
     }
 
-    public void ForceUnloadAll()
+    public void ForceUnload()
     {
         foreach (var item in this.pool)
         {
@@ -199,15 +199,32 @@ public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
         this.pools[type].UnloadUnused();
     }
 
-    public void ForceUnloadAll(string type)
+    public void ForceUnload(string type)
     {
-        this.pools[type].ForceUnloadAll();
+        this.pools[type].ForceUnload();
+    }
+
+    public void ForceUnloadAll()
+    {
+        foreach (var item in this.pools)
+        {
+            item.Value.ForceUnload();
+        }
     }
 
     public void Delete(string type)
     {
         this.pools[type].Dispose();
         this.pools.Remove(type);
+    }
+
+    public void DeleteAll()
+    {
+        foreach (var item in this.pools)
+        {
+            item.Value.Dispose();
+        }
+        this.pools.Clear();
     }
 }
 
