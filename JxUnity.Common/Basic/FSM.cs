@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public class FSMStateBase
+public abstract class FSMStateBase
 {
     public virtual void OnEnter() { }
     public virtual void OnLeave() { }

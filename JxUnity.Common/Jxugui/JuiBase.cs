@@ -4,7 +4,7 @@ using System.Reflection;
 using UnityEngine;
 
 
-public abstract class JuiBase
+public abstract class JuiBase : IDisposable
 {
     private GameObject _gameObject;
     private Transform _transform;
@@ -141,7 +141,7 @@ public abstract class JuiBase
         }
     }
     
-    public void Destroy()
+    private void Destroy()
     {
         this.OnDestroy();
 
@@ -274,4 +274,9 @@ public abstract class JuiBase
     protected virtual void OnHide() { }
     protected virtual void OnUpdate() { }
     protected virtual void OnDestroy() { }
+
+    public virtual void Dispose()
+    {
+        this.Destroy();
+    }
 }

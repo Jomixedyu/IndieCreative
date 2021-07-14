@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System;
 using System.Reflection;
+using UnityEngine;
 
 public class ProcedureManager : Singleton<ProcedureManager>
 {
@@ -33,10 +34,10 @@ public class ProcedureManager : Singleton<ProcedureManager>
     {
         if (!procedure.HasState(typeName))
         {
-            Debug.LogError("无法找到Procedure: " + typeName);
+            Debug.LogError("not found procedure: " + typeName);
             return;
         }
-        Debug.Log("修改Procedure: " + typeName);
+        Debug.Log("change procedure: " + typeName);
         this.procedure.ChangeState(typeName);
     }
     public void ChangePrevProcedure()

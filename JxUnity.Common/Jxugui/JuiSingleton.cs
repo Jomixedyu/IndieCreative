@@ -1,11 +1,18 @@
 ﻿using System;
 
-public abstract class JuiSingleton<UIType> : JuiBase
+public abstract class JuiSingleton<UIType> : JuiBase where UIType : class
 {
     private static UIType mInstance;
     public static UIType Instance
     {
-        get => GetInstance();
+        get
+        {
+            if (mInstance == null)
+            {
+                mInstance = Activator.CreateInstance<UIType>();
+            }
+            return mInstance;
+        }
     }
     public static bool HasInstance
     {
@@ -13,11 +20,12 @@ public abstract class JuiSingleton<UIType> : JuiBase
     }
     public static UIType GetInstance()
     {
-        if (mInstance == null)
-        {
-            mInstance = Activator.CreateInstance<UIType>();
-        }
-        return mInstance;
+        return Instance;
     }
 
+    public override void Dispose()
+    {
+        base.Dispose();
+        mInstance = null;
+    }
 }

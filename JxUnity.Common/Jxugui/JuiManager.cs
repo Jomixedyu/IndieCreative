@@ -6,29 +6,81 @@ using UnityEngine;
 /// <summary>
 /// 使每个UI成为单例，通过绑定或添加，UIManager负责更新UI
 /// </summary>
-public class JuiManager : MonoSingleton<JuiManager>
+public sealed class JuiManager : MonoSingleton<JuiManager>
 {
     public event Action UpdateHandler;
     private List<Type> uiShowStack;
     private Dictionary<string, JuiBase> ui;
 
+    private static Dictionary<string, UIInfo> uiTypes;
+    private class UIInfo
+    {
+        public Type UIType;
+        public string UIPath;
+        public JuiPanelAttribute Attr;
+    }
+    private void AutoBind(UIInfo uiInfo)
+    {
+        if (uiInfo.Attr.IsPreBind && Instance.transform.Find(uiInfo.UIPath) != null)
+        {
+            Type genericType = typeof(JuiSingleton<>).MakeGenericType(new Type[] { uiInfo.UIType });
+            var method = genericType.GetMethod("GetInstance", BindingFlags.Public | BindingFlags.Static);
+            method.Invoke(null, null);
+        }
+    }
     private void Awake()
     {
+        if (HasInstance)
+        {
+            //move
+            if (transform.childCount > 0)
+            {
+                foreach (var item in uiTypes)
+                {
+                    string uiName = item.Key;
+                    UIInfo uiInfo = item.Value;
+                    if (Instance.Exist(uiName))
+                    {
+                        continue;
+                    }
+                    //move
+                    Transform t = transform.Find(uiInfo.UIPath);
+                    if (t != null)
+                    {
+                        t.SetParent(Instance.transform);
+                        this.AutoBind(uiInfo);
+                    }
+                }
+            }
+            Destroy(this.gameObject);
+            return;
+        }
+
         this.uiShowStack = new List<Type>();
         this.ui = new Dictionary<string, JuiBase>();
 
-        var types = Assembly.GetExecutingAssembly().GetTypes();
-        foreach (var item in types)
+        if (uiTypes == null)
         {
-            if (item.IsDefined(typeof(JuiPanelAttribute)))
+            uiTypes = new Dictionary<string, UIInfo>();
+            foreach (var item in Assembly.GetExecutingAssembly().GetTypes())
             {
-                if (item.GetCustomAttribute<JuiPanelAttribute>().IsPreBind)
+                if (item.IsDefined(typeof(JuiPanelAttribute)))
                 {
-                    Type genericType = typeof(JuiSingleton<>).MakeGenericType(new Type[] { item });
-                    var method = genericType.GetMethod("GetInstance", BindingFlags.Public | BindingFlags.Static);
-                    method.Invoke(null, null);
+                    var attr = item.GetCustomAttribute<JuiPanelAttribute>();
+                    string uiPath = attr.UiPath;
+                    if (uiPath == null)
+                    {
+                        uiPath = item.Name;
+                    }
+                    uiTypes.Add(item.Name, new UIInfo() { UIType = item, UIPath = uiPath, Attr = attr });
                 }
             }
+        }
+
+        //auto bind
+        foreach (var item in uiTypes)
+        {
+            this.AutoBind(item.Value);
         }
     }
 
@@ -76,9 +128,33 @@ public class JuiManager : MonoSingleton<JuiManager>
     {
         return this.ui[name];
     }
-
+    public bool Exist(string ui)
+    {
+        return this.ui.ContainsKey(ui);
+    }
     public GameObject LoadResource(string path)
     {
         throw new System.NotImplementedException();
+    }
+
+    public override void Dispose()
+    {
+        if (isDisposed)
+        {
+            return;
+        }
+        //unload all ui
+        this.uiShowStack?.Clear();
+
+        if (this.ui != null)
+        {
+            foreach (var item in this.ui)
+            {
+                item.Value.Dispose();
+            }
+            this.ui?.Clear();
+        }
+
+        base.Dispose();
     }
 }
