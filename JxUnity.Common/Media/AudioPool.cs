@@ -4,11 +4,14 @@ using UnityEngine;
 
 public class AudioPool : MonoBehaviour
 {
-    public class AudioState
+    protected class AudioState
     {
         public AudioSource audioSource;
         public AudioClip clip;
         public bool isUsed;
+        /// <summary>
+        /// 如果name为null则为匿名音频
+        /// </summary>
         public string name;
         public float createTime;
         public float endTime;
@@ -18,9 +21,9 @@ public class AudioPool : MonoBehaviour
     [SerializeField]
     private int maxCount = 5;
     public int MaxCount { get => maxCount; }
-    private List<AudioState> pool;
+    protected List<AudioState> pool;
 
-    private float volume = 1;
+    private float volume = 1f;
     public float Volume
     {
         get => volume;
@@ -38,28 +41,45 @@ public class AudioPool : MonoBehaviour
 
     private void Awake()
     {
-        pool = new List<AudioState>(maxCount);
+        pool = new List<AudioState>(maxCount + 1);
         //创建对象
         for (int i = 0; i < maxCount; i++)
         {
             AudioSource ap = gameObject.AddComponent<AudioSource>();
+            ap.volume = volume;
             AudioState aus = new AudioState() { audioSource = ap };
             pool.Add(aus);
         }
-        Volume = volume;
     }
 
-    public void Update()
+    private void Update()
     {
-        if (Time.frameCount % 30 == 0)
+        if (Time.frameCount % 15 == 0)
+        {
             foreach (var item in pool)
+            {
                 if (!item.audioSource.isPlaying)
+                {
                     ReleaseAudio(item);
-    }
+                }
+            }
+        }
 
+    }
+    /// <summary>
+    /// 播放一个音频
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="ac"></param>
+    /// <param name="isLoop"></param>
     public void Play(string name, AudioClip ac, bool isLoop)
     {
-        if (ac == null) return;
+        if (ac == null)
+        {
+            Debug.LogError("audioclip is null");
+            return;
+        }
+
         AudioState aus = GetUsableAudio();
         aus.name = name;
         aus.isLoop = isLoop;
@@ -72,20 +92,32 @@ public class AudioPool : MonoBehaviour
         aus.audioSource.loop = isLoop;
         aus.audioSource.Play();
     }
+    /// <summary>
+    /// 播放一次匿名音频
+    /// </summary>
+    /// <param name="ac"></param>
     public void Play(AudioClip ac)
     {
-        Play(string.Empty, ac, false);
+        Play(null, ac, false);
     }
 
+    /// <summary>
+    /// 停止某个音频
+    /// </summary>
+    /// <param name="name"></param>
     public void Stop(string name)
     {
         foreach (var item in pool)
         {
             if (item.name == name)
+            {
                 ReleaseAudio(item);
+            }
         }
     }
-
+    /// <summary>
+    /// 停止并释放所有音频
+    /// </summary>
     public void StopAll()
     {
         foreach (var item in pool)
@@ -101,7 +133,7 @@ public class AudioPool : MonoBehaviour
         {
             if (!item.isUsed) return item;
         }
-        
+
         pool.Sort((AudioState x, AudioState y) =>
         {
             var r = x.isLoop.CompareTo(y.isLoop);
@@ -119,7 +151,7 @@ public class AudioPool : MonoBehaviour
         aus.audioSource.clip = null;
         aus.clip = null;
         aus.isUsed = false;
-        aus.name = string.Empty;
+        aus.name = null;
     }
 }
 
