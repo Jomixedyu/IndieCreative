@@ -4,7 +4,7 @@
 public sealed class JuiElementSubPanelAttribute : JuiPanelBaseAttribute
 {
     /// <summary>
-    /// 在父UI节点下的路径
+    /// 在父UI节点下的路径，如果和变量名相同则可省略
     /// </summary>
     public string Path { get; set; } = default;
 
