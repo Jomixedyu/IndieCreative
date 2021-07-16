@@ -18,12 +18,24 @@ public class Singleton<T> : IDisposable where T : class, new()
     {
         get => mInstance != null;
     }
+
     public static T GetInstance()
     {
         return Instance;
     }
 
+    protected void SetInstance(T obj)
+    {
+        mInstance = obj;
+    }
+
+    protected bool isDisposed = false;
     public virtual void Dispose()
     {
+        if (isDisposed)
+        {
+            return;
+        }
+        mInstance = null;
     }
 }
