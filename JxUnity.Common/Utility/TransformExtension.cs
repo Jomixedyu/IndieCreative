@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
-using UnityEngine.UIElements;
 
 public static class TransformExtension
 {
@@ -133,11 +130,17 @@ public static class TransformExtension
             UnityEngine.Object.Destroy(transform.GetChild(i).gameObject);
         }
     }
-
+    public static void MoveChildren(this Transform self, Transform target)
+    {
+        for (int i = 0; i < self.childCount; i++)
+        {
+            self.GetChild(0).SetParent(target);
+        }
+    }
     public static Transform CreateChild(this Transform _this, string name = "GameObject", Type[] components = null)
     {
         GameObject go;
-        if(components == null)
+        if (components == null)
         {
             go = new GameObject(name);
         }
@@ -149,12 +152,22 @@ public static class TransformExtension
         go.transform.SetParent(_this);
         return go.transform;
     }
-}
-
-public static class VertexHelperExtension
-{
-    public static void GetAllVertex(this VertexHelper vh, ref List<Vertex> vertices)
+    public static string LastChild(string path)
     {
-        
+        int pos = path.LastIndexOf('/');
+        if (pos < 0)
+        {
+            return path;
+        }
+        return path.Substring(pos, path.Length - pos);
+    }
+    public static string Root(string path)
+    {
+        int pos = path.IndexOf('/');
+        if (pos < 0)
+        {
+            return path;
+        }
+        return path.Substring(0, pos + 1);
     }
 }
