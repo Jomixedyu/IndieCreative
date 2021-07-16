@@ -157,6 +157,10 @@ public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
 
     private void Awake()
     {
+        if (base.CheckInstanceAndDestroy())
+        {
+            return;
+        }
         this.pools = new Dictionary<string, GameObjectPool>();
     }
 
@@ -214,6 +218,10 @@ public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
 
     public void Delete(string type)
     {
+        if (!this.pools.ContainsKey(type))
+        {
+            return;
+        }
         this.pools[type].Dispose();
         this.pools.Remove(type);
     }
