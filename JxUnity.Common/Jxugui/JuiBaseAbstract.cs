@@ -84,11 +84,7 @@ public abstract class JuiBaseAbstract : JuiAbstract
     }
     public override void Create()
     {
-        this.attr = this.GetType().GetCustomAttribute<JuiPanelAttribute>(false);
-        if (this.attr.Name == null)
-        {
-            this.attr.Name = this.GetType().Name;
-        }
+        this.attr = JuiManager.GetUIAttribute(this);
 
         this.transform = JuiManager.Instance.transform.Find(this.attr.Name);
         base.Create();

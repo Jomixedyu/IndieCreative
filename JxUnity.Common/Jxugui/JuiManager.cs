@@ -57,12 +57,13 @@ public sealed class JuiManager : MonoBehaviour, IDisposable
     private static Dictionary<string, UIInfo> uiTypes;
     private class UIInfo
     {
-        public string Name;
+        public string TypeName;
+        public string UIName;
         public Type UIType;
         public JuiPanelAttribute Attr;
         public override string ToString()
         {
-            return Name;
+            return TypeName;
         }
     }
 
@@ -79,10 +80,10 @@ public sealed class JuiManager : MonoBehaviour, IDisposable
 
     private void AutoBind(UIInfo uiInfo)
     {
-        bool hasRealUI = Instance.transform.Find(uiInfo.Name) != null;
+        bool hasRealUI = Instance.transform.Find(uiInfo.TypeName) != null;
         if (hasRealUI)
         {
-            this.RegisterUI(uiInfo.Name);
+            this.RegisterUI(uiInfo.TypeName);
             if (uiInfo.Attr.IsPreBind)
             {
                 Type genericType = typeof(JuiBase<>).MakeGenericType(new Type[] { uiInfo.UIType });
@@ -110,7 +111,7 @@ public sealed class JuiManager : MonoBehaviour, IDisposable
                         continue;
                     }
                     //move
-                    Transform t = transform.Find(uiInfo.Name);
+                    Transform t = transform.Find(uiInfo.TypeName);
 
                     if (t != null)
                     {
@@ -135,14 +136,14 @@ public sealed class JuiManager : MonoBehaviour, IDisposable
                 if (type.IsDefined(typeof(JuiPanelAttribute)))
                 {
                     var attr = type.GetCustomAttribute<JuiPanelAttribute>();
-                    string uiName = attr.Name;
-                    if (uiName == null)
+                    if (attr.Name == null)
                     {
-                        uiName = type.Name;
+                        attr.Name = type.Name;
                     }
                     uiTypes.Add(type.Name, new UIInfo()
                     {
-                        Name = type.Name,
+                        TypeName = type.Name,
+                        UIName = attr.Name,
                         UIType = type,
                         Attr = attr
                     });
@@ -156,7 +157,16 @@ public sealed class JuiManager : MonoBehaviour, IDisposable
             this.AutoBind(item.Value);
         }
     }
-
+    public static JuiPanelAttribute GetUIAttribute(JuiBaseAbstract t)
+    {
+        var type = t.GetType();
+        var name = type.Name;
+        if (!uiTypes.ContainsKey(name))
+        {
+            return null;
+        }
+        return uiTypes[name].Attr;
+    }
     private void Update()
     {
         this.UpdateHandler?.Invoke();
