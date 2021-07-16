@@ -13,7 +13,7 @@ public class LocalizedText : MonoBehaviour
     private string stringId;
     public string StringId => stringId;
 
-    [SerializeField] 
+
     private Text text;
 
     public void SetLocalizedId(string chunkName, string id)
@@ -32,7 +32,7 @@ public class LocalizedText : MonoBehaviour
         if (text == null) 
             text = GetComponent<Text>();
         if (text == null)
-            throw new NullReferenceException("Text组件不存在！");
+            throw new NullReferenceException("text component not found!");
     }
 
     private void OnEnable()
