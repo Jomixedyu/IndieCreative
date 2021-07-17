@@ -36,6 +36,10 @@ public abstract class JuiAbstract : IDisposable
     {
         get => throw new NotImplementedException();
     }
+    public virtual void SetFocus()
+    {
+        throw new NotImplementedException();
+    }
 
     private bool isShow = false;
     public bool IsShow { get => isShow; }
@@ -246,6 +250,14 @@ public abstract class JuiAbstract : IDisposable
     protected virtual void OnHide() { }
     protected virtual void OnUpdate() { }
     protected virtual void OnDestroy() { }
+    /// <summary>
+    /// message
+    /// </summary>
+    public virtual void OnFocus() { }
+    /// <summary>
+    /// message
+    /// </summary>
+    public virtual void OnLostFocus() { }
 
     public virtual void Dispose()
     {

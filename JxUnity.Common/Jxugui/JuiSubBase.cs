@@ -9,16 +9,27 @@ public abstract class JuiSubBase : JuiAbstract
     public JuiBaseAbstract ParentUI { get => parentUI; }
     private JuiBaseAbstract.JuiBaseAbstractPack pack;
 
+    /// <summary>
+    /// 当前子面板在父面板中的是否为焦点
+    /// </summary>
+    public bool IsFocusSelf
+    {
+        get
+        {
+            return this.pack.PeekStackTop() == this;
+        }
+    }
+
     public override bool IsFocus
     {
         get
         {
-            return this.pack.PeekStackTop() == this.GetType();
+            return this.parentUI.IsFocus && this.IsFocusSelf;
         }
     }
-    public void SetFocus()
+    public override void SetFocus()
     {
-        this.pack.SetTopStack(this.GetType());
+        this.pack.SetTopStack(this);
     }
 
     public void InitializeUI(
@@ -57,7 +68,7 @@ public abstract class JuiSubBase : JuiAbstract
 
         if (this.IsShow)
         {
-            this.pack.PushUIStack(this.GetType());
+            this.pack.PushUIStack(this);
             if (this.attr.EnableUpdate)
             {
                 this.pack.AddUpdateHandler(this.Update);
@@ -72,7 +83,7 @@ public abstract class JuiSubBase : JuiAbstract
             return;
         }
         base.Show();
-        this.pack.PushUIStack(this.GetType());
+        this.pack.PushUIStack(this);
         if (this.attr.EnableUpdate)
         {
             this.pack.AddUpdateHandler(this.Update);
@@ -81,7 +92,7 @@ public abstract class JuiSubBase : JuiAbstract
     protected override void LogicHide()
     {
         base.LogicHide();
-        this.pack.PopUIStack(this.GetType());
+        this.pack.PopUIStack(this);
     }
     public override void Hide()
     {

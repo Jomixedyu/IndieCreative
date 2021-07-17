@@ -9,14 +9,14 @@ public abstract class JuiBaseAbstract : JuiAbstract
     {
         get
         {
-            return JuiManager.Instance.GetFocus() == this.GetType();
+            return JuiManager.Instance.GetFocus() == this;
         }
     }
-    public void SetFocus()
+    public override void SetFocus()
     {
-        JuiManager.Instance.SetFocus(this.GetType());
+        JuiManager.Instance.SetFocus(this);
     }
-    private List<Type> uiShowStack = new List<Type>();
+    private List<JuiSubBase> uiShowStack = new List<JuiSubBase>();
     private Action updateHandler;
     private struct OperateQueue
     {
@@ -59,7 +59,7 @@ public abstract class JuiBaseAbstract : JuiAbstract
             return;
         }
         base.Show();
-        JuiManager.Instance.Push(this.GetType());
+        JuiManager.Instance.Push(this);
         if (this.attr.EnableUpdate)
         {
             JuiManager.Instance.AddUpdateHandler(this.Update);
@@ -68,7 +68,7 @@ public abstract class JuiBaseAbstract : JuiAbstract
     protected override void LogicHide()
     {
         base.LogicHide();
-        JuiManager.Instance.Pop(this.GetType());
+        JuiManager.Instance.Pop(this);
     }
     public override void Hide()
     {
@@ -91,7 +91,7 @@ public abstract class JuiBaseAbstract : JuiAbstract
 
         if (this.IsShow)
         {
-            JuiManager.Instance.Push(this.GetType());
+            JuiManager.Instance.Push(this);
             if (this.attr.EnableUpdate)
             {
                 JuiManager.Instance.AddUpdateHandler(this.Update);
@@ -139,10 +139,10 @@ public abstract class JuiBaseAbstract : JuiAbstract
     public class JuiBaseAbstractPack
     {
         public JuiBaseAbstract Ui;
-        public Action<Type> PushUIStack;
-        public Action<Type> PopUIStack;
-        public Func<Type> PeekStackTop;
-        public Action<Type> SetTopStack;
+        public Action<JuiSubBase> PushUIStack;
+        public Action<JuiSubBase> PopUIStack;
+        public Func<JuiSubBase> PeekStackTop;
+        public Action<JuiSubBase> SetTopStack;
         public Action<Action> AddUpdateHandler;
         public Action<Action> RemoveUpdateHandler;
     }
@@ -172,15 +172,24 @@ public abstract class JuiBaseAbstract : JuiAbstract
     {
         this.operateQueue.Add(new OperateQueue(act, false));
     }
-    private void PushUIStack(Type sub)
+    private void PushUIStack(JuiSubBase sub)
     {
+        this.PeekStackTop()?.OnLostFocus();
         this.uiShowStack.Add(sub);
+        sub.OnFocus();
     }
-    private void PopUIStack(Type subBase)
+    private void PopUIStack(JuiSubBase sub)
     {
-        this.uiShowStack.Remove(subBase);
+        if (sub != this.PeekStackTop())
+        {
+            this.uiShowStack.Remove(sub);
+            return;
+        }
+        sub.OnLostFocus();
+        this.uiShowStack.Remove(sub);
+        this.PeekStackTop()?.OnFocus();
     }
-    private Type PeekStackTop()
+    private JuiSubBase PeekStackTop()
     {
         if (this.uiShowStack.Count == 0)
         {
@@ -188,14 +197,22 @@ public abstract class JuiBaseAbstract : JuiAbstract
         }
         return this.uiShowStack[this.uiShowStack.Count - 1];
     }
-    private void SetTopStack(Type subBase)
+    private void SetTopStack(JuiSubBase sub)
     {
-        int pos = this.uiShowStack.IndexOf(subBase);
-        if (pos > -1)
+        int pos = this.uiShowStack.IndexOf(sub);
+        if (pos < 0)
         {
-            this.uiShowStack.Remove(subBase);
-            this.uiShowStack.Add(subBase);
+            return;
         }
+        if (sub == this.PeekStackTop())
+        {
+            return;
+        }
+        //not top
+        this.uiShowStack.Remove(sub);
+        this.PeekStackTop()?.OnLostFocus();
+        this.uiShowStack.Add(sub);
+        sub.OnFocus();
     }
 
 }

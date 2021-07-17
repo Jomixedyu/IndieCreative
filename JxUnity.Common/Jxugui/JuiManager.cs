@@ -36,7 +36,7 @@ public sealed class JuiManager : MonoBehaviour, IDisposable
     {
         get => mInstance != null;
     }
-    
+
     private event Action UpdateHandler;
     private struct UpdateQueueData
     {
@@ -51,7 +51,7 @@ public sealed class JuiManager : MonoBehaviour, IDisposable
     }
     private List<UpdateQueueData> updateOperateQueue;
 
-    private List<Type> uiShowStack;
+    private List<JuiBaseAbstract> uiShowStack;
     private Dictionary<string, JuiBaseAbstract> ui;
 
     private static Dictionary<string, UIInfo> uiTypes;
@@ -124,7 +124,7 @@ public sealed class JuiManager : MonoBehaviour, IDisposable
             return;
         }
 
-        this.uiShowStack = new List<Type>();
+        this.uiShowStack = new List<JuiBaseAbstract>();
         this.ui = new Dictionary<string, JuiBaseAbstract>();
         this.updateOperateQueue = new List<UpdateQueueData>();
 
@@ -187,20 +187,29 @@ public sealed class JuiManager : MonoBehaviour, IDisposable
         }
     }
 
-    public void Push(Type type)
+    public void Push(JuiBaseAbstract obj)
     {
-        this.uiShowStack.Add(type);
+        this.GetFocus()?.OnLostFocus();
+        this.uiShowStack.Add(obj);
+        obj.OnFocus();
     }
-    public void Pop(Type type)
+    public void Pop(JuiBaseAbstract obj)
     {
-        this.uiShowStack.Remove(type);
+        if (obj != this.GetFocus())
+        {
+            this.uiShowStack.Remove(obj);
+            return;
+        }
+        obj.OnLostFocus();
+        this.uiShowStack.Remove(obj);
+        this.GetFocus()?.OnFocus();
     }
 
     /// <summary>
     /// 获取Focus
     /// </summary>
     /// <returns></returns>
-    public Type GetFocus()
+    public JuiBaseAbstract GetFocus()
     {
         if (this.uiShowStack.Count == 0)
         {
@@ -212,10 +221,16 @@ public sealed class JuiManager : MonoBehaviour, IDisposable
     /// 设置为Focus
     /// </summary>
     /// <param name="type"></param>
-    public void SetFocus(Type type)
+    public void SetFocus(JuiBaseAbstract obj)
     {
-        this.uiShowStack.Remove(type);
-        this.uiShowStack.Add(type);
+        if (obj == this.GetFocus())
+        {
+            return;
+        }
+        this.uiShowStack.Remove(obj);
+        this.GetFocus()?.OnLostFocus();
+        this.uiShowStack.Add(obj);
+        obj.OnFocus();
     }
 
     public void RegisterUI(string name)
