@@ -135,6 +135,11 @@ public abstract class JuiBaseAbstract : JuiAbstract
             }
         }
     }
+    
+    protected bool HasSubUIFocus()
+    {
+        return this.uiShowStack.Count != 0;
+    }
 
     public class JuiBaseAbstractPack
     {

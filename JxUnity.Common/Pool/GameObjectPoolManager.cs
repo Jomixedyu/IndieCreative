@@ -157,7 +157,7 @@ public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
 
     private void Awake()
     {
-        if (base.CheckInstanceAndDestroy())
+        if (CheckInstanceAndDestroy())
         {
             return;
         }

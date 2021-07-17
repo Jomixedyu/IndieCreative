@@ -28,6 +28,10 @@ public class ScheduleManager : MonoSingleton<ScheduleManager>
 
     private void Awake()
     {
+        if (CheckInstanceAndDestroy())
+        {
+            return;
+        }
         this.schedule = new Dictionary<int, Schedule>();
         this.waitRemoveList = new List<int>();
     }

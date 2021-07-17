@@ -101,6 +101,7 @@ public abstract class JuiSubBase : JuiAbstract
             return;
         }
         base.Hide();
+        this.pack.PopUIStack(this);
         if (this.attr.EnableUpdate)
         {
             this.pack.RemoveUpdateHandler(this.Update);
