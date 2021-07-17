@@ -2,11 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FPS : MonoBehaviour
+public class FPS : MonoSingleton<FPS>
 {
     private float time;
     private int frameCount;
     private string showText = "fps: 0";
+
+    private void Awake()
+    {
+        if (CheckInstanceAndDestroy())
+        {
+            return;
+        }
+    }
 
     private void OnGUI()
     {
