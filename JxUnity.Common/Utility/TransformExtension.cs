@@ -170,4 +170,22 @@ public static class TransformExtension
         }
         return path.Substring(0, pos + 1);
     }
+
+    /// <summary>
+    /// 查找一级激活子物体
+    /// </summary>
+    /// <param name="_this"></param>
+    /// <returns></returns>
+    public static int FindChildActiveInHierarchy(this Transform _this)
+    {
+        int count = 0;
+        for (int i = 0; i < _this.childCount; i++)
+        {
+            if (_this.GetChild(i).gameObject.activeInHierarchy)
+            {
+                count++;
+            }
+        }
+        return count;
+    }
 }

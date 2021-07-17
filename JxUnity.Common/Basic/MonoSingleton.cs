@@ -32,7 +32,10 @@ public class MonoSingleton<T> : MonoBehaviour, IDisposable where T : MonoSinglet
                 }
                 if (mInstance.IsDontDestroyOnInit)
                 {
-                    DontDestroyOnLoad(mInstance.gameObject);
+                    if (object.ReferenceEquals(mInstance.transform.parent, null))
+                    {
+                        DontDestroyOnLoad(mInstance.gameObject);
+                    }
                 }
             }
             return mInstance;
