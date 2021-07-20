@@ -16,6 +16,17 @@ public abstract class JuiBaseAbstract : JuiAbstract
     {
         JuiManager.Instance.SetFocus(this);
     }
+
+    private List<JuiSubBase> subUIs = new List<JuiSubBase>();
+    protected void AddSubUI(JuiSubBase ui)
+    {
+        this.subUIs.Add(ui);
+    }
+    protected void RemoveSubUI(JuiSubBase ui)
+    {
+        this.subUIs.Remove(ui);
+    }
+
     private List<JuiSubBase> uiShowStack = new List<JuiSubBase>();
     private Action updateHandler;
     private struct OperateQueue
@@ -96,6 +107,16 @@ public abstract class JuiBaseAbstract : JuiAbstract
             {
                 JuiManager.Instance.AddUpdateHandler(this.Update);
             }
+
+            this.OnShow();
+
+            foreach (JuiSubBase subui in this.subUIs)
+            {
+                if (subui.IsShow)
+                {
+                    subui.SendMessage(MessageType.Show);
+                }
+            }
         }
 
         string uiName = this.GetType().Name;
@@ -106,9 +127,9 @@ public abstract class JuiBaseAbstract : JuiAbstract
         }
         if (!JuiManager.Instance.HasUIInstance(uiName))
         {
-            JuiManager.Instance.SetUI(uiName, this);
+            JuiManager.Instance.SetUIInstance(uiName, this);
         }
-        //TODO: 绑定子UI
+
     }
 
     protected override GameObject LoadResource(string path)
@@ -131,11 +152,12 @@ public abstract class JuiBaseAbstract : JuiAbstract
                 }
                 sub.InitializeUI(this, subAttr, this.GetSubUiIniter());
                 field.SetValue(this, sub);
+                this.AddSubUI(sub);
                 sub.Create();
             }
         }
     }
-    
+
     protected bool HasSubUIFocus()
     {
         return this.uiShowStack.Count != 0;
@@ -179,9 +201,9 @@ public abstract class JuiBaseAbstract : JuiAbstract
     }
     private void PushUIStack(JuiSubBase sub)
     {
-        this.PeekStackTop()?.OnLostFocus();
+        this.PeekStackTop()?.SendMessage(MessageType.LostFocus);
         this.uiShowStack.Add(sub);
-        sub.OnFocus();
+        sub.SendMessage(MessageType.Focus);
     }
     private void PopUIStack(JuiSubBase sub)
     {
@@ -190,9 +212,9 @@ public abstract class JuiBaseAbstract : JuiAbstract
             this.uiShowStack.Remove(sub);
             return;
         }
-        sub.OnLostFocus();
+        sub.SendMessage(MessageType.LostFocus);
         this.uiShowStack.Remove(sub);
-        this.PeekStackTop()?.OnFocus();
+        this.PeekStackTop()?.SendMessage(MessageType.Focus);
     }
     private JuiSubBase PeekStackTop()
     {
@@ -215,10 +237,18 @@ public abstract class JuiBaseAbstract : JuiAbstract
         }
         //not top
         this.uiShowStack.Remove(sub);
-        this.PeekStackTop()?.OnLostFocus();
+        this.PeekStackTop()?.SendMessage(MessageType.LostFocus);
         this.uiShowStack.Add(sub);
-        sub.OnFocus();
+        sub.SendMessage(MessageType.Focus);
     }
 
+    public List<JuiSubBase> GetSubUIs()
+    {
+        return this.subUIs;
+    }
+    public JuiSubBase GetSubUIFocus()
+    {
+        return PeekStackTop();
+    }
 }
 

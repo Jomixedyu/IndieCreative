@@ -74,8 +74,8 @@ public abstract class JuiAbstract : IDisposable
         {
             return;
         }
-        this.isShow = false;
-        InactiveHide();
+        this.LogicHide();
+        this.InactiveHide();
     }
 
     public virtual void Create()
@@ -96,10 +96,6 @@ public abstract class JuiAbstract : IDisposable
         }
 
         this.OnCreate();
-        if (this.isShow)
-        {
-            this.OnShow();
-        }
     }
 
     private void Destroy()
@@ -245,19 +241,33 @@ public abstract class JuiAbstract : IDisposable
         }
     }
 
+    public enum MessageType
+    {
+        Show, Hide, Update, Destroy, Focus, LostFocus
+    }
+
+    public void SendMessage(MessageType type)
+    {
+        switch (type)
+        {
+            case MessageType.Show: this.OnShow(); break;
+            case MessageType.Hide: this.OnHide(); break;
+            case MessageType.Update: this.OnUpdate(); break;
+            case MessageType.Destroy: this.OnDestroy(); break;
+            case MessageType.Focus: this.OnFocus(); break;
+            case MessageType.LostFocus: this.OnLostFocus(); break;
+            default:
+                break;
+        }
+    }
+
     protected virtual void OnCreate() { }
     protected virtual void OnShow() { }
     protected virtual void OnHide() { }
     protected virtual void OnUpdate() { }
     protected virtual void OnDestroy() { }
-    /// <summary>
-    /// message
-    /// </summary>
-    public virtual void OnFocus() { }
-    /// <summary>
-    /// message
-    /// </summary>
-    public virtual void OnLostFocus() { }
+    protected virtual void OnFocus() { }
+    protected virtual void OnLostFocus() { }
 
     public virtual void Dispose()
     {

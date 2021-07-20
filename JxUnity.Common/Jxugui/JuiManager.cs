@@ -189,9 +189,9 @@ public sealed class JuiManager : MonoBehaviour, IDisposable
 
     public void Push(JuiBaseAbstract obj)
     {
-        this.GetFocus()?.OnLostFocus();
+        this.GetFocus()?.SendMessage(JuiAbstract.MessageType.LostFocus);
         this.uiShowStack.Add(obj);
-        obj.OnFocus();
+        obj.SendMessage(JuiAbstract.MessageType.Focus);
     }
     public void Pop(JuiBaseAbstract obj)
     {
@@ -200,9 +200,9 @@ public sealed class JuiManager : MonoBehaviour, IDisposable
             this.uiShowStack.Remove(obj);
             return;
         }
-        obj.OnLostFocus();
+        obj.SendMessage(JuiAbstract.MessageType.LostFocus);
         this.uiShowStack.Remove(obj);
-        this.GetFocus()?.OnFocus();
+        this.GetFocus()?.SendMessage(JuiAbstract.MessageType.Focus);
     }
 
     /// <summary>
@@ -228,20 +228,20 @@ public sealed class JuiManager : MonoBehaviour, IDisposable
             return;
         }
         this.uiShowStack.Remove(obj);
-        this.GetFocus()?.OnLostFocus();
+        this.GetFocus()?.SendMessage(JuiAbstract.MessageType.LostFocus);
         this.uiShowStack.Add(obj);
-        obj.OnFocus();
+        obj.SendMessage(JuiAbstract.MessageType.Focus);
     }
 
     public void RegisterUI(string name)
     {
         this.ui.Add(name, null);
     }
-    public void SetUI(string name, JuiBaseAbstract ui)
+    public void SetUIInstance(string name, JuiBaseAbstract ui)
     {
         this.ui[name] = ui;
     }
-    public JuiAbstract GetUI(string name)
+    public JuiBaseAbstract GetUIInstance(string name)
     {
         return this.ui[name];
     }
