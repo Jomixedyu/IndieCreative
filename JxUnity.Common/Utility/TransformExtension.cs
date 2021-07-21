@@ -47,7 +47,11 @@ public static class TransformExtension
     /// <returns></returns>
     public static void AddListener(this Component component, EventTriggerType eventTriggerType, UnityAction<BaseEventData> callback)
     {
-        EventTrigger eventTrigger = component.GetComponent<EventTrigger>() ?? component.gameObject.AddComponent<EventTrigger>();
+        EventTrigger eventTrigger = component.GetComponent<EventTrigger>();
+        if (eventTrigger == null)
+        {
+            eventTrigger = component.gameObject.AddComponent<EventTrigger>();
+        }
 
         List<EventTrigger.Entry> triggers;
         if (eventTrigger.triggers != null)
@@ -152,7 +156,7 @@ public static class TransformExtension
         go.transform.SetParent(_this);
         return go.transform;
     }
-    public static string LastChild(string path)
+    public static string GetLastChildInPath(string path)
     {
         int pos = path.LastIndexOf('/');
         if (pos < 0)
@@ -161,7 +165,7 @@ public static class TransformExtension
         }
         return path.Substring(pos, path.Length - pos);
     }
-    public static string Root(string path)
+    public static string GetRoot(string path)
     {
         int pos = path.IndexOf('/');
         if (pos < 0)
@@ -187,5 +191,23 @@ public static class TransformExtension
             }
         }
         return count;
+    }
+
+    public static Transform FirstChild(this Transform transform)
+    {
+        if (transform.childCount == 0)
+        {
+            return null;
+        }
+        return transform.GetChild(0);
+    }
+    public static Transform LastChild(this Transform transform)
+    {
+        int count = transform.childCount;
+        if (count == 0)
+        {
+            return null;
+        }
+        return transform.GetChild(count - 1);
     }
 }
