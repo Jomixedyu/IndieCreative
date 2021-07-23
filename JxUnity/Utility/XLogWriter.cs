@@ -13,13 +13,37 @@ public static class XLogWriter
     private static Stream stream = null;
     private static StreamWriter sw = null;
 
+    /// <summary>
+    /// 在编译打包后的游戏状态下写出日志。
+    /// </summary>
+    /// <param name="outFolder"></param>
+    /// <param name="bufferCount"></param>
     public static void InitInPlayMode(string outFolder, int bufferCount = 5)
     {
 #if !UNITY_EDITOR
         Init(outFolder, bufferCount);
 #endif
     }
+    /// <summary>
+    /// 在编译打包后的游戏状态并且编译版本不为Development Build的情况下写出日志。
+    /// </summary>
+    /// <param name="outFolder"></param>
+    /// <param name="bufferCount"></param>
+    public static void InitInReleasePlayMode(string outFolder, int bufferCount = 5)
+    {
+#if !UNITY_EDITOR
+        if (!Debug.isDebugBuild)
+        {
+            Init(outFolder, bufferCount);
+        }
+#endif
+    }
 
+    /// <summary>
+    /// 写出日志。
+    /// </summary>
+    /// <param name="outFolder"></param>
+    /// <param name="bufferCount"></param>
     public static void Init(string outFolder, int bufferCount = 5)
     {
         IsOutFile = true;
@@ -28,7 +52,7 @@ public static class XLogWriter
         if (!Directory.Exists(SaveFolder))
             Directory.CreateDirectory(SaveFolder);
 
-        SaveFileName = string.Format("{0}.log", DateTime.Now.ToString("yyyyMMddhhmmss"));
+        SaveFileName = string.Format("xlw{0}.log", DateTime.Now.ToString("yyyyMMddhhmmss"));
         SaveFileFullName = Path.Combine(SaveFolder, SaveFileName);
         BufferCount = bufferCount;
 
