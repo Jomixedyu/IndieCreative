@@ -52,9 +52,20 @@ public static class XLogWriter
         }
     }
 
+    private static string Now => DateTime.Now.ToString("HH:mm:ss");
+
     private static void Application_logMessageReceived(string condition, string stackTrace, LogType type)
     {
-        sw.WriteLine(condition);
+        string log = string.Format("[{0}][{1}] {2}", Now, type.ToString(), condition);
+        sw.WriteLine(log);
+        switch (type)
+        {
+            case LogType.Error:
+            case LogType.Assert:
+            case LogType.Exception:
+                sw.WriteLine("\t" + stackTrace.Replace("\n", "\n\t"));
+                break;
+        }
         bufferCount++;
         if (bufferCount >= BufferCount)
         {
