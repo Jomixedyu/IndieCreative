@@ -137,21 +137,22 @@ public abstract class JuiBaseAbstract : JuiAbstract
         return JuiManager.Instance.LoadResource(path);
     }
 
-    protected override void OnBindElement(List<FieldInfo> fields)
+    protected override void OnBindElement(List<MemberInfo> fields)
     {
         base.OnBindElement(fields);
-        foreach (FieldInfo field in fields)
+        foreach (MemberInfo field in fields)
         {
+            if (!BindUtil.IsFieldOrProp(field)) return;
             if (field.IsDefined(typeof(JuiElementSubPanelAttribute)))
             {
-                var sub = (JuiSubBase)Activator.CreateInstance(field.FieldType, null);
+                var sub = (JuiSubBase)Activator.CreateInstance(BindUtil.GetFieldOrPropType(field), null);
                 var subAttr = field.GetCustomAttribute<JuiElementSubPanelAttribute>();
                 if (subAttr.Name == null)
                 {
                     subAttr.Name = field.Name;
                 }
                 sub.InitializeUI(this, subAttr, this.GetSubUiIniter());
-                field.SetValue(this, sub);
+                BindUtil.SetFieldOrPropValue(field, this, sub);
                 this.AddSubUI(sub);
                 sub.Create();
             }

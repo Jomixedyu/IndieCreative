@@ -108,92 +108,138 @@ public abstract class JuiAbstract : IDisposable
         _transform = null;
     }
 
-    protected object GetBindElementObject(Transform tran, Type type)
+
+    protected static class BindUtil
     {
-        if (tran == null)
+        public static object GetBindElementObject(Transform tran, Type type)
         {
+            if (tran == null)
+            {
+                return null;
+            }
+            if (type.IsSubclassOf(typeof(Transform)))
+            {
+                return tran;
+            }
+            else if (type.IsSubclassOf(typeof(UnityEngine.Component)))
+            {
+                return tran.GetComponent(type);
+            }
+            else if (type.IsSubclassOf(typeof(GameObject)))
+            {
+                return tran.gameObject;
+            }
             return null;
         }
-        if (type.IsSubclassOf(typeof(Transform)))
+        public static bool IsFieldOrProp(MemberInfo info)
         {
-            return tran;
+            return info.MemberType == MemberTypes.Field || info.MemberType == MemberTypes.Property;
         }
-        else if (type.IsSubclassOf(typeof(UnityEngine.Component)))
+        public static Type GetFieldOrPropType(MemberInfo info)
         {
-            return tran.GetComponent(type);
+            Type type = default;
+            if (info.MemberType == MemberTypes.Field)
+            {
+                type = ((FieldInfo)info).FieldType;
+            }
+            else if (info.MemberType == MemberTypes.Property)
+            {
+                type = ((PropertyInfo)info).PropertyType;
+            }
+            return type;
         }
-        else if (type.IsSubclassOf(typeof(GameObject)))
+        public static void SetFieldOrPropValue(MemberInfo info, object inst, object value)
         {
-            return tran.transform;
+            if (info.MemberType == MemberTypes.Field)
+            {
+                ((FieldInfo)info).SetValue(inst, value);
+            }
+            else if (info.MemberType == MemberTypes.Property)
+            {
+                ((PropertyInfo)info).SetValue(inst, value);
+            }
         }
-        return null;
     }
 
-    protected virtual void OnBindElement(List<FieldInfo> fields)
+    private void BindElement(MemberInfo info, Type type)
     {
-        foreach (FieldInfo field in fields)
+        JuiElementAttribute attr = info.GetCustomAttribute<JuiElementAttribute>();
+        string path = attr.Path != null ? attr.Path : info.Name;
+
+        Transform tran = transform.Find(path);
+        if (tran == null)
         {
-            Type type = field.FieldType;
-            if (field.IsDefined(typeof(JuiElementAttribute)))
+            Debug.LogWarning(string.Format("JuiElementBinder: {0}.{1} not found.", this.GetType().Name, info.Name));
+            return;
+        }
+
+        object obj = BindUtil.GetBindElementObject(tran, type);
+        BindUtil.SetFieldOrPropValue(info, this, obj);
+    }
+    private void BindElementArray(MemberInfo info, Type type)
+    {
+        JuiElementArrayAttribute attr = info.GetCustomAttribute<JuiElementArrayAttribute>();
+
+        string path = attr.Path != null ? attr.Path : info.Name;
+
+        Transform tran = transform.Find(path);
+        if (tran == null)
+        {
+            Debug.LogWarning(string.Format("JuiElementBinder: {0}.{1} not found.", this.GetType().Name, info.Name));
+            return;
+        }
+        object fieldInst = null;
+
+        if (type.IsArray)
+        {
+            fieldInst = Array.CreateInstance(attr.ElementType, tran.childCount);
+            Array arr = (Array)fieldInst;
+            for (int i = 0; i < tran.childCount; i++)
             {
-                JuiElementAttribute attr = field.GetCustomAttribute<JuiElementAttribute>();
-                string path = attr.Path != null ? attr.Path : field.Name;
-
-                Transform tran = transform.Find(path);
-                if (tran == null)
-                {
-                    Debug.LogWarning(string.Format("JuiElementBinder: {0}.{1} not found.", this.GetType().Name, field.Name));
-                    continue;
-                }
-
-                object obj = GetBindElementObject(tran, type);
-                field.SetValue(this, obj);
-
+                object inst = BindUtil.GetBindElementObject(tran.GetChild(i), attr.ElementType);
+                arr.SetValue(inst, i);
             }
-            else if (field.IsDefined(typeof(JuiElementArrayAttribute)))
+        }
+        else if (typeof(IList).IsAssignableFrom(type))
+        {
+            fieldInst = Activator.CreateInstance(type);
+            IList list = (IList)fieldInst;
+            foreach (Transform childTransform in tran)
             {
-                JuiElementArrayAttribute attr = field.GetCustomAttribute<JuiElementArrayAttribute>();
-
-                string path = attr.Path != null ? attr.Path : field.Name;
-
-                Transform tran = transform.Find(path);
-                if (tran == null)
-                {
-                    Debug.LogWarning(string.Format("JuiElementBinder: {0}.{1} not found.", this.GetType().Name, field.Name));
-                    continue;
-                }
-                object fieldInst = null;
-
-                if (type.IsArray)
-                {
-                    fieldInst = Array.CreateInstance(attr.ElementType, tran.childCount);
-                    Array arr = (Array)fieldInst;
-                    for (int i = 0; i < tran.childCount; i++)
-                    {
-                        object inst = GetBindElementObject(tran.GetChild(i), attr.ElementType);
-                        arr.SetValue(inst, i);
-                    }
-                }
-                else if (typeof(IList).IsAssignableFrom(type))
-                {
-                    fieldInst = Activator.CreateInstance(type);
-                    IList list = (IList)fieldInst;
-                    foreach (Transform childTransform in tran)
-                    {
-                        object inst = GetBindElementObject(childTransform, attr.ElementType);
-                        list.Add(inst);
-                    }
-                }
-                field.SetValue(this, fieldInst);
+                object inst = BindUtil.GetBindElementObject(childTransform, attr.ElementType);
+                list.Add(inst);
             }
+        }
+        BindUtil.SetFieldOrPropValue(info, this, fieldInst);
+    }
+
+    protected virtual void OnBindElement(List<MemberInfo> fields)
+    {
+        foreach (MemberInfo info in fields)
+        {
+            if (BindUtil.IsFieldOrProp(info))
+            {
+                Type type = BindUtil.GetFieldOrPropType(info);
+
+                if (info.IsDefined(typeof(JuiElementAttribute)))
+                {
+                    BindElement(info, type);
+                }
+                else if (info.IsDefined(typeof(JuiElementArrayAttribute)))
+                {
+                    BindElementArray(info, type);
+                }
+            }
+
         }
     }
 
     private void AutoBindElement()
     {
-        var fields = this.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-        List<FieldInfo> infos = new List<FieldInfo>();
-        foreach (FieldInfo field in fields)
+        var fields = this.GetType().GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+        List<MemberInfo> infos = new List<MemberInfo>();
+        foreach (MemberInfo field in fields)
         {
             if (field.IsDefined(typeof(JuiAbstractAttribute), true))
             {

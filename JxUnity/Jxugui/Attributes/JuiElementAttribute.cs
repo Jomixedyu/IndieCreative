@@ -1,15 +1,14 @@
 ﻿using System;
 
-[AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
 public sealed class JuiElementAttribute : JuiAbstractAttribute
 {
-    private string path;
-    public string Path { get => path; }
-    public JuiElementAttribute() { }
+    public string Path { get; set; }
 
+    public JuiElementAttribute() { }
     public JuiElementAttribute(string path)
     {
-        this.path = path;
+        this.Path = path;
     }
 }
 
