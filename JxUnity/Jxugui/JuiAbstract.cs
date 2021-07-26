@@ -268,15 +268,15 @@ namespace JxUnity.Jxugui
                 {
                     return null;
                 }
-                if (type.IsSubclassOf(typeof(Transform)))
+                if (type == typeof(Transform) || type.IsSubclassOf(typeof(Transform)))
                 {
                     return tran;
                 }
-                else if (type.IsSubclassOf(typeof(UnityEngine.Component)))
+                else if (type == typeof(Component) || type.IsSubclassOf(typeof(Component)))
                 {
                     return tran.GetComponent(type);
                 }
-                else if (type.IsSubclassOf(typeof(GameObject)))
+                else if (type == typeof(GameObject) || type.IsSubclassOf(typeof(GameObject)))
                 {
                     return tran.gameObject;
                 }
