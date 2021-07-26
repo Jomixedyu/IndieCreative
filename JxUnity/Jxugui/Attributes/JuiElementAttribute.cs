@@ -1,14 +1,16 @@
 ﻿using System;
 
-[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-public sealed class JuiElementAttribute : JuiAbstractAttribute
+namespace JxUnity.Jxugui
 {
-    public string Path { get; set; }
-
-    public JuiElementAttribute() { }
-    public JuiElementAttribute(string path)
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+    public sealed class JuiElementAttribute : JuiAbstractAttribute
     {
-        this.Path = path;
+        public string Path { get; set; }
+
+        public JuiElementAttribute() { }
+        public JuiElementAttribute(string path)
+        {
+            this.Path = path;
+        }
     }
 }
-

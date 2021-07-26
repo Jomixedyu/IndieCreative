@@ -1,6 +1,8 @@
 ﻿using System;
 
-public abstract class JuiAbstractAttribute : Attribute
+namespace JxUnity.Jxugui
 {
-
+    public abstract class JuiAbstractAttribute : Attribute
+    {
+    }
 }

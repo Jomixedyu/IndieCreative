@@ -1,34 +1,38 @@
 ﻿using System;
 using UnityEngine;
 
-
-public abstract class JuiBase<UIType> : JuiBaseAbstract where UIType : JuiBase<UIType>, new()
+namespace JxUnity.Jxugui
 {
-    private static UIType mInstance;
-    public static UIType Instance
+    /// <summary>
+    /// 顶级UI
+    /// </summary>
+    /// <typeparam name="UIType"></typeparam>
+    public abstract class JuiBase<UIType> : JuiBaseAbstract, IDisposable where UIType : JuiBase<UIType>, new()
     {
-        get
+        private static UIType mInstance;
+        public static UIType Instance
+        {
+            get => GetInstance();
+        }
+        public static bool HasInstance
+        {
+            get => mInstance != null;
+        }
+        public static UIType GetInstance()
         {
             if (mInstance == null)
             {
                 mInstance = Activator.CreateInstance<UIType>();
-                mInstance.Create();
+                mInstance.CreateBind();
+                mInstance.InitUIState();
             }
             return mInstance;
         }
-    }
-    public static bool HasInstance
-    {
-        get => mInstance != null;
-    }
-    public static UIType GetInstance()
-    {
-        return Instance;
-    }
-    public override void Dispose()
-    {
-        base.Dispose();
-        mInstance = null;
-    }
+        public override void Dispose()
+        {
+            base.Dispose();
+            mInstance = null;
+        }
 
+    }
 }
