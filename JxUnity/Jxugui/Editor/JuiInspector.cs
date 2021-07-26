@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using JxUnity.Jxugui;
 
 public class JuiInspector : EditorWindow
 {
@@ -22,14 +23,15 @@ public class JuiInspector : EditorWindow
             return;
         }
         EditorGUILayout.LabelField("focus ui: " + JuiManager.Instance.GetFocus()?.Name);
-        foreach (string ui in JuiManager.Instance.GetAllUI())
+        foreach (var ui in JuiManager.Instance.GetAllUI())
         {
-            EditorGUILayout.LabelField(ui);
-            EditorGUILayout.LabelField("\tbinding: " + JuiManager.Instance.HasUIInstance(ui).ToString());
+            string name = ui.Key;
+            EditorGUILayout.LabelField(name + " : class " + ui.Value.ToString());
+            EditorGUILayout.LabelField("\tbinding: " + JuiManager.Instance.HasUIInstance(name).ToString());
 
-            if (JuiManager.Instance.HasUIInstance(ui))
+            if (JuiManager.Instance.HasUIInstance(name))
             {
-                var pui = JuiManager.Instance.GetUIInstance(ui);
+                var pui = JuiManager.Instance.GetUIInstance(name);
                 EditorGUILayout.LabelField("\tis show: " + pui.IsShow.ToString());
                 EditorGUILayout.LabelField("\tsubui focus: " + pui.GetSubUIFocus()?.Name);
                 EditorGUILayout.LabelField("\tsubui: ");

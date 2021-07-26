@@ -11,6 +11,9 @@ namespace JxUnity.Jxugui
             set => throw new NotSupportedException("only subui is supported.");
         }
 
+        public override bool IsFocusSelf => JuiManager.Instance.GetFocus() == this;
+        public override bool IsFocus => this.IsFocusSelf;
+
         public override void SetFocus()
         {
             JuiManager.Instance.SetFocus(this);
@@ -54,7 +57,7 @@ namespace JxUnity.Jxugui
             this.transform = JuiManager.Instance.transform.Find(this.attr.Name);
             base.CreateBind();
 
-            string uiName = this.GetType().Name;
+            string uiName = this.attr.Name;
 
             if (!JuiManager.Instance.Exist(uiName))
             {

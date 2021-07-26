@@ -246,11 +246,9 @@ namespace JxUnity.Jxugui
         {
             return this.ui[name];
         }
-        public string[] GetAllUI()
+        public Dictionary<string, JuiBaseAbstract> GetAllUI()
         {
-            string[] uis = new string[this.ui.Count];
-            this.ui.Keys.CopyTo(uis, 0);
-            return uis;
+            return this.ui;
         }
         public bool Exist(string ui)
         {
