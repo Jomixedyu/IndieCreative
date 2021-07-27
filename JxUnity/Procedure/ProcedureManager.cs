@@ -3,9 +3,12 @@ using System;
 using System.Reflection;
 using UnityEngine;
 
-public class ProcedureManager : Singleton<ProcedureManager>
+/// <summary>
+/// 流程状态管理器
+/// </summary>
+public class ProcedureManager
 {
-    private FSMBase<string, ProcedureBase> procedure = new FSMBase<string, ProcedureBase>();
+    private static FSMBase<string, ProcedureBase> procedures;
 
     public static Type[] GetClassTypeByBase(Assembly ass, Type baseType)
     {
@@ -21,43 +24,60 @@ public class ProcedureManager : Singleton<ProcedureManager>
         return rst.ToArray();
     }
 
-    public ProcedureManager()
+    static ProcedureManager()
     {
+        procedures = new FSMBase<string, ProcedureBase>();
         Type[] types = GetClassTypeByBase(Assembly.GetExecutingAssembly(), typeof(ProcedureBase));
         foreach (Type item in types)
         {
-            this.procedure.AddState(item.Name, (ProcedureBase)Activator.CreateInstance(item));
+            procedures.AddState(item.Name, (ProcedureBase)Activator.CreateInstance(item));
         }
     }
-
-    public void Change(string typeName)
+    /// <summary>
+    /// 更改流程状态
+    /// </summary>
+    /// <param name="typeName"></param>
+    public static void Change(string typeName)
     {
-        if (!procedure.HasState(typeName))
+        ProcedureUpdater.GetInstance();
+        if (!procedures.HasState(typeName))
         {
-            Debug.LogError("not found procedure: " + typeName);
+            Debug.LogError("procedure: " + typeName + " not found.");
             return;
         }
         Debug.Log("change procedure: " + typeName);
-        this.procedure.ChangeState(typeName);
+        procedures.ChangeState(typeName);
     }
-    public void ChangePrevProcedure()
+    /// <summary>
+    /// 更改至上一个流程状态
+    /// </summary>
+    public static void ChangeToPrevProcedure()
     {
-        if(this.procedure.preIndex != null)
+        if(procedures.LastStateIndex != null)
         {
-            this.Change(this.procedure.preIndex);
+            Change(procedures.LastStateIndex);
         }
     }
-    public void Change<TProcedure>() where TProcedure : ProcedureBase
+    /// <summary>
+    /// 更改流程状态
+    /// </summary>
+    /// <typeparam name="TProcedure"></typeparam>
+    public static void Change<TProcedure>() where TProcedure : ProcedureBase
     {
-        this.Change(typeof(TProcedure).Name);
+        Change(typeof(TProcedure).Name);
     }
-    public ProcedureBase GetCurProcedure()
+    /// <summary>
+    /// 获取当前流程状态
+    /// </summary>
+    /// <returns></returns>
+    public static ProcedureBase GetCurProcedure()
     {
-        return this.procedure.GetCurState();
+        return procedures.GetCurState();
     }
-    public void Tick()
+
+    public static void OnTick()
     {
-        this.procedure.GetCurState()?.OnUpdate();
+        procedures.GetCurState()?.OnUpdate();
     }
 
 }
