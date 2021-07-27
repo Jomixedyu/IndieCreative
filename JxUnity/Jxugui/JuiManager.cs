@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace JxUnity.Jxugui
 {
@@ -168,8 +170,44 @@ namespace JxUnity.Jxugui
             }
             return uiTypes[name].Attr;
         }
+
+        [SerializeField]
+        [Tooltip("是否启用导航重新选择，启用后鼠标点击和隐藏显示将不会导致丢失导航")]
+        private bool enableReselect;
+        /// <summary>
+        /// 是否启用导航重新选择，启用后鼠标点击和隐藏显示将不会导致丢失导航
+        /// </summary>
+        public bool EnableReselect { get => enableReselect; set => enableReselect = value; }
+        private GameObject lastSelected;
+        private bool lastSelectedlastActive = false;
+        private void Reselect()
+        {
+            if (EventSystem.current.currentSelectedGameObject == null)
+            {
+                EventSystem.current.SetSelectedGameObject(lastSelected);
+            }
+            else
+            {
+                lastSelected = EventSystem.current.currentSelectedGameObject;
+            }
+            if (lastSelected != null)
+            {
+                if (lastSelected.activeInHierarchy && !lastSelectedlastActive)
+                {
+                    lastSelected.GetComponent<Selectable>().OnSelect(null);
+                    Debug.Log("Bababa");
+                }
+                lastSelectedlastActive = lastSelected.activeInHierarchy;
+            }
+
+        }
+
         private void Update()
         {
+            if (EnableReselect)
+            {
+                this.Reselect();
+            }
             this.UpdateHandler?.Invoke();
             if (this.updateOperateQueue.Count > 0)
             {
