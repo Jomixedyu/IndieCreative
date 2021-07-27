@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace JxUnity.Logic2D
+namespace JxUnity2d.Logic
 {
     public class IllusionBackground2D : MonoBehaviour
     {
