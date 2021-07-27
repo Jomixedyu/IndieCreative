@@ -8,6 +8,8 @@ using UnityEngine;
 /// </summary>
 public class ProcedureManager
 {
+    private static bool useCustomUpdater = false;
+
     private static FSMBase<string, ProcedureBase> procedures;
 
     public static Type[] GetClassTypeByBase(Assembly ass, Type baseType)
@@ -33,13 +35,37 @@ public class ProcedureManager
             procedures.AddState(item.Name, (ProcedureBase)Activator.CreateInstance(item));
         }
     }
+
+    /// <summary>
+    /// 设置后需要手动调用Update函数
+    /// </summary>
+    public static void UseCustomUpdater()
+    {
+        useCustomUpdater = true;
+        if (ProcedureUpdater.HasInstance())
+        {
+            ProcedureUpdater.GetInstance().Dispose();
+        }
+    }
+    /// <summary>
+    /// 设置后自动调用Update函数
+    /// </summary>
+    public static void UseDefaultUpdater()
+    {
+        useCustomUpdater = false;
+        ProcedureUpdater.GetInstance();
+    }
+
     /// <summary>
     /// 更改流程状态
     /// </summary>
     /// <param name="typeName"></param>
     public static void Change(string typeName)
     {
-        ProcedureUpdater.GetInstance();
+        if (!useCustomUpdater)
+        {
+            ProcedureUpdater.GetInstance();
+        }
         if (!procedures.HasState(typeName))
         {
             Debug.LogError("procedure: " + typeName + " not found.");
@@ -53,7 +79,7 @@ public class ProcedureManager
     /// </summary>
     public static void ChangeToPrevProcedure()
     {
-        if(procedures.LastStateIndex != null)
+        if (procedures.LastStateIndex != null)
         {
             Change(procedures.LastStateIndex);
         }
@@ -75,7 +101,7 @@ public class ProcedureManager
         return procedures.GetCurState();
     }
 
-    public static void OnTick()
+    public static void Update()
     {
         procedures.GetCurState()?.OnUpdate();
     }

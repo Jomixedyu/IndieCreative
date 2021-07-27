@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-internal class ProcedureUpdater : Component
+internal class ProcedureUpdater : MonoBehaviour, IDisposable
 {
     private static ProcedureUpdater instance;
     public static ProcedureUpdater GetInstance()
@@ -25,9 +25,19 @@ internal class ProcedureUpdater : Component
         }
         return instance;
     }
+    public static bool HasInstance()
+    {
+        return instance != null;
+    }
+
+    public void Dispose()
+    {
+        instance = null;
+        Destroy(gameObject);
+    }
 
     private void Update()
     {
-        ProcedureManager.OnTick();
+        ProcedureManager.Update();
     }
 }
