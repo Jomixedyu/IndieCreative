@@ -196,6 +196,16 @@ namespace JxUnity.Jxugui
             {
                 _transform = this.parent.transform.Find(this.attr.Path);
             }
+            if (this.attribute.ResourcePath == null)
+            {
+                string path = this.Name;
+                var p = this.Parent;
+                if (p != null)
+                {
+                    path = p.Name + "/" + path;
+                }
+                this.attribute.ResourcePath = path;
+            }
             if (_transform == null)
             {
                 var prefab = this.LoadResource(this.attribute.ResourcePath);
@@ -470,14 +480,14 @@ namespace JxUnity.Jxugui
             this.RemoveSubUI(sub);
             sub.Destroy();
         }
-
+        
         /// <summary>
         /// 获取资源
         /// </summary>
         /// <param name="path"></param>
         protected virtual GameObject LoadResource(string path)
         {
-            throw new NotImplementedException();
+            return JuiManager.Instance.LoadResource(path);
         }
 
         /// <summary>

@@ -7,9 +7,5 @@ namespace JxUnity.Jxugui
     /// </summary>
     public abstract class JuiSubBase : JuiAbstract
     {
-        protected override GameObject LoadResource(string path)
-        {
-            return JuiManager.Instance.LoadResource(this.parent.Name + '/' + path);
-        }
     }
 }

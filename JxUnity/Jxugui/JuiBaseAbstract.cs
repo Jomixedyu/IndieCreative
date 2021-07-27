@@ -83,12 +83,6 @@ namespace JxUnity.Jxugui
             base.InitUIState();
         }
 
-
-        protected override GameObject LoadResource(string path)
-        {
-            return JuiManager.Instance.LoadResource(path);
-        }
-
         public override void Destroy()
         {
             if (this.IsShow)
