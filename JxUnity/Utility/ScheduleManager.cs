@@ -1,8 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 待办时间表管理器，按时间延迟执行。
+/// </summary>
 public class ScheduleManager : MonoSingleton<ScheduleManager>
 {
     public struct Schedule
@@ -35,12 +37,18 @@ public class ScheduleManager : MonoSingleton<ScheduleManager>
         this.schedule = new Dictionary<int, Schedule>();
         this.waitRemoveList = new List<int>();
     }
-
+    /// <summary>
+    /// 添加一个待办事项
+    /// </summary>
+    /// <param name="time">等待时间</param>
+    /// <param name="cb">待办内容</param>
     public void Add(float time, Action cb)
     {
         this.schedule.Add(this.GetId(), new Schedule(Time.time + time, cb));
     }
-
+    /// <summary>
+    /// 按顺序完成所有待办事项
+    /// </summary>
     public void CompleteAll()
     {
         if (this.schedule.Count == 0)
@@ -77,6 +85,5 @@ public class ScheduleManager : MonoSingleton<ScheduleManager>
             this.waitRemoveList.Clear();
         }
     }
-
 
 }

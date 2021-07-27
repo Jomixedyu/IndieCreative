@@ -11,8 +11,8 @@ public class FSMBase<TFSMIndex, TFSMState> where TFSMState : FSMStateBase
 {
     private IDictionary<TFSMIndex, TFSMState> fsm = new Dictionary<TFSMIndex, TFSMState>();
 
-    private bool hasPreState = false;
-    public TFSMIndex preIndex { get; protected set; }
+    private bool hasLastStateIndex = false;
+    public TFSMIndex LastStateIndex { get; protected set; }
 
     private TFSMState curState = null;
     private TFSMIndex curIndex = default;
@@ -31,19 +31,19 @@ public class FSMBase<TFSMIndex, TFSMState> where TFSMState : FSMStateBase
     }
     public void ChangePreState()
     {
-        if (!hasPreState)
+        if (!hasLastStateIndex)
         {
             return;
         }
-        this.ChangeState(preIndex);
+        this.ChangeState(LastStateIndex);
     }
     public virtual void ChangeState(TFSMIndex fsmIndex)
     {
         if (curState != null)
         {
             curState.OnLeave();
-            preIndex = curIndex;
-            hasPreState = true;
+            LastStateIndex = curIndex;
+            hasLastStateIndex = true;
         }
         curIndex = fsmIndex;
         curState = fsm[fsmIndex];

@@ -134,13 +134,25 @@ public static class TransformExtension
             UnityEngine.Object.Destroy(transform.GetChild(i).gameObject);
         }
     }
-    public static void MoveChildren(this Transform self, Transform target)
+    /// <summary>
+    /// 将子对象移至
+    /// </summary>
+    /// <param name="self"></param>
+    /// <param name="target"></param>
+    public static void MoveChildrenTo(this Transform self, Transform target)
     {
         for (int i = 0; i < self.childCount; i++)
         {
             self.GetChild(0).SetParent(target);
         }
     }
+    /// <summary>
+    /// 创建子对象
+    /// </summary>
+    /// <param name="_this"></param>
+    /// <param name="name"></param>
+    /// <param name="components"></param>
+    /// <returns></returns>
     public static Transform CreateChild(this Transform _this, string name = "GameObject", Type[] components = null)
     {
         GameObject go;
@@ -156,6 +168,11 @@ public static class TransformExtension
         go.transform.SetParent(_this);
         return go.transform;
     }
+    /// <summary>
+    /// 按路径获取最后一个子对象
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
     public static string GetLastChildInPath(string path)
     {
         int pos = path.LastIndexOf('/');
@@ -165,6 +182,11 @@ public static class TransformExtension
         }
         return path.Substring(pos, path.Length - pos);
     }
+    /// <summary>
+    /// 按路径获取一个根名称
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
     public static string GetRoot(string path)
     {
         int pos = path.IndexOf('/');
@@ -180,19 +202,27 @@ public static class TransformExtension
     /// </summary>
     /// <param name="_this"></param>
     /// <returns></returns>
-    public static int FindChildActiveInHierarchy(this Transform _this)
+    public static int GetActiveChildCountInHierarchy(this Transform _this)
     {
+        if (!_this.gameObject.activeInHierarchy)
+        {
+            return 0;
+        }
         int count = 0;
         for (int i = 0; i < _this.childCount; i++)
         {
-            if (_this.GetChild(i).gameObject.activeInHierarchy)
+            if (_this.GetChild(i).gameObject.activeSelf)
             {
                 count++;
             }
         }
         return count;
     }
-
+    /// <summary>
+    /// 获取第一个子对象
+    /// </summary>
+    /// <param name="transform"></param>
+    /// <returns></returns>
     public static Transform FirstChild(this Transform transform)
     {
         if (transform.childCount == 0)
@@ -201,6 +231,11 @@ public static class TransformExtension
         }
         return transform.GetChild(0);
     }
+    /// <summary>
+    /// 获取最后一个子对象
+    /// </summary>
+    /// <param name="transform"></param>
+    /// <returns></returns>
     public static Transform LastChild(this Transform transform)
     {
         int count = transform.childCount;

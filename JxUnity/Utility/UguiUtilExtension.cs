@@ -8,8 +8,4 @@ public static class UguiUtilExtension
     {
         button.transform.Find("Text").GetComponent<Text>().text = text;
     }
-    public static void SetUImageSprite(this Transform transform, Sprite sprite)
-    {
-        transform.GetComponent<Image>().sprite = sprite;
-    }
 }

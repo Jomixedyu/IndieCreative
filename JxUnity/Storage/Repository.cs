@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace JxStorage
+namespace JxUnity.Storage
 {
     public class RepositoryItemConfig
     {
@@ -182,7 +182,13 @@ namespace JxStorage
             this.groupMaxCount = groupMaxCount;
             this.groups = new RepositoryItemInfo[groupMaxCount];
         }
-
+        /// <summary>
+        /// 查询是否可以放入对应数量的某样物品
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="count"></param>
+        /// <param name="feature"></param>
+        /// <returns></returns>
         public bool Putable(string id, int count = 1, string feature = null)
         {
             int space = 0;
@@ -204,7 +210,13 @@ namespace JxStorage
             }
             return false;
         }
-
+        /// <summary>
+        /// 查询是否可以拿走对应数量的某样物品
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="count"></param>
+        /// <param name="feature"></param>
+        /// <returns></returns>
         public bool Takeable(string id, int count = 1, string feature = null)
         {
             var it = this.GetGroupIt(this.groups, id, feature);
@@ -219,7 +231,13 @@ namespace JxStorage
             }
             return false;
         }
-
+        /// <summary>
+        /// 放入物品
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="count"></param>
+        /// <param name="feature"></param>
+        /// <returns></returns>
         public int PutItem(string id, int count = 1, string feature = null)
         {
             if (count <= 0)
@@ -274,7 +292,12 @@ namespace JxStorage
             this.OnItemsChanged?.Invoke(this.GetEvent(id, count - putableCount, feature, true));
             return putableCount;
         }
-
+        /// <summary>
+        /// 拿走物品
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="count"></param>
+        /// <param name="feature"></param>
         public void TakeItem(string id, int count = 1, string feature = null)
         {
             int taked = count;
@@ -303,11 +326,22 @@ namespace JxStorage
             taked = Math.Max(taked, 0);
             this.OnItemsChanged?.Invoke(this.GetEvent(id, count - taked, feature, false));
         }
+        /// <summary>
+        /// 物品是否存在
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="feature"></param>
+        /// <returns></returns>
         public bool IsExist(string id, string feature = null)
         {
             return this.FindGroup(id, feature) != null;
         }
-
+        /// <summary>
+        /// 获取某个物品的数量
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="feature"></param>
+        /// <returns></returns>
         public int Count(string id, string feature = null)
         {
             var it = this.GetGroupIt(this.groups, id, feature);
@@ -315,7 +349,9 @@ namespace JxStorage
             while (it.MoveNext()) hasCount += it.Current.Count;
             return hasCount;
         }
-
+        /// <summary>
+        /// 整理仓库，物体自动叠加，并且按类型存放
+        /// </summary>
         public void Arrange()
         {
             var clone = this.groups;
@@ -366,7 +402,7 @@ namespace JxStorage
                         }
                     }
                 }
-                
+
             }
             Array.Sort(this.groups);
         }

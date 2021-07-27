@@ -29,12 +29,10 @@ public class AudioPool : MonoBehaviour
         get => volume;
         set
         {
-            if (value > 1) value = 1;
-            if (value < 0) value = 0;
-            volume = value;
+            volume = Mathf.Clamp(value, 0, 1);
             foreach (var item in pool)
             {
-                item.audioSource.volume = value;
+                item.audioSource.volume = volume;
             }
         }
     }

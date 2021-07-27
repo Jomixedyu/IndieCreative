@@ -20,8 +20,6 @@ public class MonoSingleton<T> : MonoBehaviour, IDisposable where T : MonoSinglet
                     GameObject go = new GameObject(typeof(T).Name);
                     mInstance = go.AddComponent<T>();
 
-                    //Debug.LogWarning("New MonoSingleton " + typeof(T));
-
                     GameObject parent = GameObject.Find("__System");
                     if (parent == null)
                     {
@@ -81,6 +79,5 @@ public class MonoSingleton<T> : MonoBehaviour, IDisposable where T : MonoSinglet
         {
             UnityEngine.Object.Destroy(gameObject);
         }
-        //Debug.LogWarning("Destroy MonoSingleton: " + typeof(T).Name);
     }
 }

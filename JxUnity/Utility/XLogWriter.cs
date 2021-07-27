@@ -2,6 +2,9 @@
 using System.IO;
 using UnityEngine;
 
+/// <summary>
+/// 日志文件记录器
+/// </summary>
 public static class XLogWriter
 {
     public static bool IsOutFile { get; set; } = false;
@@ -20,9 +23,10 @@ public static class XLogWriter
     /// <param name="bufferCount"></param>
     public static void InitInPlayMode(string outFolder, int bufferCount = 5)
     {
-#if !UNITY_EDITOR
-        Init(outFolder, bufferCount);
-#endif
+        if (!Application.isEditor)
+        {
+            Init(outFolder, bufferCount);
+        }
     }
     /// <summary>
     /// 在编译打包后的游戏状态并且编译版本不为Development Build的情况下写出日志。
@@ -31,16 +35,17 @@ public static class XLogWriter
     /// <param name="bufferCount"></param>
     public static void InitInReleasePlayMode(string outFolder, int bufferCount = 5)
     {
-#if !UNITY_EDITOR
-        if (!Debug.isDebugBuild)
+        if (!Application.isEditor)
         {
-            Init(outFolder, bufferCount);
+            if (!Debug.isDebugBuild)
+            {
+                Init(outFolder, bufferCount);
+            }
         }
-#endif
     }
 
     /// <summary>
-    /// 写出日志。
+    /// 初始化写出日志。
     /// </summary>
     /// <param name="outFolder"></param>
     /// <param name="bufferCount"></param>
