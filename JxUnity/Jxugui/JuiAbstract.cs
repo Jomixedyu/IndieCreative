@@ -535,8 +535,22 @@ namespace JxUnity.Jxugui
                 case MessageType.Show: this.OnShow(); break;
                 case MessageType.Hide: this.OnHide(); break;
                 case MessageType.Update: this.OnUpdate(); break;
-                case MessageType.Focus: this.OnFocus(); break;
-                case MessageType.LostFocus: this.OnLostFocus(); break;
+                case MessageType.Focus:
+                    this.OnFocusSelf();
+                    if (this.IsFocus)
+                    {
+                        this.OnFocus();
+                        this.GetSubUIFocus()?.SendMessage(MessageType.Focus);
+                    }
+                    break;
+                case MessageType.LostFocus: 
+                    this.OnLostFocusSelf();
+                    if(this.IsFocus)
+                    {
+                        this.OnLostFocus();
+                        this.GetSubUIFocus()?.SendMessage(MessageType.LostFocus);
+                    }
+                    break;
                 default:
                     break;
             }
@@ -581,7 +595,14 @@ namespace JxUnity.Jxugui
         /// </summary>
         /// <param name="sub"></param>
         protected virtual void OnRemoveSubUI(JuiAbstract sub) { }
-
+        /// <summary>
+        /// 消息：作为子UI获取焦点
+        /// </summary>
+        protected virtual void OnFocusSelf() { }
+        /// <summary>
+        /// 消息：作为子UI失去焦点
+        /// </summary>
+        protected virtual void OnLostFocusSelf() { }
 
         private void AddUpdateHandler(Action act)
         {
