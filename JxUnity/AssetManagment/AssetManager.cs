@@ -159,7 +159,7 @@ public static class AssetManager
 
                 req.completed += (o) =>
                 {
-                    XLogger.Log("AsyncLoadComplete: " + path);
+                    Debug.Log("AsyncLoadComplete: " + path);
                     _AssetsAsyncCallBack(req);
                 };
                 _AddAsyncItem(req, cb);
