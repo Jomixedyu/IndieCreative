@@ -28,12 +28,13 @@ public class ScheduleManager : MonoSingleton<ScheduleManager>
 
     private List<int> waitRemoveList;
 
-    private void Awake()
+    protected override void Awake()
     {
         if (CheckInstanceAndDestroy())
         {
             return;
         }
+        base.Awake();
         this.schedule = new Dictionary<int, Schedule>();
         this.waitRemoveList = new List<int>();
     }

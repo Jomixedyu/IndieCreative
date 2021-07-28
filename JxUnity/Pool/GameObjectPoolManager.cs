@@ -155,12 +155,13 @@ public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
 {
     private Dictionary<string, GameObjectPool> pools;
 
-    private void Awake()
+    protected override void Awake()
     {
         if (CheckInstanceAndDestroy())
         {
             return;
         }
+        base.Awake();
         this.pools = new Dictionary<string, GameObjectPool>();
     }
 

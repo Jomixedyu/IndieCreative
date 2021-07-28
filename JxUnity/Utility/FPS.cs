@@ -8,32 +8,37 @@ public class FPS : MonoSingleton<FPS>
     private int frameCount;
     private string showText;
 
-    private Rect rect;
-    private Vector2 normSize;
+    private Vector2 normSize = new Vector2(60, 40);
+    private Rect rect = new Rect(15, 5, 60, 40);
 
-    private void Awake()
+    protected override void Awake()
     {
         if (CheckInstanceAndDestroy())
         {
             return;
         }
+        base.Awake();
         showText = "fps: 0";
-        normSize = new Vector2(60, 40);
     }
+
+    private bool isLeftTop = true;
     public void LeftTop()
     {
+        isLeftTop = true;
         rect = new Rect(new Vector2(15, 5), normSize);
     }
     public void RightTop()
     {
+        isLeftTop = false;
         rect = new Rect(new Vector2(Screen.width - 60, 5), normSize);
     }
-    public void SetPosition(Vector2 vector2)
-    {
-        rect = new Rect(vector2, normSize);
-    }
+
     private void OnGUI()
     {
+        if (!isLeftTop)
+        {
+            rect = new Rect(new Vector2(Screen.width - 60, 5), normSize);
+        }
         GUI.Label(rect, this.showText);
     }
 

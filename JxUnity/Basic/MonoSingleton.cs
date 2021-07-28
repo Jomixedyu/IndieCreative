@@ -1,7 +1,8 @@
 ﻿using System;
 using UnityEngine;
 
-public class MonoSingleton<T> : MonoBehaviour, IDisposable where T : MonoSingleton<T>
+public abstract class MonoSingleton<T>
+    : MonoBehaviour, IDisposable where T : MonoSingleton<T>
 {
     [SerializeField]
     private bool IsDontDestroyOnInit = true;
@@ -43,6 +44,22 @@ public class MonoSingleton<T> : MonoBehaviour, IDisposable where T : MonoSinglet
     {
         get => mInstance != null;
     }
+    protected virtual void Awake()
+    {
+        mInstance = this as T;
+        if (IsDontDestroyOnInit)
+        {
+            if (this.transform.parent == null)
+            {
+                DontDestroyOnLoad(gameObject);
+            }
+            else if (this.transform.parent.name == "__System")
+            {
+                DontDestroyOnLoad(this.transform.parent.gameObject);
+            }
+        }
+    }
+
     public static T GetInstance()
     {
         return Instance;
@@ -52,9 +69,9 @@ public class MonoSingleton<T> : MonoBehaviour, IDisposable where T : MonoSinglet
         mInstance = obj;
     }
     /// <summary>
-    /// 检查单例实例是否存在，如果存在则销毁
+    /// 检查单例实例是否已经存在，如果存在则销毁新的实例
     /// </summary>
-    /// <returns></returns>
+    /// <returns>返回true为实例存在并已销毁</returns>
     protected bool CheckInstanceAndDestroy()
     {
         if (HasInstance)
@@ -63,6 +80,17 @@ public class MonoSingleton<T> : MonoBehaviour, IDisposable where T : MonoSinglet
             return true;
         }
         return false;
+    }
+
+    protected virtual void OnDestroy()
+    {
+        if (HasInstance)
+        {
+            if (mInstance == this)
+            {
+                mInstance = null;
+            }
+        }
     }
 
     protected bool isDisposed = false;
