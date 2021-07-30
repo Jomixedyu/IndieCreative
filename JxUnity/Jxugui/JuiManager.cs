@@ -305,7 +305,7 @@ namespace JxUnity.Jxugui
         {
             if (LoadResourceHandler == null)
             {
-                throw new System.NotImplementedException("LoadResourceHandler is null");
+                throw new System.NotImplementedException("LoadResourceHandler is null: " + path);
             }
             return LoadResourceHandler.Invoke(path);
         }
