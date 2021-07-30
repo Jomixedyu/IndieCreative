@@ -164,7 +164,11 @@ public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
         base.Awake();
         this.pools = new Dictionary<string, GameObjectPool>();
     }
-
+    /// <summary>
+    /// 按对象获取池类型，如果不存在，则返回null
+    /// </summary>
+    /// <param name="go"></param>
+    /// <returns></returns>
     public string GetObjectType(GameObject go)
     {
         foreach (var item in this.pools)
@@ -177,18 +181,57 @@ public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
         return null;
     }
 
-    public GameObjectPool Register(string type, GameObject go, Action<GameObject> getCb, Action<GameObject> recycleCb)
+    private static void DefaultGetCallBack(GameObject gameObject)
+    {
+        gameObject.SetActive(true);
+    }
+    private static void DefaultRecycleCallBack(GameObject gameObject)
+    {
+        gameObject.SetActive(false);
+    }
+    /// <summary>
+    /// 注册池对象
+    /// </summary>
+    /// <param name="type">池类型</param>
+    /// <param name="go">对象原型</param>
+    /// <param name="getCb">获取回调</param>
+    /// <param name="recycleCb">回收回调</param>
+    /// <returns></returns>
+    public GameObjectPool Register(
+        string type,
+        GameObject go,
+        Action<GameObject> getCb,
+        Action<GameObject> recycleCb)
     {
         GameObjectPool pool = new GameObjectPool(this.gameObject, type, go, getCb, recycleCb);
         this.pools.Add(type, pool);
         return pool;
     }
-
+    /// <summary>
+    /// 注册池对象，物体将自动激活与反激活。
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="go"></param>
+    /// <returns></returns>
+    public GameObjectPool RegisterDefault(string type, GameObject go)
+    {
+        GameObjectPool pool = new GameObjectPool(this.gameObject, type, go, DefaultGetCallBack, DefaultRecycleCallBack);
+        this.pools.Add(type, pool);
+        return pool;
+    }
+    /// <summary>
+    /// 获取一个池内对象
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
     public GameObject Get(string type)
     {
         return this.pools[type].Get();
     }
-
+    /// <summary>
+    /// 回收
+    /// </summary>
+    /// <param name="go"></param>
     public void Recycle(GameObject go)
     {
         string type = this.GetObjectType(go);
@@ -198,17 +241,25 @@ public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
         }
         this.pools[type].Recycle(go);
     }
-
+    /// <summary>
+    /// 卸载未在使用的池对象
+    /// </summary>
+    /// <param name="type"></param>
     public void UnloadUnused(string type)
     {
         this.pools[type].UnloadUnused();
     }
-
+    /// <summary>
+    /// 强制卸载池内对象
+    /// </summary>
+    /// <param name="type"></param>
     public void ForceUnload(string type)
     {
         this.pools[type].ForceUnload();
     }
-
+    /// <summary>
+    /// 强制卸载所有池内对象
+    /// </summary>
     public void ForceUnloadAll()
     {
         foreach (var item in this.pools)
@@ -216,7 +267,10 @@ public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
             item.Value.ForceUnload();
         }
     }
-
+    /// <summary>
+    /// 删除池
+    /// </summary>
+    /// <param name="type"></param>
     public void Delete(string type)
     {
         if (!this.pools.ContainsKey(type))
@@ -227,6 +281,9 @@ public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
         this.pools.Remove(type);
     }
 
+    /// <summary>
+    /// 删除所有池
+    /// </summary>
     public void DeleteAll()
     {
         foreach (var item in this.pools)
@@ -236,5 +293,3 @@ public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
         this.pools.Clear();
     }
 }
-
-
