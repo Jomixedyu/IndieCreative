@@ -299,7 +299,7 @@ namespace JxUnity.Jxugui
             return uiinst != null;
         }
 
-        public Func<string, GameObject> LoadResourceHandler { get; set; }
+        public static Func<string, GameObject> LoadResourceHandler { get; set; }
 
         public GameObject LoadResource(string path)
         {
