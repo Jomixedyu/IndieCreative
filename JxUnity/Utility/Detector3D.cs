@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-public static class Measure3D
+public static class Detector3D
 {
     public static Vector3 RemoveYAxis(this Vector3 v3) => new Vector3(v3.x, 0, v3.z);
 

@@ -46,7 +46,7 @@ public abstract class MonoSingleton<T>
     }
     protected virtual void Awake()
     {
-        mInstance = this as T;
+        SetInstance(this as T);
         if (IsDontDestroyOnInit)
         {
             if (this.transform.parent == null)
@@ -67,6 +67,7 @@ public abstract class MonoSingleton<T>
     protected void SetInstance(T obj)
     {
         mInstance = obj;
+        isDisposed = false;
     }
     /// <summary>
     /// 检查单例实例是否已经存在，如果存在则销毁新的实例

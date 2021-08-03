@@ -189,8 +189,24 @@ public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
     {
         gameObject.SetActive(false);
     }
+
+    private GameObjectPool Internal_Register(
+        string type,
+        GameObject go,
+        Action<GameObject> getCb,
+        Action<GameObject> recycleCb)
+    {
+        if (this.pools.ContainsKey(type))
+        {
+            return null;
+        }
+        GameObjectPool pool = new GameObjectPool(this.gameObject, type, go, getCb, recycleCb);
+        this.pools.Add(type, pool);
+        return pool;
+    }
+
     /// <summary>
-    /// 注册池对象
+    /// 注册池对象，如果对象池已存在，则返回null。
     /// </summary>
     /// <param name="type">池类型</param>
     /// <param name="go">对象原型</param>
@@ -203,22 +219,19 @@ public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
         Action<GameObject> getCb,
         Action<GameObject> recycleCb)
     {
-        GameObjectPool pool = new GameObjectPool(this.gameObject, type, go, getCb, recycleCb);
-        this.pools.Add(type, pool);
-        return pool;
+        return Internal_Register(type, go, getCb, recycleCb);
     }
     /// <summary>
-    /// 注册池对象，物体将自动激活与反激活。
+    /// 注册池对象，物体将自动激活与反激活。如果对象池已存在，则返回null。
     /// </summary>
     /// <param name="type"></param>
     /// <param name="go"></param>
     /// <returns></returns>
     public GameObjectPool RegisterDefault(string type, GameObject go)
     {
-        GameObjectPool pool = new GameObjectPool(this.gameObject, type, go, DefaultGetCallBack, DefaultRecycleCallBack);
-        this.pools.Add(type, pool);
-        return pool;
+        return Internal_Register(type, go, DefaultGetCallBack, DefaultRecycleCallBack);
     }
+
     /// <summary>
     /// 获取一个池内对象
     /// </summary>
