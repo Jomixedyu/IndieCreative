@@ -28,6 +28,12 @@ namespace JxUnity.Jxugui
             }
             return mInstance;
         }
+        private static void ResetInstance()
+        {
+            mInstance = Activator.CreateInstance<UIType>();
+            mInstance.CreateBind();
+            mInstance.InitUIState();
+        }
         public override void Dispose()
         {
             base.Dispose();

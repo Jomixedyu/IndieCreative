@@ -209,7 +209,7 @@ namespace JxUnity.Jxugui
             if (_transform == null)
             {
                 var prefab = this.LoadResource(this.attribute.ResourcePath);
-                var goinst = UnityEngine.Object.Instantiate(prefab, this.transform);
+                var goinst = UnityEngine.Object.Instantiate(prefab, JuiManager.Instance.transform);
                 goinst.name = this.Name;
                 _transform = goinst.transform;
             }
@@ -250,12 +250,16 @@ namespace JxUnity.Jxugui
 
         public virtual void Destroy()
         {
-            if (this.IsShow && this.parent != null)
+            if (this.parent != null)
             {
+                this.Hide();
                 this.parent.RemoveSubUI(this);
-                if (this.attr.EnableUpdate)
+                if (this.IsShow)
                 {
-                    this.parent.RemoveUpdateHandler(this.Update);
+                    if (this.attr.EnableUpdate)
+                    {
+                        this.parent.RemoveUpdateHandler(this.Update);
+                    }
                 }
             }
 

@@ -71,67 +71,8 @@ namespace JxUnity.Jxugui
             }
         }
 
-
-        public void AddUpdateHandler(Action action)
+        private static void StaticInit()
         {
-            this.updateOperateQueue.Add(new UpdateQueueData(action, true));
-        }
-        public void RemoveUpdateHandler(Action action)
-        {
-            this.updateOperateQueue.Add(new UpdateQueueData(action, false));
-        }
-
-
-        private void AutoBind(UIInfo uiInfo)
-        {
-            bool hasRealUI = Instance.transform.Find(uiInfo.TypeName) != null;
-            if (hasRealUI)
-            {
-                this.RegisterUI(uiInfo.TypeName);
-                if (uiInfo.Attr.IsPreBind)
-                {
-                    Type genericType = typeof(JuiBase<>).MakeGenericType(new Type[] { uiInfo.UIType });
-                    var method = genericType.GetMethod("GetInstance", BindingFlags.Public | BindingFlags.Static);
-                    //auto SetUI
-                    method.Invoke(null, null);
-                }
-            }
-        }
-
-        private void Awake()
-        {
-            if (HasInstance)
-            {
-                //move
-                if (transform.childCount > 0)
-                {
-                    //create temp
-                    foreach (var item in uiTypes)
-                    {
-                        string uiName = item.Key;
-                        UIInfo uiInfo = item.Value;
-                        if (Instance.Exist(uiName))
-                        {
-                            continue;
-                        }
-                        //move
-                        Transform t = transform.Find(uiInfo.TypeName);
-
-                        if (t != null)
-                        {
-                            t.SetParent(Instance.transform);
-                            this.AutoBind(uiInfo);
-                        }
-                    }
-                }
-                Destroy(this.gameObject);
-                return;
-            }
-
-            this.uiShowStack = new List<JuiBaseAbstract>();
-            this.ui = new Dictionary<string, JuiBaseAbstract>();
-            this.updateOperateQueue = new List<UpdateQueueData>();
-
             if (uiTypes == null)
             {
                 uiTypes = new Dictionary<string, UIInfo>();
@@ -154,12 +95,87 @@ namespace JxUnity.Jxugui
                     }
                 }
             }
+        }
 
-            //auto bind
+        public void AddUpdateHandler(Action action)
+        {
+            this.updateOperateQueue.Add(new UpdateQueueData(action, true));
+        }
+        public void RemoveUpdateHandler(Action action)
+        {
+            this.updateOperateQueue.Add(new UpdateQueueData(action, false));
+        }
+
+
+        private void AutoBind(UIInfo uiInfo)
+        {
+            bool hasRealUI = this.transform.Find(uiInfo.UIName) != null;
+            if (hasRealUI)
+            {
+                this.RegisterUI(uiInfo.UIName);
+                if (uiInfo.Attr.IsPreBind)
+                {
+                    Type genericType = typeof(JuiBase<>).MakeGenericType(new Type[] { uiInfo.UIType });
+                    var method = genericType.GetMethod("ResetInstance", BindingFlags.NonPublic | BindingFlags.Static);
+                    //auto SetUI
+                    method.Invoke(null, null);
+                }
+            }
+        }
+        //切换场景时，在旧的实例中查找新实例中没有的ui，移至新的实例中
+        private void Awake()
+        {
+            this.uiShowStack = new List<JuiBaseAbstract>();
+            this.ui = new Dictionary<string, JuiBaseAbstract>();
+            this.updateOperateQueue = new List<UpdateQueueData>();
+            StaticInit();
+
+            JuiManager oldInstance = null;
+            if (HasInstance)
+            {
+                oldInstance = Instance;
+            }
+
+            mInstance = this;
+            if (IsDontDestroyOnInit)
+            {
+                DontDestroyOnLoad(mInstance.gameObject);
+            }
+
             foreach (var item in uiTypes)
             {
                 this.AutoBind(item.Value);
             }
+
+            if (oldInstance != null)
+            {
+                //move instance to self
+                if (oldInstance.transform.childCount > 0)
+                {
+                    //create temp
+                    foreach (var item in uiTypes)
+                    {
+                        UIInfo uiInfo = item.Value;
+                        string uiName = uiInfo.UIName;
+
+                        if (Exist(uiName))
+                        {
+                            continue;
+                        }
+                        //move
+                        Transform t = oldInstance.transform.Find(uiInfo.UIName);
+
+                        if (t != null)
+                        {
+                            //take
+                            t.SetParent(transform, false);
+                            AutoBind(uiInfo);
+                        }
+                    }
+                }
+                Destroy(oldInstance.gameObject);
+            }
+
         }
         public static JuiPanelAttribute GetUIAttribute(Type type)
         {
@@ -305,7 +321,7 @@ namespace JxUnity.Jxugui
         {
             if (LoadResourceHandler == null)
             {
-                throw new System.NotImplementedException("LoadResourceHandler is null: " + path);
+                throw new System.NotImplementedException("LoadResourceHandler is null");
             }
             return LoadResourceHandler.Invoke(path);
         }
