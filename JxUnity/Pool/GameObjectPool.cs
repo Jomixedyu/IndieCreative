@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class GameObjectPool : IDisposable
+public class GameObjectPoolItem : IDisposable
 {
     private class PoolItem
     {
@@ -31,7 +31,7 @@ public class GameObjectPool : IDisposable
 
     private Dictionary<int, PoolItem> pool = new Dictionary<int, PoolItem>(256);
 
-    public GameObjectPool(
+    public GameObjectPoolItem(
         GameObject parent,
         string type,
         GameObject proto,
@@ -151,34 +151,16 @@ public class GameObjectPool : IDisposable
     }
 }
 
-public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
+public static class GameObjectPool
 {
-    private Dictionary<string, GameObjectPool> pools;
-
-    protected override void Awake()
-    {
-        if (CheckInstanceAndDestroy())
-        {
-            return;
-        }
-        base.Awake();
-        this.pools = new Dictionary<string, GameObjectPool>();
-    }
     /// <summary>
     /// 按对象获取池类型，如果不存在，则返回null
     /// </summary>
     /// <param name="go"></param>
     /// <returns></returns>
-    public string GetObjectType(GameObject go)
+    public static string GetObjectType(GameObject go)
     {
-        foreach (var item in this.pools)
-        {
-            if (item.Value.IsInPool(go.GetInstanceID()))
-            {
-                return item.Key;
-            }
-        }
-        return null;
+        return GameObjectPoolMono.GetInstance().GetObjectType(go);
     }
 
     private static void DefaultGetCallBack(GameObject gameObject)
@@ -190,19 +172,18 @@ public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
         gameObject.SetActive(false);
     }
 
-    private GameObjectPool Internal_Register(
+    private static GameObjectPoolItem Internal_Register(
         string type,
         GameObject go,
         Action<GameObject> getCb,
         Action<GameObject> recycleCb)
     {
-        if (this.pools.ContainsKey(type))
+        var inst = GameObjectPoolMono.GetInstance();
+        if (inst.IsExist(type))
         {
             return null;
         }
-        GameObjectPool pool = new GameObjectPool(this.gameObject, type, go, getCb, recycleCb);
-        this.pools.Add(type, pool);
-        return pool;
+        return inst.Register(type, go, getCb, recycleCb);
     }
 
     /// <summary>
@@ -213,7 +194,7 @@ public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
     /// <param name="getCb">获取回调</param>
     /// <param name="recycleCb">回收回调</param>
     /// <returns></returns>
-    public GameObjectPool Register(
+    public static GameObjectPoolItem Register(
         string type,
         GameObject go,
         Action<GameObject> getCb,
@@ -227,7 +208,7 @@ public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
     /// <param name="type"></param>
     /// <param name="go"></param>
     /// <returns></returns>
-    public GameObjectPool RegisterDefault(string type, GameObject go)
+    public static GameObjectPoolItem RegisterDefault(string type, GameObject go)
     {
         return Internal_Register(type, go, DefaultGetCallBack, DefaultRecycleCallBack);
     }
@@ -237,72 +218,55 @@ public sealed class GameObjectPoolManager : MonoSingleton<GameObjectPoolManager>
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    public GameObject Get(string type)
+    public static GameObject Get(string type)
     {
-        return this.pools[type].Get();
+        return GameObjectPoolMono.GetInstance().Get(type);
     }
     /// <summary>
     /// 回收
     /// </summary>
     /// <param name="go"></param>
-    public void Recycle(GameObject go)
+    public static void Recycle(GameObject go)
     {
-        string type = this.GetObjectType(go);
-        if (type == null)
-        {
-            throw new ArgumentException("not exists.");
-        }
-        this.pools[type].Recycle(go);
+        GameObjectPoolMono.GetInstance().Recycle(go);
     }
     /// <summary>
     /// 卸载未在使用的池对象
     /// </summary>
     /// <param name="type"></param>
-    public void UnloadUnused(string type)
+    public static void UnloadUnused(string type)
     {
-        this.pools[type].UnloadUnused();
+        GameObjectPoolMono.GetInstance().UnloadUnused(type);
     }
     /// <summary>
     /// 强制卸载池内对象
     /// </summary>
     /// <param name="type"></param>
-    public void ForceUnload(string type)
+    public static void ForceUnload(string type)
     {
-        this.pools[type].ForceUnload();
+        GameObjectPoolMono.GetInstance().ForceUnload(type);
     }
     /// <summary>
     /// 强制卸载所有池内对象
     /// </summary>
-    public void ForceUnloadAll()
+    public static void ForceUnloadAll()
     {
-        foreach (var item in this.pools)
-        {
-            item.Value.ForceUnload();
-        }
+        GameObjectPoolMono.GetInstance().ForceUnloadAll();
     }
     /// <summary>
     /// 删除池
     /// </summary>
     /// <param name="type"></param>
-    public void Delete(string type)
+    public static void Delete(string type)
     {
-        if (!this.pools.ContainsKey(type))
-        {
-            return;
-        }
-        this.pools[type].Dispose();
-        this.pools.Remove(type);
+        GameObjectPoolMono.GetInstance().Delete(type);
     }
 
     /// <summary>
     /// 删除所有池
     /// </summary>
-    public void DeleteAll()
+    public static void DeleteAll()
     {
-        foreach (var item in this.pools)
-        {
-            item.Value.Dispose();
-        }
-        this.pools.Clear();
+        GameObjectPoolMono.GetInstance().DeleteAll();
     }
 }

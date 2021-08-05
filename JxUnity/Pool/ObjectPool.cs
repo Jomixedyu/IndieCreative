@@ -6,7 +6,7 @@ using System.Reflection;
 /// 简易对象的对象池，回收时执行构造函数设置默认值（释放引用）。
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class ObjectPool<T> where T : class, new()
+public static class ObjectPool<T> where T : class, new()
 {
     private static Queue<T> queue;
     private static ConstructorInfo ctorInfo;
