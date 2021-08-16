@@ -1,9 +1,10 @@
 ﻿using System;
 
-public class LocalizationManager : Singleton<LocalizationManager>, IDisposable
+
+public static class LocalizationManager
 {
-    private string languageType;
-    public string LanguageType
+    private static string languageType;
+    public static string LanguageType
     {
         get => languageType;
         set
@@ -13,9 +14,14 @@ public class LocalizationManager : Singleton<LocalizationManager>, IDisposable
         }
     }
 
-    public event Action LanguageChanged;
+    public static event Action LanguageChanged;
 
-    public string GetString(string tableName, string id)
+    public static string GetLangType()
+    {
+        return languageType;
+    }
+
+    public static string GetString(string id)
     {
         return string.Empty;
     }

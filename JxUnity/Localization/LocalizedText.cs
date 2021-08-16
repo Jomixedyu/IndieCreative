@@ -3,47 +3,42 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(Text))]
 public class LocalizedText : MonoBehaviour
 {
     [SerializeField]
-    private string stringChunk;
-    public string StringChunk => stringChunk;
-    
-    [SerializeField] 
     private string stringId;
-    public string StringId => stringId;
-
+    public string StringId { get => stringId; set => stringId = value; }
 
     private Text text;
 
-    public void SetLocalizedId(string chunkName, string id)
-    {
-        this.stringChunk = chunkName;
-        this.stringId = id;
-    }
-
     public string GetText()
     {
-        return LocalizationManager.Instance.GetString(stringChunk, stringId);
+        return LocalizationManager.GetString(stringId);
     }
 
     private void Awake()
     {
-        if (text == null) 
-            text = GetComponent<Text>();
         if (text == null)
-            throw new NullReferenceException("text component not found!");
+        {
+            text = GetComponent<Text>();
+        }
+        if (text == null)
+        {
+            text = gameObject.AddComponent<Text>();
+            //throw new NullReferenceException("text component not found!");
+        }
     }
 
     private void OnEnable()
     {
         text.text = GetText();
-        LocalizationManager.Instance.LanguageChanged += OnLanguageChange;
+        LocalizationManager.LanguageChanged += OnLanguageChange;
     }
 
     private void OnDisable()
     {
-        LocalizationManager.Instance.LanguageChanged -= OnLanguageChange;
+        LocalizationManager.LanguageChanged -= OnLanguageChange;
     }
 
     //语言变更刷新
