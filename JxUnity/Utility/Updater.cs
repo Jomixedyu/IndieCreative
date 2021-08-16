@@ -11,7 +11,7 @@ public class Updater : MonoSingleton<Updater>
         {
             return;
         }
-		base.Awake();
+        base.Awake();
     }
     private void Update()
     {

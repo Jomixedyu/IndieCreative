@@ -33,6 +33,6 @@ public static class ColliderExtension
         foreach (Collider2D item in self.GetComponentsInChildren<Collider2D>())
         {
             item.enabled = false;
-        } 
+        }
     }
 }

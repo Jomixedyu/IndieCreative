@@ -8,7 +8,7 @@ public static class Detector3D
     /// <summary>
     /// 扇形检测
     /// </summary>
-    /// <param name="from">源</param>
+    /// <param name="from">检测源</param>
     /// <param name="target">目标</param>
     /// <param name="radius">半径</param>
     /// <param name="degree">角度</param>
@@ -22,7 +22,7 @@ public static class Detector3D
         if (Math.Abs(aPos.y - bPos.y) > height) return false;
         aPos.y = 0; bPos.y = 0;
         if (Vector3.Distance(aPos, bPos) > radius) return false;
-        if (Vector3.Angle(from.forward, aPos - bPos) < degree / 2) return true;
+        if (Vector3.Angle(from.forward, bPos - aPos) < degree / 2) return true;
         return false;
     }
     /// <summary>
