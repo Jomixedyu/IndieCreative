@@ -48,21 +48,28 @@ public class GameObjectPoolItem : IDisposable
         this.recycleCb = recycleCb;
     }
 
-    public int GetObjectCount()
+    public int ObjectCount
     {
-        return pool.Count;
+        get
+        {
+            return pool.Count;
+        }
     }
 
     public bool IsInPool(int instanceId)
     {
         return this.pool.ContainsKey(instanceId);
     }
-
-    public void PreLoad(int count)
+    /// <summary>
+    /// 预分配对象
+    /// </summary>
+    /// <param name="count">数量</param>
+    /// <param name="cb">每生成一个对象时的回调</param>
+    public void PreLoad(int count, Action<GameObject> cb = null)
     {
         for (int i = 0; i < count; i++)
         {
-            this.Alloc();
+            this.Alloc(cb);
         }
     }
 
@@ -110,12 +117,13 @@ public class GameObjectPoolItem : IDisposable
         return 0;
     }
 
-    private int Alloc()
+    private int Alloc(Action<GameObject> cb = null)
     {
         GameObject go = UnityEngine.Object.Instantiate(this.proto, this._gameObject.transform);
         this.recycleCb?.Invoke(go);
         int id = go.GetInstanceID();
         this.pool.Add(id, new PoolItem(false, go));
+        cb?.Invoke(go);
         return id;
     }
 
@@ -135,9 +143,25 @@ public class GameObjectPoolItem : IDisposable
 
     public void Recycle(GameObject go)
     {
-        go.transform.SetParent(this._gameObject.transform);
         this.recycleCb?.Invoke(go);
+        go.transform.SetParent(this._gameObject.transform);
         this.pool[go.GetInstanceID()].isUsed = false;
+    }
+
+    public int UsableCount
+    {
+        get
+        {
+            int i = 0;
+            foreach (var item in this.pool)
+            {
+                if (item.Value.isUsed)
+                {
+                    ++i;
+                }
+            }
+            return i;
+        }
     }
 
     private bool isDisposed = false;
@@ -153,6 +177,10 @@ public class GameObjectPoolItem : IDisposable
 
 public static class GameObjectPool
 {
+    public static bool IsEnabled()
+    {
+        return GameObjectPoolMono.HasInstance;
+    }
     /// <summary>
     /// 按对象获取池类型，如果不存在，则返回null
     /// </summary>
@@ -222,6 +250,14 @@ public static class GameObjectPool
     {
         return GameObjectPoolMono.GetInstance().Get(type);
     }
+    public static int GetCount(string type)
+    {
+        return GameObjectPoolMono.GetInstance().GetCount(type);
+    }
+    public static GameObjectPoolItem GetPool(string type)
+    {
+        return GameObjectPoolMono.GetInstance().GetPool(type);
+    }
     /// <summary>
     /// 回收
     /// </summary>
@@ -230,6 +266,7 @@ public static class GameObjectPool
     {
         GameObjectPoolMono.GetInstance().Recycle(go);
     }
+
     /// <summary>
     /// 卸载未在使用的池对象
     /// </summary>
@@ -268,5 +305,22 @@ public static class GameObjectPool
     public static void DeleteAll()
     {
         GameObjectPoolMono.GetInstance().DeleteAll();
+    }
+    /// <summary>
+    /// 遍历池
+    /// </summary>
+    /// <param name="act"></param>
+    public static void ForEach(Action<GameObjectPoolItem> act)
+    {
+        GameObjectPoolMono.GetInstance().ForEach(act);
+    }
+    /// <summary>
+    /// 当前池内可用
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public static int GetUsableCount(string type)
+    {
+        return GameObjectPoolMono.GetInstance().GetUsableCount(type);
     }
 }

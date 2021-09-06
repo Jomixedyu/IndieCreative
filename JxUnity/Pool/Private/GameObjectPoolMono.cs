@@ -134,4 +134,27 @@ internal sealed class GameObjectPoolMono : MonoSingleton<GameObjectPoolMono>
         }
         this.pools.Clear();
     }
+
+    public int GetCount(string type)
+    {
+        return this.pools[type].ObjectCount;
+    }
+
+    internal GameObjectPoolItem GetPool(string type)
+    {
+        return this.pools[type];
+    }
+
+    public void ForEach(Action<GameObjectPoolItem> act)
+    {
+        foreach (var item in this.pools)
+        {
+            act?.Invoke(item.Value);
+        }
+    }
+
+    public int GetUsableCount(string type)
+    {
+        return this.pools[type].UsableCount;
+    }
 }
