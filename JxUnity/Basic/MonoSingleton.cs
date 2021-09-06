@@ -18,16 +18,8 @@ public abstract class MonoSingleton<T>
                 mInstance = GameObject.FindObjectOfType(typeof(T)) as T;
                 if (mInstance == null)
                 {
-                    GameObject go = new GameObject(typeof(T).Name);
+                    GameObject go = new GameObject("__m_" + typeof(T).Name);
                     mInstance = go.AddComponent<T>();
-
-                    GameObject parent = GameObject.Find("__System");
-                    if (parent == null)
-                    {
-                        parent = new GameObject("__System");
-                        DontDestroyOnLoad(parent);
-                    }
-                    go.transform.parent = parent.transform;
                 }
                 if (mInstance.IsDontDestroyOnInit)
                 {
@@ -52,10 +44,6 @@ public abstract class MonoSingleton<T>
             if (this.transform.parent == null)
             {
                 DontDestroyOnLoad(gameObject);
-            }
-            else if (this.transform.parent.name == "__System")
-            {
-                DontDestroyOnLoad(this.transform.parent.gameObject);
             }
         }
     }
