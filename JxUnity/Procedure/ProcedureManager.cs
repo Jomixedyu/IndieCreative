@@ -10,7 +10,7 @@ public class ProcedureManager
 {
     private static bool useCustomUpdater = false;
 
-    private static FSMBase<string, ProcedureBase> procedures;
+    private static FSM<string, ProcedureBase> procedures;
 
     public static Type[] GetClassTypeByBase(Assembly ass, Type baseType)
     {
@@ -28,7 +28,7 @@ public class ProcedureManager
 
     static ProcedureManager()
     {
-        procedures = new FSMBase<string, ProcedureBase>();
+        procedures = new FSM<string, ProcedureBase>();
         Type[] types = GetClassTypeByBase(Assembly.GetExecutingAssembly(), typeof(ProcedureBase));
         foreach (Type item in types)
         {

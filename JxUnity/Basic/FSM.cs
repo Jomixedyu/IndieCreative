@@ -1,25 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 
+
 public abstract class FSMStateBase
 {
+    public object HostFsm { get; set; }
     public virtual void OnEnter() { }
     public virtual void OnLeave() { }
 }
 
-public class FSMBase<TFSMIndex, TFSMState> where TFSMState : FSMStateBase
+public class FSM<TFSMIndex, TFSMState> where TFSMState : FSMStateBase
 {
     private IDictionary<TFSMIndex, TFSMState> fsm = new Dictionary<TFSMIndex, TFSMState>();
 
-    private bool hasLastStateIndex = false;
+    private bool hasLastState = false;
     public TFSMIndex LastStateIndex { get; protected set; }
 
     private TFSMState curState = null;
     private TFSMIndex curIndex = default;
 
-    public void AddState(TFSMIndex fsmIndex, TFSMState state)
+    public FSM<TFSMIndex, TFSMState> AddState(TFSMIndex fsmIndex, TFSMState state)
     {
+        state.HostFsm = this;
         fsm.Add(fsmIndex, state);
+        return this;
     }
     public void RemoveState(TFSMIndex fsmIndex)
     {
@@ -31,7 +35,7 @@ public class FSMBase<TFSMIndex, TFSMState> where TFSMState : FSMStateBase
     }
     public void ChangePreState()
     {
-        if (!hasLastStateIndex)
+        if (!hasLastState)
         {
             return;
         }
@@ -43,7 +47,7 @@ public class FSMBase<TFSMIndex, TFSMState> where TFSMState : FSMStateBase
         {
             curState.OnLeave();
             LastStateIndex = curIndex;
-            hasLastStateIndex = true;
+            hasLastState = true;
         }
         curIndex = fsmIndex;
         curState = fsm[fsmIndex];
@@ -54,4 +58,18 @@ public class FSMBase<TFSMIndex, TFSMState> where TFSMState : FSMStateBase
     {
         return curState;
     }
+
+    public void Reset()
+    {
+        if (curState != null)
+        {
+            curState.OnLeave();
+        }
+        LastStateIndex = default;
+        curIndex = default;
+        hasLastState = false;
+        curState = null;
+        fsm.Clear();
+    }
+
 }
