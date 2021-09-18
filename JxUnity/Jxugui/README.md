@@ -2,6 +2,24 @@
 # JxUnity.Jxugui
 Unity UGUI面板编写，轻松编写UI。
 
+## Content
+- [JxUnity.Jxugui](#jxunityjxugui)
+  - [Content](#content)
+  - [UI管理器](#ui管理器)
+  - [顶级UI面板声明](#顶级ui面板声明)
+  - [JuiPanel特性](#juipanel特性)
+    - [`Name` UI名字，如果和对象名或类型名相同则可省略](#name-ui名字如果和对象名或类型名相同则可省略)
+    - [`EnableUpdate` 启用Update函数](#enableupdate-启用update函数)
+    - [`ResourcePath` 资源加载路径，当UI不存在于场景时，进行动态加载](#resourcepath-资源加载路径当ui不存在于场景时进行动态加载)
+    - [`IsAutoBindElement` 自动绑定元素，对类型内标示的字段进行自动绑定](#isautobindelement-自动绑定元素对类型内标示的字段进行自动绑定)
+    - [`IsPreBind` 在场景初始化时将脚本绑定到UI](#isprebind-在场景初始化时将脚本绑定到ui)
+    - [Example](#example)
+  - [子元素绑定](#子元素绑定)
+  - [子UI面板](#子ui面板)
+  - [消息系统](#消息系统)
+  - [UI调试用监视面板](#ui调试用监视面板)
+  - [帮助](#帮助)
+
 ## UI管理器
 `JuiManager`可以是一个单例类，可以使用`JuiManager.Instance`来访问实例。  
 `JuiManager`应当挂在ui画布上，每个一级的子对象都应是一个UI面板，管理器仅用来管理顶级UI。  
