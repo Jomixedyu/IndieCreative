@@ -38,3 +38,4 @@ public class Test : MonoSingleton<Test>
 如果单例在新的场景中遇到了同样的实例时，则会销毁旧的实例，并设置新场景的实例。
 
 ## 状态机模板
+
