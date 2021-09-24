@@ -58,7 +58,7 @@ public abstract class MonoSingleton<T>
         isDisposed = false;
     }
     /// <summary>
-    /// 检查单例实例是否已经存在，如果存在则销毁新的实例
+    /// 检查单例实例是否已经存在，如果存在则销毁旧的实例
     /// </summary>
     /// <returns>返回true为实例存在并已销毁</returns>
     protected bool CheckInstanceAndDestroy()

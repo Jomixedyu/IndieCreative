@@ -1,6 +1,7 @@
 
 # JxUnity.Jxugui
-Unity UGUI面板编写，轻松编写UI。
+Unity UGUI面板编写，轻松编写UI。  
+当前版本：v2.2.0
 
 ## Content
 - [JxUnity.Jxugui](#jxunityjxugui)
