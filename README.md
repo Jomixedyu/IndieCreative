@@ -65,5 +65,6 @@
 ## xLua
 该库还在完善阶段，可能会出现不兼容的更新，[查看文档](JxUnity/xLua/README.md)
 
-该库的Lua侧使用了[JxCore.LuaSharp](https://github.com/JomiXedYu/JxCode.LuaSharp)作为基础类库，实现了类型系统，关键字，字符串扩展，表扩展工具等，接口与类型命名均参考C#，以方便熟悉C#的开发者使用，  
-提供了LuaBehaviour，可以在Lua侧实现组件编程。  
+- 该库的Lua侧使用了[JxCore.LuaSharp](https://github.com/JomiXedYu/JxCode.LuaSharp)作为基础类库，实现了类型系统，关键字，字符串扩展，表扩展工具等，接口与类型命名均参考C#，以方便熟悉C#的开发者使用，  
+- 拥有默认的Ticker/Updater，可以在初始化时使用自定义的Ticker/Updater。
+- 提供了LuaBehaviour，可以在Lua侧实现组件编程。  
