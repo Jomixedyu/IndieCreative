@@ -1,5 +1,5 @@
 # JxUnity.Framework
- 
+ ![](https://img.shields.io/github/license/JomiXedYu/JxCode.CoreLib?style=for-the-badge)
  在JxUnity文件夹下，每一个文件夹都是一个模块，除了部分模块会依赖Basic模块之外，其他模块之间不存在着耦合关系，可以任意的加载与卸载。
 
 ## Content
