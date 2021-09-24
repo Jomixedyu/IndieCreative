@@ -1,7 +1,8 @@
 # JxUnity.Framework
  ![](https://img.shields.io/github/license/JomiXedYu/JxCode.CoreLib?style=for-the-badge)
 
- 在JxUnity文件夹下，每一个文件夹都是一个模块，模块与模块之间实现了完全无耦合，可以任意的加载与卸载。
+面向小型独立游戏的Unity框架，为什么是小型呢？这里没有依赖注入，没有MVC，只有功能好用的好写的模块。  
+在JxUnity文件夹下，每一个文件夹都是一个模块，模块与模块之间实现了完全无耦合，可以任意的加载与卸载。
 
 ## Content
 - [JxUnity.Framework](#jxunityframework)
