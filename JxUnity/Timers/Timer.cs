@@ -6,9 +6,10 @@ namespace JxUnity.Timers
     public class Timer
     {
         public float Interval { get; set; }
+        public bool IsUnscale { get; set; }
+
         private float delta = 0;
         private Action action;
-        private bool isUnscale;
 
         private bool isRunning;
 
@@ -20,8 +21,13 @@ namespace JxUnity.Timers
         public Timer(float interval = 0, bool isUnscale = false)
         {
             this.Interval = interval;
-            this.isUnscale = isUnscale;
+            this.IsUnscale = isUnscale;
             this.isRunning = false;
+        }
+
+        public static Timer Create(float interval = 0, bool isUnscale = false)
+        {
+            return new Timer(interval, isUnscale);
         }
 
         public void Start(Action cb)
@@ -48,7 +54,7 @@ namespace JxUnity.Timers
 
         private void Instance_OnUpdate()
         {
-            if (this.isUnscale)
+            if (this.IsUnscale)
             {
                 this.delta += Time.unscaledDeltaTime;
             }
