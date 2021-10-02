@@ -1,92 +1,90 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-namespace JxUnity.Utility
+
+public class CoroutineTask
 {
-    public class CoroutineTask
+    public bool Running { get; private set; }
+    public bool Paused { get; private set; }
+    private IEnumerator coroutine;
+
+    public CoroutineTask(IEnumerator coroutine)
     {
-        public bool Running { get; private set; }
-        public bool Paused { get; private set; }
-        private IEnumerator coroutine;
+        this.coroutine = coroutine;
+    }
 
-        public CoroutineTask(IEnumerator coroutine)
+    public void Start()
+    {
+        Running = true;
+        Paused = false;
+        CoroutineTaskMono.Instance.StartCoroutine(this.CallWrapper());
+    }
+    public void Stop()
+    {
+        Running = false;
+    }
+    public void Pause()
+    {
+        Paused = true;
+    }
+    public void Resume()
+    {
+        if (!Running)
         {
-            this.coroutine = coroutine;
+            Start();
         }
+        Paused = false;
+    }
 
-        public void Start()
+    IEnumerator CallWrapper()
+    {
+        yield return null;
+        IEnumerator e = this.coroutine;
+        while (Running)
         {
-            Running = true;
-            Paused = false;
-            CoroutineTaskMono.Instance.StartCoroutine(this.CallWrapper());
-        }
-        public void Stop()
-        {
-            Running = false;
-        }
-        public void Pause()
-        {
-            Paused = true;
-        }
-        public void Resume()
-        {
-            if (!Running)
+            if (Paused)
             {
-                Start();
+                yield return null;
             }
-            Paused = false;
-        }
-
-        IEnumerator CallWrapper()
-        {
-            yield return null;
-            IEnumerator e = this.coroutine;
-            while (Running)
+            else
             {
-                if (Paused)
+                if (e != null && e.MoveNext())
                 {
-                    yield return null;
+                    yield return e.Current;
                 }
                 else
                 {
-                    if (e != null && e.MoveNext())
-                    {
-                        yield return e.Current;
-                    }
-                    else
-                    {
-                        Running = false;
-                    }
+                    Running = false;
                 }
             }
-        }
-
-        public static CoroutineTask Create(IEnumerator c)
-        {
-            return new CoroutineTask(c);
-        }
-
-        public static void StartCoroutine(IEnumerator routine)
-        {
-            CoroutineTaskMono.Instance.StartCoroutine(routine);
         }
     }
 
-    internal class CoroutineTaskMono : MonoBehaviour
+    public static CoroutineTask Create(IEnumerator c)
     {
-        private static CoroutineTaskMono mono;
-        public static CoroutineTaskMono Instance
+        return new CoroutineTask(c);
+    }
+
+    public static void StartCoroutine(IEnumerator routine)
+    {
+        CoroutineTaskMono.Instance.StartCoroutine(routine);
+    }
+}
+
+internal class CoroutineTaskMono : MonoBehaviour
+{
+    private static CoroutineTaskMono mono;
+    public static CoroutineTaskMono Instance
+    {
+        get
         {
-            get
+            if (mono == null)
             {
-                if (mono == null)
-                {
-                    var go = new GameObject($"__m_{nameof(CoroutineTaskMono)}");
-                    DontDestroyOnLoad(go);
-                    mono = go.AddComponent<CoroutineTaskMono>();
-                }
-                return mono;
+                var go = new GameObject($"__m_{nameof(CoroutineTaskMono)}");
+                DontDestroyOnLoad(go);
+                mono = go.AddComponent<CoroutineTaskMono>();
             }
+            return mono;
         }
     }
 }
