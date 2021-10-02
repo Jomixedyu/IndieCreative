@@ -71,7 +71,5 @@ namespace JxUnity.Timers
 
         }
 
-
-
     }
 }
