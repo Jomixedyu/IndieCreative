@@ -68,7 +68,7 @@ namespace JxUnity.Utility
 
     }
 
-    public class CoroutineTaskMono : MonoBehaviour
+    internal class CoroutineTaskMono : MonoBehaviour
     {
         private static CoroutineTaskMono mono;
         public static CoroutineTaskMono Instance
