@@ -66,6 +66,10 @@ namespace JxUnity.Utility
             return new CoroutineTask(c);
         }
 
+        public static void StartCoroutine(IEnumerator routine)
+        {
+            CoroutineTaskMono.Instance.StartCoroutine(routine);
+        }
     }
 
     internal class CoroutineTaskMono : MonoBehaviour
