@@ -1,0 +1,71 @@
+﻿using System;
+using UnityEngine;
+
+namespace JxUnity.Timers
+{
+    public class Timer
+    {
+        public float Interval { get; set; }
+        private float delta = 0;
+        private Action action;
+        private bool isUnscale;
+
+        private bool isRunning;
+
+        /// <summary>
+        /// 计时器
+        /// </summary>
+        /// <param name="interval">时间间隔</param>
+        /// <param name="isUnscale">是否受Unity时间缩放所影响</param>
+        public Timer(float interval = 0, bool isUnscale = false)
+        {
+            this.Interval = interval;
+            this.isUnscale = isUnscale;
+            this.isRunning = false;
+        }
+
+        public void Start(Action cb)
+        {
+            if (this.isRunning)
+            {
+                throw new Exception("timer is running");
+            }
+            this.delta = 0f;
+            this.action = cb;
+            this.isRunning = true;
+            TimerMono.Instance.OnUpdate += this.Instance_OnUpdate;
+        }
+
+        public void Stop()
+        {
+            if (!this.isRunning)
+            {
+                return;
+            }
+            this.isRunning = false;
+            TimerMono.Instance.OnUpdate -= this.Instance_OnUpdate;
+        }
+
+        private void Instance_OnUpdate()
+        {
+            if (this.isUnscale)
+            {
+                this.delta += Time.unscaledDeltaTime;
+            }
+            else
+            {
+                this.delta += Time.deltaTime;
+            }
+
+            if (this.delta >= this.Interval)
+            {
+                this.delta -= this.Interval;
+                this.action?.Invoke();
+            }
+
+        }
+
+
+
+    }
+}
