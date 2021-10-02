@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class GameObjectPoolItem : IDisposable
+public class GameObjectPoolItem
 {
     private class PoolItem
     {
