@@ -63,7 +63,7 @@ namespace JxUnity.Timers
                 this.delta += Time.deltaTime;
             }
 
-            if (this.delta >= this.Interval)
+            while (this.delta >= this.Interval)
             {
                 this.delta -= this.Interval;
                 this.action?.Invoke();
