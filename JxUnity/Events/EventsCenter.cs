@@ -20,7 +20,7 @@ namespace JxUnity.Events
         private static Dictionary<string, EventTrigger> events 
             = new Dictionary<string, EventTrigger>();
 
-        public static void RegReceiver(string id, Event receiver)
+        public static void Subscribe(string id, Event receiver)
         {
             EventTrigger trigger;
             if (!events.TryGetValue(id, out trigger))
@@ -31,7 +31,7 @@ namespace JxUnity.Events
 
             trigger.Receiver += receiver;
         }
-        public static void UnregReceiver(string id, Event receiver)
+        public static void Unsubscribe(string id, Event receiver)
         {
             EventTrigger trigger;
             if (!events.TryGetValue(id, out trigger))
