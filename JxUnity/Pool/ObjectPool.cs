@@ -12,16 +12,14 @@ public static class ObjectPool<T> where T : class, new()
     private static ConstructorInfo ctorInfo;
     public static int Count => queue.Count;
 
-    private static bool isInit;
+    static ObjectPool()
+    {
+        queue = new Queue<T>();
+        ctorInfo = typeof(T).GetConstructor(new Type[0]);
+    }
 
     public static T Get()
     {
-        if (!isInit) //inline
-        {
-            queue = new Queue<T>();
-            ctorInfo = typeof(T).GetConstructor(new Type[0]);
-            isInit = true;
-        }
         if (queue.Count == 0)
         {
             return new T();
@@ -31,12 +29,6 @@ public static class ObjectPool<T> where T : class, new()
 
     public static void Recycle(T obj)
     {
-        if (!isInit) //inline
-        {
-            queue = new Queue<T>();
-            ctorInfo = typeof(T).GetConstructor(null);
-            isInit = true;
-        }
         ctorInfo.Invoke(obj, null);
         queue.Enqueue(obj);
     }
@@ -48,5 +40,5 @@ public static class ObjectPool<T> where T : class, new()
             Recycle(it.Current);
         }
     }
-    
+
 }
