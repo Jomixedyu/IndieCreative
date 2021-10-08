@@ -9,50 +9,61 @@ public class LuaBehaviour : MonoBehaviour
     [SerializeField]
     public string ScriptFullName;
 
+    public LuaBehaviour GetLuaComponent(string name)
+    {
+        foreach (var item in gameObject.GetComponents<LuaBehaviour>())
+        {
+            if (item.ScriptFullName == name)
+            {
+                return item;
+            }
+        }
+        return null;
+    }
+
     private void Awake()
     {
-        LuaBehaviourManager.Instance.Add(gameObject, this, ScriptFullName);
+        LuaBehaviourManager.Instance.Add(this, ScriptFullName);
     }
     private void Start()
     {
-        LuaBehaviourManager.Instance.EmitStart(gameObject);
+        LuaBehaviourManager.Instance.EmitStart(this);
     }
     private void OnEnable()
     {
-        LuaBehaviourManager.Instance.EmitEnable(gameObject);
+        LuaBehaviourManager.Instance.EmitEnable(this);
     }
     private void OnDisable()
     {
-        LuaBehaviourManager.Instance?.EmitDisable(gameObject);
+        LuaBehaviourManager.Instance.EmitDisable(this);
     }
     private void OnDestroy()
     {
-        LuaBehaviourManager.Instance?.EmitDestroy(gameObject);
+        LuaBehaviourManager.Instance.EmitDestroy(this);
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void OnCollisionEnter(UnityEngine.Collision collision)
     {
-        LuaBehaviourManager.Instance.EmitOnCollision(gameObject, "OnCollisionEnter", collision);
+        LuaBehaviourManager.Instance.EmitOnCollision(this, "OnCollisionEnter", collision);
     }
-    private void OnCollisionExit(Collision collision)
+    private void OnCollisionExit(UnityEngine.Collision collision)
     {
-        LuaBehaviourManager.Instance.EmitOnCollision(gameObject, "OnCollisionExit", collision);
+        LuaBehaviourManager.Instance.EmitOnCollision(this, "OnCollisionExit", collision);
     }
-    private void OnCollisionStay(Collision collision)
+    private void OnCollisionStay(UnityEngine.Collision collision)
     {
-        LuaBehaviourManager.Instance.EmitOnCollision(gameObject, "OnCollisionStay", collision);
+        LuaBehaviourManager.Instance.EmitOnCollision(this, "OnCollisionStay", collision);
     }
-
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter(UnityEngine.Collider other)
     {
-        LuaBehaviourManager.Instance.EmitOnTrigger(gameObject, "OnTriggerEnter", other);
+        LuaBehaviourManager.Instance.EmitOnTrigger(this, "OnTriggerEnter", other);
     }
-    private void OnTriggerExit(Collider other)
+    private void OnTriggerExit(UnityEngine.Collider other)
     {
-        LuaBehaviourManager.Instance.EmitOnTrigger(gameObject, "OnTriggerExit", other);
+        LuaBehaviourManager.Instance.EmitOnTrigger(this, "OnTriggerExit", other);
     }
-    private void OnTriggerStay(Collider other)
+    private void OnTriggerStay(UnityEngine.Collider other)
     {
-        LuaBehaviourManager.Instance.EmitOnTrigger(gameObject, "OnTriggerStay", other);
+        LuaBehaviourManager.Instance.EmitOnTrigger(this, "OnTriggerStay", other);
     }
 }

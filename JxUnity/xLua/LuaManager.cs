@@ -7,26 +7,83 @@ using XLua;
 /// <summary>
 /// 控制Lua脚本的加载
 /// </summary>
-public class LuaManager : Singleton<LuaManager>
+public class LuaManager : IDisposable
 {
+    public static LuaManager mainInstance;
+    public static LuaManager GetMainInstance()
+    {
+        if (mainInstance == null)
+        {
+            mainInstance = new LuaManager();
+        }
+        return mainInstance;
+    }
+    public static bool HasMainInstance => mainInstance != null;
+
+
     private LuaEnv luaEnv;
     public LuaEnv LuaEnv { get => luaEnv; }
 
     private Func<string, byte[]> loadFileHandle;
 
-    public LuaManager()
-    {
-        Initialize("main", (s) => { return System.IO.File.ReadAllBytes("Assets/LuaScripts/" + s + ".lua"); });
-        LuaUpdater.GetInstance().OnUpdate += Update;
-    }
+    private Action<float, float> update;
+    private Action lateUpdate;
+    private Action<float> fixedUpdate;
 
-    public void Initialize(string luaMain, Func<string, byte[]> loadFileHandle)
+    private LuaTable luaClient;
+    public LuaTable LuaClient { get => luaClient; }
+
+    private LuaTable luaUnityEvent;
+
+    public LuaManager(string luaMain = "main", Func<string, byte[]> loadFileHandle = null)
     {
+        if (loadFileHandle == null)
+        {
+            loadFileHandle = (s) => System.IO.File.ReadAllBytes("Assets/LuaScripts/" + s + ".lua");
+        }
+
         this.luaEnv = new LuaEnv();
         this.loadFileHandle = loadFileHandle;
         this.luaEnv.AddLoader(CustomLoader);
         this.luaEnv.DoString(@"print(""LuaEnv Initialize"")");
         this.luaEnv.DoString(string.Format("require (\"{0}\")", luaMain));
+
+        this.luaClient = this.luaEnv.Global.Get<LuaTable>("UnityLuaClient");
+        this.luaUnityEvent = luaClient.Get<LuaTable>("UnityEvent");
+
+        this.update = luaUnityEvent.Get<Action<float, float>>("__update");
+        this.lateUpdate = luaUnityEvent.Get<Action>("__lateUpdate");
+        this.fixedUpdate = luaUnityEvent.Get<Action<float>>("__fixedUpdate");
+
+        LuaUpdater.GetInstance().OnUpdate += this.XLuaManager_OnUpdate;
+        LuaUpdater.GetInstance().OnFixedUpdate += this.XLuaManager_OnFixedUpdate;
+        LuaUpdater.GetInstance().OnLateUpdate += this.XLuaManager_OnLateUpdate;
+    }
+    private void XLuaManager_OnUpdate()
+    {
+        if (this.luaEnv != null)
+        {
+            this.luaEnv.Tick();
+        }
+        if (update != null)
+        {
+            this.update(Time.deltaTime, Time.unscaledDeltaTime);
+        }
+    }
+    private void XLuaManager_OnLateUpdate()
+    {
+        if (this.lateUpdate != null)
+        {
+            this.lateUpdate();
+        }
+    }
+
+    private void XLuaManager_OnFixedUpdate()
+    {
+        if (this.fixedUpdate != null)
+        {
+            this.fixedUpdate(Time.fixedDeltaTime);
+        }
     }
 
     private byte[] CustomLoader(ref string filepath)
@@ -50,17 +107,20 @@ public class LuaManager : Singleton<LuaManager>
         return this.luaEnv.Global.Get<T>(name);
     }
 
-    private void Update()
-    {
-        if (this.luaEnv != null)
-        {
-            this.luaEnv.Tick();
-        }
-    }
-
-    public override void Dispose()
+    public void Dispose()
     {
         this.luaEnv.Dispose();
-        base.Dispose();
     }
 }
+
+#if UNITY_EDITOR
+public static class LuaExport_Method
+{
+    [CSharpCallLua]
+    public static List<Type> CSharpCallLua = new List<Type>()
+    {
+        typeof(Action<float>),
+        typeof(Action<float, float>),
+    };
+}
+#endif

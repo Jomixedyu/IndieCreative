@@ -9,30 +9,30 @@ public class LuaBehaviourManager : Singleton<LuaBehaviourManager>
 {
     private LuaTable luaBehaviourManager;
 
-    public Action<GameObject> EmitStart { get; private set; }
-    public Action<GameObject> EmitEnable { get; private set; }
-    public Action<GameObject> EmitDisable { get; private set; }
-    public Action<GameObject> EmitDestroy { get; private set; }
+    public Action<Component> EmitStart { get; private set; }
+    public Action<Component> EmitEnable { get; private set; }
+    public Action<Component> EmitDisable { get; private set; }
+    public Action<Component> EmitDestroy { get; private set; }
 
-    public Action<GameObject, string, Collision> EmitOnCollision { get; private set; }
+    public Action<Component, string, UnityEngine.Collision> EmitOnCollision { get; private set; }
 
-    public Action<GameObject, string, Collider> EmitOnTrigger { get; private set; }
+    public Action<Component, string, UnityEngine.Collider> EmitOnTrigger { get; private set; }
 
-    public Action<GameObject, MonoBehaviour, string> Add;
+    public Action<Component, string> Add;
 
     public LuaBehaviourManager()
     {
-        this.luaBehaviourManager = LuaClientManager.Instance.LuaClient.Get<LuaTable>("LuaBehaviourManager");
+        this.luaBehaviourManager = LuaManager.GetMainInstance().LuaClient.Get<LuaTable>("LuaBehaviourManager");
 
-        EmitStart = this.luaBehaviourManager.Get<Action<GameObject>>("Start");
-        EmitEnable = this.luaBehaviourManager.Get<Action<GameObject>>("OnEnable");
-        EmitDisable = this.luaBehaviourManager.Get<Action<GameObject>>("OnDisable");
-        EmitDestroy = this.luaBehaviourManager.Get<Action<GameObject>>("OnDestroy");
+        EmitStart = this.luaBehaviourManager.Get<Action<Component>>("Start");
+        EmitEnable = this.luaBehaviourManager.Get<Action<Component>>("OnEnable");
+        EmitDisable = this.luaBehaviourManager.Get<Action<Component>>("OnDisable");
+        EmitDestroy = this.luaBehaviourManager.Get<Action<Component>>("OnDestroy");
 
-        EmitOnCollision = this.luaBehaviourManager.Get<Action<GameObject, string, Collision>>("OnCollision");
-        EmitOnTrigger = this.luaBehaviourManager.Get<Action<GameObject, string, Collider>>("OnTrigger");
+        EmitOnCollision = this.luaBehaviourManager.Get<Action<Component, string, UnityEngine.Collision>>("OnCollision");
+        EmitOnTrigger = this.luaBehaviourManager.Get<Action<Component, string, UnityEngine.Collider>>("OnTrigger");
 
-        Add = this.luaBehaviourManager.Get<Action<GameObject, MonoBehaviour, string>>("Add");
+        Add = this.luaBehaviourManager.Get<Action<Component, string>>("Add");
     }
     public override void Dispose()
     {
