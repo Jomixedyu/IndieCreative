@@ -10,7 +10,7 @@ public class ProcedureManager
 {
     private static bool useCustomUpdater = false;
 
-    private static FSM<string, ProcedureBase> procedures;
+    private static FSM<string, ProcedureBase> procedures = new FSM<string, ProcedureBase>();
 
     public static Type[] GetClassTypeByBase(Assembly ass, Type baseType)
     {
@@ -26,10 +26,13 @@ public class ProcedureManager
         return rst.ToArray();
     }
 
-    static ProcedureManager()
+    public static void Initialize(Assembly assembly = null)
     {
-        procedures = new FSM<string, ProcedureBase>();
-        Type[] types = GetClassTypeByBase(Assembly.GetExecutingAssembly(), typeof(ProcedureBase));
+        if (assembly == null)
+        {
+            assembly = Assembly.GetCallingAssembly();
+        }
+        Type[] types = GetClassTypeByBase(assembly, typeof(ProcedureBase));
         foreach (Type item in types)
         {
             procedures.AddState(item.Name, (ProcedureBase)Activator.CreateInstance(item));

@@ -11,16 +11,9 @@ internal class ProcedureUpdater : MonoBehaviour, IDisposable
             instance = GameObject.FindObjectOfType(typeof(ProcedureUpdater)) as ProcedureUpdater;
             if (instance == null)
             {
-                GameObject go = new GameObject(typeof(ProcedureUpdater).Name);
+                GameObject go = new GameObject($"__m_{nameof(ProcedureUpdater)}");
+                DontDestroyOnLoad(go);
                 instance = go.AddComponent<ProcedureUpdater>();
-
-                GameObject parent = GameObject.Find("__System");
-                if (parent == null)
-                {
-                    parent = new GameObject("__System");
-                    DontDestroyOnLoad(parent);
-                }
-                go.transform.parent = parent.transform;
             }
         }
         return instance;
