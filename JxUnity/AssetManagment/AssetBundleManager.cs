@@ -5,9 +5,8 @@ using System.Collections.Generic;
 using UObject = UnityEngine.Object;
 using System.Collections;
 
-public class AssetBundleManager : MonoSingleton<AssetBundleManager>
+internal class AssetBundleManager : MonoSingleton<AssetBundleManager>
 {
-
     private AssetBundleManifest manifest = null;
 
     private AssetMapping assetMapping = null;

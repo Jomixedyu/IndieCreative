@@ -207,10 +207,11 @@ public static partial class AssetNameUtility
     }
 
     private static readonly string[] ResourceExts = {".prefab", ".fbx", ".obj",
-                             ".png", ".jpg", ".dds", ".gif", ".psd", ".tga", ".bmp",
+                             ".png", ".jpg", ".dds", ".gif", ".psd", ".tga", ".bmp", ".tif",
                              ".txt", ".bytes", ".xml", ".csv", ".json",
                             ".controller", ".shader", ".anim", ".unity", ".mat",
                             ".wav", ".mp3", ".ogg",
+                            ".mp4", ".mov", ".mpg", ".mpeg", ".avi", ".asf",
                             ".ttf",
                              ".shadervariants", ".asset"};
 

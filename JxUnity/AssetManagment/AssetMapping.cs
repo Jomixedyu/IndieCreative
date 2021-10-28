@@ -33,11 +33,15 @@ public class AssetMapping : IEnumerable<KeyValuePair<string, AssetMapping.Mappin
             {
                 continue;
             }
-            string[] relation = item.Trim().Split(',');
+            string[] relation = item.Trim().Split(':');
             var assetPath = relation[0];
             var assetName = relation[1];
             var guid = relation[2];
             var abName = relation[3];
+            if (this.mappingTable.ContainsKey(assetPath))
+            {
+                throw new ArgumentException("AssetMapping: asset path exist: " + assetPath);
+            }
             this.mappingTable.Add(assetPath, new MappingItem(assetPath, assetName, guid, abName));
         }
     }

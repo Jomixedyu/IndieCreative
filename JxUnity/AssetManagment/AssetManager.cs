@@ -12,7 +12,6 @@ using UnityEditor;
 public enum AssetLoadMode
 {
     NormalAsset,
-    ResourceFolder,
     BundlePackage,
 }
 
@@ -35,18 +34,24 @@ public static class AssetManager
         }
     }
 
-    [MenuItem("AssetManager/LoadMode/State")]
-    public static void State()
+    [MenuItem("ResourcePackage/LoadMode/Enable Editor Simulator", validate = true)]
+    public static bool EnableEditorSimulator_Validate()
     {
-        Debug.Log("IsEditorSimulator: " + IsEditorSimulator.ToString());
+        return !IsEditorSimulator;
     }
-    [MenuItem("AssetManager/LoadMode/EnableEditorSimulator")]
+    [MenuItem("ResourcePackage/LoadMode/Disable Editor Simulator", validate = true)]
+    public static bool DisableEditorSimulator_Validate()
+    {
+        return IsEditorSimulator;
+    }
+
+    [MenuItem("ResourcePackage/LoadMode/Enable Editor Simulator")]
     public static void EnableEditorSimulator()
     {
         IsEditorSimulator = true;
         Debug.Log("EnableEditorSimulator");
     }
-    [MenuItem("AssetManager/LoadMode/DisableEditorSimulator")]
+    [MenuItem("ResourcePackage/LoadMode/Disable Editor Simulator")]
     public static void DisableEditorSimulator()
     {
         IsEditorSimulator = false;
@@ -69,7 +74,8 @@ public static class AssetManager
         var item = assetMapping.Mapping(path);
         if(item == null)
         {
-            throw new ArgumentException("mapping not found: " + path);
+            //throw new ArgumentException("mapping not found: " + path);
+            return null;
         }
         var packagepath = AssetNameUtility.UnformatBundleName(item.assetPackageName);
         return Resources.Load<RuntimeMapping>(packagepath).Get(item.assetName, type);
@@ -82,17 +88,6 @@ public static class AssetManager
 
         switch (AssetLoadMode)
         {
-            //资源目录
-            case AssetLoadMode.ResourceFolder:
-#if UNITY_EDITOR
-                return AssetDatabase.LoadAssetAtPath<T>("Assets/Resources/" + path);
-#else
-                //去掉后缀名
-                string dirName = Path.GetDirectoryName(path);
-                string fileName = Path.GetFileNameWithoutExtension(path);
-
-                return Resources.Load<T>(dirName + "/" + fileName);
-#endif
             //打包资源
             case AssetLoadMode.BundlePackage:
 #if UNITY_EDITOR
@@ -148,23 +143,6 @@ public static class AssetManager
 
         switch (AssetLoadMode)
         {
-            case AssetLoadMode.ResourceFolder:
-#if UNITY_EDITOR
-                cb.Invoke(AssetDatabase.LoadAssetAtPath("Assets/Resources/" + path, type));
-#else
-                string dirName = Path.GetDirectoryName(path);
-                string fileName = Path.GetFileNameWithoutExtension(path);
-
-                ResourceRequest req = Resources.LoadAsync(dirName + "/" + fileName, type);
-
-                req.completed += (o) =>
-                {
-                    Debug.Log("AsyncLoadComplete: " + path);
-                    _AssetsAsyncCallBack(req);
-                };
-                _AddAsyncItem(req, cb);
-#endif
-                break;
             case AssetLoadMode.BundlePackage:
 #if UNITY_EDITOR
                 if (!IsEditorSimulator)
