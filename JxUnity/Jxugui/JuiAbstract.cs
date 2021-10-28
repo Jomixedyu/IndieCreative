@@ -654,7 +654,7 @@ namespace JxUnity.Jxugui
             int pos = this.subuiShowStack.IndexOf(sub);
             if (pos < 0)
             {
-                return;
+                throw new ArgumentException("not found subui");
             }
             if (sub == this.GetSubUIFocus())
             {
@@ -670,7 +670,7 @@ namespace JxUnity.Jxugui
         /// 是否有子UI拥有焦点
         /// </summary>
         /// <returns></returns>
-        protected bool HasSubUIFocus()
+        public bool HasSubUIFocus()
         {
             return this.subuiShowStack.Count != 0;
         }
@@ -678,7 +678,7 @@ namespace JxUnity.Jxugui
         /// 获取显示的子ui数量
         /// </summary>
         /// <returns></returns>
-        protected int GetSubUIShowCount()
+        public int GetSubUIShowCount()
         {
             return this.subuiShowStack.Count;
         }
@@ -690,7 +690,7 @@ namespace JxUnity.Jxugui
         /// 获取子ui数量（包括隐藏的）
         /// </summary>
         /// <returns></returns>
-        protected int GetSubUICount()
+        public int GetSubUICount()
         {
             return this.subUis.Count;
         }
