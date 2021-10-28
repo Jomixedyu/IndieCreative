@@ -147,28 +147,6 @@ public static class TransformExtension
         }
     }
     /// <summary>
-    /// 创建子对象
-    /// </summary>
-    /// <param name="_this"></param>
-    /// <param name="name"></param>
-    /// <param name="components"></param>
-    /// <returns></returns>
-    public static Transform CreateChild(this Transform _this, string name = "GameObject", Type[] components = null)
-    {
-        GameObject go;
-        if (components == null)
-        {
-            go = new GameObject(name);
-        }
-        else
-        {
-            go = new GameObject(name, components);
-        }
-        go.layer = _this.gameObject.layer;
-        go.transform.SetParent(_this);
-        return go.transform;
-    }
-    /// <summary>
     /// 按路径获取最后一个子对象
     /// </summary>
     /// <param name="path"></param>
@@ -244,5 +222,34 @@ public static class TransformExtension
             return null;
         }
         return transform.GetChild(count - 1);
+    }
+
+
+    /// <summary>
+    /// 创建子对象
+    /// </summary>
+    /// <param name="_this"></param>
+    /// <param name="name"></param>
+    /// <param name="components"></param>
+    /// <returns></returns>
+    public static Transform CreateChild(this Transform _this, string name = "GameObject", Type[] components = null)
+    {
+        GameObject go;
+        if (components == null)
+        {
+            go = new GameObject(name);
+        }
+        else
+        {
+            go = new GameObject(name, components);
+        }
+        go.layer = _this.gameObject.layer;
+        go.transform.SetParent(_this, false);
+        return go.transform;
+    }
+
+    public static Transform GetChild(this GameObject _this, int index)
+    {
+        return _this.transform.GetChild(index);
     }
 }
