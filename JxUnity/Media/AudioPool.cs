@@ -1,27 +1,127 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 
 public class AudioPool : MonoBehaviour
 {
-    protected class AudioState
+    protected class AudioState : IComparable<AudioState>
     {
-        public AudioSource audioSource;
-        public AudioClip clip;
-        public bool isUsed;
+        //max volume
+        private float volume;
+        public float Volume
+        {
+            get => volume;
+            set
+            {
+                if (this.audioSource.volume > value)
+                {
+                    this.audioSource.volume = value;
+                }
+                this.volume = value;
+            }
+        }
+
+        public bool IsPlaying { get => this.audioSource.isPlaying; }
+        public bool IsUsed { get; private set; }
+
+        private AudioSource audioSource;
+
         /// <summary>
         /// 如果name为null则为匿名音频
         /// </summary>
-        public string name;
-        public float createTime;
-        public float endTime;
-        public bool isLoop;
+        public string Name { get; private set; }
+        private float createTime;
+        private float endTime;
+        public bool IsLoop { get; private set; }
+        private bool isFade;
+
+        private bool isToFade;
+
+        public AudioState(AudioSource audioSource)
+        {
+            this.audioSource = audioSource;
+        }
+
+        public void Play(AudioClip ac, string name = null, bool isLoop = false, bool isFade = false)
+        {
+            if (ac == null)
+            {
+                Debug.LogError("audioclip is null");
+                return;
+            }
+            this.isToFade = false;
+            this.Name = name;
+            this.IsLoop = isLoop;
+            this.isFade = isFade;
+            this.createTime = Time.time;
+
+            this.endTime = this.createTime + ac.length;
+
+            this.audioSource.clip = ac;
+            this.audioSource.loop = isLoop;
+            this.audioSource.volume = this.volume;
+            this.audioSource.Play();
+
+            this.IsUsed = true;
+        }
+        public void Release()
+        {
+            this.Name = null;
+            this.IsLoop = false;
+            this.audioSource.Stop();
+            this.audioSource.clip = null;
+            this.IsUsed = false;
+        }
+        public void Stop()
+        {
+            if (!this.isFade)
+            {
+                this.Release();
+            }
+            else
+            {
+                this.isToFade = true;
+            }
+        }
+
+        public void Update()
+        {
+            if (this.isFade && this.isToFade)
+            {
+                var v = this.audioSource.volume;
+                v = Math.Max(0, v - Time.unscaledDeltaTime);
+                this.audioSource.volume = v;
+
+                if (v <= 0)
+                {
+                    this.Release();
+                }
+            }
+
+            if (!this.IsPlaying)
+            {
+                this.Release();
+            }
+        }
+
+        public int CompareTo(AudioState other)
+        {
+            var r = this.IsLoop.CompareTo(other.IsLoop);
+            if (r != 0)
+            {
+                return r;
+            }
+            return this.endTime.CompareTo(other.endTime);
+        }
     }
 
     [SerializeField]
-    private int maxCount = 5;
+    protected int maxCount = 5;
     public int MaxCount { get => maxCount; }
     protected List<AudioState> pool;
+    [SerializeField]
+    private bool[] poolState;
 
     private float volume = 1f;
     public float Volume
@@ -32,37 +132,39 @@ public class AudioPool : MonoBehaviour
             volume = Mathf.Clamp(value, 0, 1);
             foreach (var item in pool)
             {
-                item.audioSource.volume = volume;
+                item.Volume = volume;
             }
         }
     }
 
-    private void Awake()
+    protected void Awake()
     {
-        pool = new List<AudioState>(maxCount + 1);
+        pool = new List<AudioState>(maxCount);
+        poolState = new bool[MaxCount];
         //创建对象
         for (int i = 0; i < maxCount; i++)
         {
             AudioSource ap = gameObject.AddComponent<AudioSource>();
             ap.volume = volume;
-            AudioState aus = new AudioState() { audioSource = ap };
+            AudioState aus = new AudioState(ap);
             pool.Add(aus);
         }
     }
 
-    private void Update()
+    protected void Update()
     {
-        if (Time.frameCount % 15 == 0)
+        for (int i = 0; i < this.pool.Count; i++)
         {
-            foreach (var item in pool)
+            var item = this.pool[i];
+            if (item.IsUsed)
             {
-                if (!item.audioSource.isPlaying)
-                {
-                    ReleaseAudio(item);
-                }
+                item.Update();
             }
         }
-
+        for (int i = 0; i < MaxCount; i++)
+        {
+            poolState[i] = this.pool[i].IsUsed;
+        }
     }
     /// <summary>
     /// 播放一个音频
@@ -70,7 +172,7 @@ public class AudioPool : MonoBehaviour
     /// <param name="name"></param>
     /// <param name="ac"></param>
     /// <param name="isLoop"></param>
-    public void Play(string name, AudioClip ac, bool isLoop)
+    public void Play(AudioClip ac, string name = null, bool isLoop = false, bool isFade = false)
     {
         if (ac == null)
         {
@@ -79,24 +181,7 @@ public class AudioPool : MonoBehaviour
         }
 
         AudioState aus = GetUsableAudio();
-        aus.name = name;
-        aus.isLoop = isLoop;
-        aus.clip = ac;
-        aus.createTime = Time.time;
-        aus.endTime = aus.createTime + ac.length;
-        aus.isUsed = true;
-
-        aus.audioSource.clip = ac;
-        aus.audioSource.loop = isLoop;
-        aus.audioSource.Play();
-    }
-    /// <summary>
-    /// 播放一次匿名音频
-    /// </summary>
-    /// <param name="ac"></param>
-    public void Play(AudioClip ac)
-    {
-        Play(null, ac, false);
+        aus.Play(ac, name, isLoop, isFade);
     }
 
     /// <summary>
@@ -107,9 +192,9 @@ public class AudioPool : MonoBehaviour
     {
         foreach (var item in pool)
         {
-            if (item.name == name)
+            if (item.Name == name)
             {
-                ReleaseAudio(item);
+                item.Stop();
             }
         }
     }
@@ -120,7 +205,15 @@ public class AudioPool : MonoBehaviour
     {
         foreach (var item in pool)
         {
-            ReleaseAudio(item);
+            item.Stop();
+        }
+    }
+
+    public void Clear()
+    {
+        foreach (var item in this.pool)
+        {
+            item.Release();
         }
     }
 
@@ -129,26 +222,10 @@ public class AudioPool : MonoBehaviour
         //先找空闲的，没有空闲的按时间排，查找非循环和最早创建的
         foreach (var item in pool)
         {
-            if (!item.isUsed) return item;
+            if (!item.IsUsed) return item;
         }
 
-        pool.Sort((AudioState x, AudioState y) =>
-        {
-            var r = x.isLoop.CompareTo(y.isLoop);
-            if (r != 0)
-            {
-                return r;
-            }
-            return x.createTime.CompareTo(y.createTime);
-        });
+        pool.Sort((x, y) => x.CompareTo(y));
         return pool[0];
-    }
-    protected void ReleaseAudio(AudioState aus)
-    {
-        aus.audioSource.Stop();
-        aus.audioSource.clip = null;
-        aus.clip = null;
-        aus.isUsed = false;
-        aus.name = null;
     }
 }
