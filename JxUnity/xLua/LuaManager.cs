@@ -10,12 +10,20 @@ using XLua;
 public class LuaManager : IDisposable
 {
     public static LuaManager mainInstance;
-    public static LuaManager GetMainInstance()
+    public static LuaManager CreateMainInstance(string luaMain = "main", Func<string, byte[]> loadFileHandle = null)
     {
         if (mainInstance == null)
         {
-            mainInstance = new LuaManager();
+            //if (loadFileHandle == null)
+            //{
+            //    loadFileHandle = (s) => System.IO.File.ReadAllBytes("Assets/LuaScripts/" + s + ".lua");
+            //}
+            mainInstance = new LuaManager(luaMain, loadFileHandle);
         }
+        return mainInstance;
+    }
+    public static LuaManager GetMainInstance()
+    {
         return mainInstance;
     }
     public static bool HasMainInstance => mainInstance != null;
@@ -35,25 +43,28 @@ public class LuaManager : IDisposable
 
     private LuaTable luaUnityEvent;
 
-    public LuaManager(string luaMain = "main", Func<string, byte[]> loadFileHandle = null)
+    public LuaManager(string luaMain, Func<string, byte[]> loadFileHandle)
     {
-        if (loadFileHandle == null)
-        {
-            loadFileHandle = (s) => System.IO.File.ReadAllBytes("Assets/LuaScripts/" + s + ".lua");
-        }
-
         this.luaEnv = new LuaEnv();
         this.loadFileHandle = loadFileHandle;
         this.luaEnv.AddLoader(CustomLoader);
         this.luaEnv.DoString(@"print(""LuaEnv Initialize"")");
-        this.luaEnv.DoString(string.Format("require (\"{0}\")", luaMain));
+        if (luaMain == null)
+        {
+            Debug.LogWarning("XluaManager: not exist entry");
+        }
+        else
+        {
+            this.luaEnv.DoString(string.Format("require (\"{0}\")", luaMain));
+        }
 
         this.luaClient = this.luaEnv.Global.Get<LuaTable>("UnityLuaClient");
-        this.luaUnityEvent = luaClient.Get<LuaTable>("UnityEvent");
+        Debug.LogWarning("XluaManager: load fail JxLuaClient");
+        this.luaUnityEvent = luaClient?.Get<LuaTable>("UnityEvent");
 
-        this.update = luaUnityEvent.Get<Action<float, float>>("__update");
-        this.lateUpdate = luaUnityEvent.Get<Action>("__lateUpdate");
-        this.fixedUpdate = luaUnityEvent.Get<Action<float>>("__fixedUpdate");
+        this.update = luaUnityEvent?.Get<Action<float, float>>("__update");
+        this.lateUpdate = luaUnityEvent?.Get<Action>("__lateUpdate");
+        this.fixedUpdate = luaUnityEvent?.Get<Action<float>>("__fixedUpdate");
 
         LuaUpdater.GetInstance().OnUpdate += this.XLuaManager_OnUpdate;
         LuaUpdater.GetInstance().OnFixedUpdate += this.XLuaManager_OnFixedUpdate;
@@ -121,6 +132,7 @@ public static class LuaExport_Method
     {
         typeof(Action<float>),
         typeof(Action<float, float>),
+        typeof(Func<bool>),
     };
 }
 #endif
