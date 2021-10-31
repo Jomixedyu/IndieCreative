@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
+using JxUnity.Resources;
 
 public class ResourcePackageBuilder : Editor
 {
@@ -94,7 +95,7 @@ public class ResourcePackageBuilder : Editor
     {
 
     }
-    private static void GenerateRuntimeMapping(string path, RuntimeMapping mapping)
+    private static void GenerateRuntimeMapping(string path, AssetMapObject mapping)
     {
         if (AssetManager.AssetLoadMode == AssetLoadMode.NormalAsset)
         {
@@ -112,7 +113,7 @@ public class ResourcePackageBuilder : Editor
         }
     }
 
-    private static string GenerateMapping_Internel(string path, string abName, RuntimeMapping mapping)
+    private static string GenerateMapping_Internel(string path, string abName, AssetMapObject mapping)
     {
         var assetsFolderName = AssetNameUtility.RootToAssetsFolderName(path).ToLower();
         var assetShortName = Path.GetFileNameWithoutExtension(assetsFolderName);
@@ -134,7 +135,7 @@ public class ResourcePackageBuilder : Editor
 
         foreach (string abName in abList)
         {
-            RuntimeMapping ser = ScriptableObject.CreateInstance<RuntimeMapping>();
+            AssetMapObject ser = ScriptableObject.CreateInstance<AssetMapObject>();
             string assetPath = AssetNameUtility.BundleNameToRootName(abName);
             if (AssetDatabase.IsValidFolder(assetPath))
             {
@@ -173,7 +174,7 @@ public class ResourcePackageBuilder : Editor
         if (AssetManager.AssetLoadMode == AssetLoadMode.NormalAsset)
         {
 
-            RuntimeMapping ser = ScriptableObject.CreateInstance<RuntimeMapping>();
+            AssetMapObject ser = ScriptableObject.CreateInstance<AssetMapObject>();
             string objPath = resourceRootName + "/resourcepackage/resource_mapping.bytes.asset";
             GenerateRuntimeMapping(resMappingName, ser);
             AssetDatabase.CreateAsset(ser, objPath);

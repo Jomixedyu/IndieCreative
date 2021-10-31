@@ -1,4 +1,5 @@
 ﻿using UnityEditor;
+using JxUnity.Resources;
 
 public static class ResourcePackageBuilderUtility
 {
