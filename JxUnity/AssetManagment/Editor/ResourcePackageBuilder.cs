@@ -16,6 +16,7 @@ public class ResourcePackageBuilder : Editor
         {
             SetName(AssetDatabase.GUIDToAssetPath(item));
         }
+        AssetDatabase.Refresh();
     }
 
     [MenuItem("Assets/ResourcePackage/Set Selected SubNames")]
@@ -26,16 +27,19 @@ public class ResourcePackageBuilder : Editor
         {
             SetSubNames(AssetDatabase.GUIDToAssetPath(item));
         }
+        AssetDatabase.Refresh();
     }
 
     internal static void SetName(string rootName)
     {
         ResourcePackageBuilderUtility.SetNameAndRemoveSub(rootName);
+        AssetDatabase.Refresh();
     }
 
     public static void SetSubNames(string rootName)
     {
         ResourcePackageBuilderUtility.ResetSubNames(rootName);
+        AssetDatabase.Refresh();
     }
 
     [MenuItem("Assets/ResourcePackage/Remove Selected Name")]
@@ -47,6 +51,7 @@ public class ResourcePackageBuilder : Editor
             string rootName = AssetDatabase.GUIDToAssetPath(item);
             ResourcePackageBuilderUtility.RemoveName(rootName);
         }
+        AssetDatabase.Refresh();
     }
 
     [MenuItem("Assets/ResourcePackage/Remove Selected SubNames")]
@@ -61,6 +66,7 @@ public class ResourcePackageBuilder : Editor
                 ResourcePackageBuilderUtility.RemoveAllInSub(rootFullName);
             }
         }
+        AssetDatabase.Refresh();
     }
 
     [MenuItem("ResourcePackage/Remove All Names", false, 100)]
@@ -72,7 +78,7 @@ public class ResourcePackageBuilder : Editor
         }
 
         ResourcePackageBuilderUtility.RemoveAllNames();
-
+        AssetDatabase.Refresh();
         EditorUtility.DisplayDialog("msg", "done", "ok");
     }
 
@@ -80,6 +86,7 @@ public class ResourcePackageBuilder : Editor
     public static void RemoveUnusedNames()
     {
         AssetDatabase.RemoveUnusedAssetBundleNames();
+        AssetDatabase.Refresh();
     }
 
     [MenuItem("ResourcePackage/Check Valid", false, 105)]

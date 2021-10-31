@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UObject = UnityEngine.Object;
 using System.Collections;
 
-internal class AssetBundleManager : MonoSingleton<AssetBundleManager>
+internal class AssetBundleManagerMono : MonoSingleton<AssetBundleManagerMono>
 {
     private AssetBundleManifest manifest = null;
 
@@ -39,6 +39,7 @@ internal class AssetBundleManager : MonoSingleton<AssetBundleManager>
     {
         return this.assetbundleCaching.ContainsKey(bundleName);
     }
+    
     public AssetBundle GetAssetBundleCache(string bundleName)
     {
         AssetBundle bundle = null;

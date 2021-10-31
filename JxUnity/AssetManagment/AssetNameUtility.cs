@@ -28,7 +28,7 @@ public static partial class AssetNameUtility
         }
         var dir = Path.GetDirectoryName(bundleName).Replace('\\', '/');
         var abExt = AssetConfig.Variant != null ? "." + AssetConfig.Variant : string.Empty;
-        return dir + "/" + name + abExt;
+        return $"{dir}/{name}{abExt}";
     }
     /// <summary>
     /// 将ab包格式的路径格式化为普通路径

@@ -94,9 +94,9 @@ public static class AssetManager
                 if (!IsEditorSimulator)
                     return AssetDatabase.LoadAssetAtPath<T>("Assets/" + path);
                 else
-                    return (T)AssetBundleManager.Instance.LoadAsset(path, typeof(T));
+                    return (T)AssetBundleManagerMono.Instance.LoadAsset(path, typeof(T));
 #else
-                return (T)AssetBundleManager.Instance.LoadAsset(path, typeof(T));
+                return (T)AssetBundleManagerMono.Instance.LoadAsset(path, typeof(T));
 #endif
             case AssetLoadMode.NormalAsset:
 #if UNITY_EDITOR
@@ -148,9 +148,9 @@ public static class AssetManager
                 if (!IsEditorSimulator)
                     cb.Invoke(AssetDatabase.LoadAssetAtPath("Assets/" + path, type));
                 else
-                    AssetBundleManager.Instance.LoadAssetAsync(path, type, cb);
+                    AssetBundleManagerMono.Instance.LoadAssetAsync(path, type, cb);
 #else
-                AssetBundleManager.Instance.LoadAssetAsync(path, type, cb);
+                AssetBundleManagerMono.Instance.LoadAssetAsync(path, type, cb);
 #endif
                 break;
             case AssetLoadMode.NormalAsset:
