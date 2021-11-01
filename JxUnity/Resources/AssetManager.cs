@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 
 using UnityEngine;
+using System.Runtime.CompilerServices;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -12,124 +13,93 @@ namespace JxUnity.Resources
 {
     public enum AssetLoadMode
     {
-        NormalAsset,
-        BundlePackage,
+        Local,
+        Package,
     }
 
     public static class AssetManager
     {
-        public static AssetLoadMode AssetLoadMode { get; set; } = AssetLoadMode.NormalAsset;
+        public static AssetLoadMode AssetLoadMode { get; set; } = AssetLoadMode.Local;
 
-        #region IsEditorSimulator
-#if UNITY_EDITOR
-
-        public static bool IsEditorSimulator
+        private static AssetBundleMapping assetMapping;
+        private static UnityEngine.Object GetLocalMapItem(string path, Type type)
         {
-            get
-            {
-                return EditorPrefs.GetBool("AssetManager.IsEditorSimulator", false);
-            }
-            set
-            {
-                EditorPrefs.SetBool("AssetManager.IsEditorSimulator", value);
-            }
-        }
-
-        [MenuItem("ResourcePackage/LoadMode/Enable Editor Simulator", validate = true)]
-        public static bool EnableEditorSimulator_Validate()
-        {
-            return !IsEditorSimulator;
-        }
-        [MenuItem("ResourcePackage/LoadMode/Disable Editor Simulator", validate = true)]
-        public static bool DisableEditorSimulator_Validate()
-        {
-            return IsEditorSimulator;
-        }
-
-        [MenuItem("ResourcePackage/LoadMode/Enable Editor Simulator")]
-        public static void EnableEditorSimulator()
-        {
-            IsEditorSimulator = true;
-            Debug.Log("EnableEditorSimulator");
-        }
-        [MenuItem("ResourcePackage/LoadMode/Disable Editor Simulator")]
-        public static void DisableEditorSimulator()
-        {
-            IsEditorSimulator = false;
-            Debug.Log("DisableEditorSimulator");
-        }
-#endif
-        #endregion
-
-        private static AssetRuntimeMapping assetMapping;
-        private static UnityEngine.Object GetRuntimeMappingItem(string path, Type type)
-        {
-            path = path.ToLower();
             if (assetMapping == null)
             {
-                var runtimeMapping = UnityEngine.Resources.Load<AssetMapObject>("resourcepackage/resource_mapping.bytes");
+                string filename = $"{AssetConfig.LocalRoot}/{AssetConfig.ResourceFolderName.ToLower()}/{AssetConfig.MapFilename}";
+                var runtimeMapping = UnityEngine.Resources.Load<AssetLocalMap>(filename);
 
-                TextAsset x = (TextAsset)runtimeMapping.Get("resource_mapping", typeof(TextAsset));
-                assetMapping = new AssetRuntimeMapping(x.text);
+                TextAsset x = (TextAsset)runtimeMapping.Get(AssetConfig.MapName, typeof(TextAsset));
+                assetMapping = new AssetBundleMapping(x.text);
             }
-            var item = assetMapping.Mapping(path);
+            AssetBundleMapping.MappingItem item = assetMapping.Mapping(path);
             if (item == null)
             {
-                //throw new ArgumentException("mapping not found: " + path);
                 return null;
             }
-            var packagepath = AssetNameUtility.UnformatBundleName(item.assetPackageName);
-            return UnityEngine.Resources.Load<AssetMapObject>(packagepath).Get(item.assetName, type);
+            string packagepath = AssetNameUtility.UnformatBundleName(item.assetPackageName);
+            AssetLocalMap res = UnityEngine.Resources.Load<AssetLocalMap>($"{AssetConfig.LocalRoot}/{packagepath}");
+            return res.Get(item.assetName, type);
         }
 
-        public static T GetAsset<T>(string path) where T : UnityEngine.Object
+        /// <summary>
+        /// 同步模式加载资源
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static object Load(string path, Type type)
         {
             if (string.IsNullOrEmpty(path)) return null;
-            path = path.Replace("\\", "/");
-
             switch (AssetLoadMode)
             {
                 //打包资源
-                case AssetLoadMode.BundlePackage:
+                case AssetLoadMode.Package:
 #if UNITY_EDITOR
-                    if (!IsEditorSimulator)
-                        return AssetDatabase.LoadAssetAtPath<T>("Assets/" + path);
+                    if (!AssetConfig.IsEditorSimulator)
+                        return AssetDatabase.LoadAssetAtPath("Assets/" + path, type);
                     else
-                        return (T)AssetBundleManagerMono.Instance.LoadAsset(path, typeof(T));
+                        return AssetBundleManagerMono.Instance.LoadAsset(path, type);
 #else
-                return (T)AssetBundleManagerMono.Instance.LoadAsset(path, typeof(T));
+                return AssetBundleManagerMono.Instance.LoadAsset(path, type);
 #endif
-                case AssetLoadMode.NormalAsset:
+                case AssetLoadMode.Local:
 #if UNITY_EDITOR
-                    if (!IsEditorSimulator)
+                    if (!AssetConfig.IsEditorSimulator)
                     {
-                        return AssetDatabase.LoadAssetAtPath<T>("Assets/" + path);
+                        return AssetDatabase.LoadAssetAtPath("Assets/" + path, type);
                     }
                     else
                     {
-                        return (T)GetRuntimeMappingItem(path, typeof(T));
+                        return GetLocalMapItem(path, type);
                     }
 #else
-                return (T)GetRuntimeMappingItem(path, typeof(T));
+                return GetRuntimeMappingItem(path, type);
 #endif
             }
             return null;
         }
 
-        public static Dictionary<ResourceRequest, Action<UnityEngine.Object>> assetsAsyncDict
-            = new Dictionary<ResourceRequest, Action<UnityEngine.Object>>();
-
-        private static void _AddAsyncItem(ResourceRequest req, Action<UnityEngine.Object> act)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T Load<T>(string path) where T : UnityEngine.Object
         {
-            assetsAsyncDict.Add(req, new Action<UnityEngine.Object>((asset) => { act(asset); }));
-        }
-        private static void _AssetsAsyncCallBack(ResourceRequest id)
-        {
-            assetsAsyncDict[id].Invoke(id.asset);
-            assetsAsyncDict.Remove(id);
+            return Load(path, typeof(T)) as T;
         }
 
-        public static void GetAssetAsync(string path, Type type, Action<UnityEngine.Object> cb)
+        //public static Dictionary<ResourceRequest, Action<UnityEngine.Object>> assetsAsyncDict
+        //    = new Dictionary<ResourceRequest, Action<UnityEngine.Object>>();
+
+        //private static void _AddAsyncItem(ResourceRequest req, Action<UnityEngine.Object> act)
+        //{
+        //    assetsAsyncDict.Add(req, new Action<UnityEngine.Object>((asset) => { act(asset); }));
+        //}
+        //private static void _AssetsAsyncCallBack(ResourceRequest id)
+        //{
+        //    assetsAsyncDict[id].Invoke(id.asset);
+        //    assetsAsyncDict.Remove(id);
+        //}
+
+        public static void LoadAsync(string path, Type type, Action<UnityEngine.Object> cb)
         {
             if (cb == null)
             {
@@ -144,9 +114,9 @@ namespace JxUnity.Resources
 
             switch (AssetLoadMode)
             {
-                case AssetLoadMode.BundlePackage:
+                case AssetLoadMode.Package:
 #if UNITY_EDITOR
-                    if (!IsEditorSimulator)
+                    if (!AssetConfig.IsEditorSimulator)
                         cb.Invoke(AssetDatabase.LoadAssetAtPath("Assets/" + path, type));
                     else
                         AssetBundleManagerMono.Instance.LoadAssetAsync(path, type, cb);
@@ -154,12 +124,12 @@ namespace JxUnity.Resources
                 AssetBundleManagerMono.Instance.LoadAssetAsync(path, type, cb);
 #endif
                     break;
-                case AssetLoadMode.NormalAsset:
+                case AssetLoadMode.Local:
 #if UNITY_EDITOR
-                    if (!IsEditorSimulator)
+                    if (!AssetConfig.IsEditorSimulator)
                         cb.Invoke(AssetDatabase.LoadAssetAtPath("Assets/" + path, type));
                     else
-                        cb.Invoke(GetRuntimeMappingItem(path, type));
+                        cb.Invoke(GetLocalMapItem(path, type));
 #else
                 cb.Invoke(GetRuntimeMappingItem(path, type));
 #endif

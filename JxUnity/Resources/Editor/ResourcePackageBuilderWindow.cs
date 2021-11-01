@@ -56,7 +56,7 @@ public class ResourcePackageBuilderWindow : EditorWindow
         }
         if (GUILayout.Button("root/ResourcePackage"))
         {
-            this.outputPath = AssetNameUtility.GetRootPath() + "/ResourcePackage";
+            this.outputPath = AssetNameUtility.GetPROJ() + "/ResourcePackage";
         }
         GUILayout.EndHorizontal();
         GUILayout.Space(20);

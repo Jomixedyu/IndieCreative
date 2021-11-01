@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-
 namespace JxUnity.Resources
 {
+    /// <summary>
+    /// 路径命名规则：
+    /// FULL: 一个资产的完全路径，
+    /// PROJ: 项目路径，
+    /// ROOT: 从项目根目录开始的相对路径，
+    /// ASSET: 从Assets目录开始的相对路径。
+    /// </summary>
     public static partial class AssetNameUtility
     {
         private static readonly int AssetsPathLength = "Assets".Length + 1;
@@ -16,21 +19,15 @@ namespace JxUnity.Resources
         /// <summary>
         /// 将路径格式化为ab包格式的路径
         /// </summary>
-        /// <param name="bundleName"></param>
+        /// <param name="path"></param>
         /// <returns></returns>
-        public static string FormatBundleName(string bundleName)
+        public static string FormatBundleName(string path)
         {
-            var name = Path.GetFileName(bundleName);
-            int dot = name.LastIndexOf('.');
-            if (dot >= 0)
-            {
-                var carr = name.ToCharArray();
-                carr[dot] = '_';
-                name = new string(carr);
-            }
-            var dir = Path.GetDirectoryName(bundleName).Replace('\\', '/');
+            path = path.Replace('\\', '/');
+
             var abExt = AssetConfig.Variant != null ? "." + AssetConfig.Variant : string.Empty;
-            return $"{dir}/{name}{abExt}";
+
+            return $"{path}{abExt}";
         }
         /// <summary>
         /// 将ab包格式的路径格式化为普通路径
@@ -49,15 +46,8 @@ namespace JxUnity.Resources
                 }
                 name = name.Substring(0, name.Length - ext.Length);
             }
-            int dot = name.LastIndexOf('_');
-            if (dot >= 0)
-            {
-                var carr = name.ToCharArray();
-                carr[dot] = '.';
-                name = new string(carr);
-            }
-            var dir = Path.GetDirectoryName(bundleName).Replace('\\', '/');
-            return dir + "/" + name;
+            var dir = Path.GetDirectoryName(bundleName);
+            return Path.Combine(dir, name).Replace('\\', '/');
         }
 
         /// <summary>
@@ -79,29 +69,31 @@ namespace JxUnity.Resources
             return bundleName;
         }
 
-        public static string RootToBundleName(string rootName)
+        public static string ROOTToBundleName(string _ROOT)
         {
-            return RootToAssetsFolderName(rootName).ToLower().Replace('.', '_');
+            return ROOTToASSET(_ROOT);
         }
 
-        public static string RootToAssetsFolderName(string rootName)
+        public static string ROOTToASSET(string _ROOT)
         {
-            if (!rootName.StartsWith("Assets", true, null))
+            if (!_ROOT.StartsWith("Assets", true, null))
             {
-                return rootName;
+                return _ROOT;
             }
-            return rootName.Substring(AssetsPathLength);
+            return _ROOT.Substring(AssetsPathLength);
         }
 
-        public static string BundleNameToRootName(string bundleName)
+
+        public static string BundleNameToROOT(string bundleName)
         {
-            return "Assets/" + BundleNameToAssetFolderName(bundleName);
+            return "Assets/" + BundleNameToASSET(bundleName);
         }
-
-        public static string BundleNameToAssetFolderName(string bundleName)
+ 
+        public static string BundleNameToASSET(string bundleName)
         {
             return UnformatBundleName(bundleName);
         }
+
         public static string GetShortName(string name)
         {
             return Path.GetFileNameWithoutExtension(name);
@@ -115,7 +107,7 @@ namespace JxUnity.Resources
         /// </summary>
         /// <param name="fullName"></param>
         /// <returns></returns>
-        public static string FullNameToAssetsFolderName(string fullName)
+        public static string FULLToASSET(string fullName)
         {
             if (fullName.Length == Application.dataPath.Length)
             {
@@ -124,19 +116,15 @@ namespace JxUnity.Resources
             return fullName.Substring(Application.dataPath.Length + 1).Replace('\\', '/');
         }
 
-        /// <summary>
-        /// FullName返回rootFullName
-        /// </summary>
-        /// <param name="fullName"></param>
-        /// <returns></returns>
-        public static string FullNameToRootName(string fullName)
+
+        public static string FULLToROOT(string full)
         {
-            string proj = GetRootPath();
-            if (proj == fullName)
+            string proj = GetPROJ();
+            if (proj == full)
             {
                 return string.Empty;
             }
-            return fullName.Substring(proj.Length + 1).Replace('\\', '/');
+            return full.Substring(proj.Length + 1).Replace('\\', '/');
         }
 
 
@@ -144,104 +132,9 @@ namespace JxUnity.Resources
         /// 获取项目文件夹路径
         /// </summary>
         /// <returns></returns>
-        public static string GetRootPath()
+        public static string GetPROJ()
         {
             return Application.dataPath.Substring(0, Application.dataPath.IndexOf("/Assets"));
-        }
-
-        /// <summary>
-        /// 返回一个root起始位置的文件夹名字列表
-        /// </summary>
-        /// <param name="rootFullname"></param>
-        /// <returns></returns>
-        public static List<string> GetAllSubFolders(string rootFullname)
-        {
-            List<string> list = new List<string>();
-            string fullName = GetRootPath() + "/" + rootFullname;
-            GetAllSubFolders(fullName, list);
-            List<string> ret = new List<string>();
-            foreach (var item in list)
-            {
-                string fulName = FullNameToRootName(item);
-                if (fullName != string.Empty)
-                {
-                    ret.Add(fulName);
-                }
-            }
-            return ret;
-        }
-        /// <summary>
-        /// 返回一个root起始位置的资源名字列表
-        /// </summary>
-        /// <param name="rootFullname"></param>
-        /// <returns></returns>
-        public static List<string> GetAllSubAssets(string rootFullname)
-        {
-            List<string> list = new List<string>();
-            string fullName = GetRootPath() + "/" + rootFullname;
-            GetAllSubFiles(fullName, list, ResourceExts);
-            List<string> ret = new List<string>();
-            foreach (var item in list)
-            {
-                ret.Add(FullNameToRootName(item));
-            }
-            return ret;
-        }
-        /// <summary>
-        /// 获取所有正在使用的AB包名
-        /// </summary>
-        /// <returns></returns>
-        public static List<string> GetUsedAssetBundleNames()
-        {
-            var allNames = AssetDatabase.GetAllAssetBundleNames();
-            var unusedNames = AssetDatabase.GetUnusedAssetBundleNames();
-
-            List<string> ret = new List<string>(allNames.Length);
-
-            foreach (string item in allNames)
-            {
-                if (Array.IndexOf(unusedNames, item) == -1)
-                {
-                    ret.Add(item);
-                }
-            }
-            return ret;
-        }
-
-        private static readonly string[] ResourceExts = {".prefab", ".fbx", ".obj",
-                             ".png", ".jpg", ".dds", ".gif", ".psd", ".tga", ".bmp", ".tif",
-                             ".txt", ".bytes", ".xml", ".csv", ".json",
-                            ".controller", ".shader", ".anim", ".unity", ".mat",
-                            ".wav", ".mp3", ".ogg",
-                            ".mp4", ".mov", ".mpg", ".mpeg", ".avi", ".asf",
-                            ".ttf",
-                             ".shadervariants", ".asset"};
-
-        private static void GetAllSubFolders(string root, List<string> outList)
-        {
-            DirectoryInfo info = new DirectoryInfo(root);
-            outList.Add(info.FullName);
-            foreach (var item in info.GetDirectories())
-            {
-                GetAllSubFolders(item.FullName, outList);
-            }
-        }
-
-        private static void GetAllSubFiles(string root, List<string> outList, string[] filter)
-        {
-            DirectoryInfo dirInfo = new DirectoryInfo(root);
-            foreach (var fileInfo in dirInfo.GetFiles())
-            {
-                if (Array.IndexOf(filter, Path.GetExtension(fileInfo.Name)) != -1)
-                {
-                    outList.Add(fileInfo.FullName);
-                }
-            }
-            foreach (var _dirInfo in dirInfo.GetDirectories())
-            {
-                GetAllSubFiles(_dirInfo.FullName, outList, filter);
-            }
-
         }
 
 #endif

@@ -11,14 +11,14 @@ namespace JxUnity.Resources
     {
         private AssetBundleManifest manifest = null;
 
-        private AssetRuntimeMapping assetMapping = null;
+        private AssetBundleMapping assetMapping = null;
 
         private Dictionary<string, AssetBundle> assetbundleCaching = null;
 
         private Dictionary<string, UObject> assetCaching = null;
 
         //加载依赖表和资源映射表
-        public void Initialize()
+        private void Initialize()
         {
             AssetBundle manifestBundle = AssetBundle.LoadFromFile(AssetConfig.LoadManifestBundle);
             this.manifest = manifestBundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
@@ -27,14 +27,19 @@ namespace JxUnity.Resources
             var mappingFile = AssetNameUtility.FormatBundleName(AssetConfig.LoadMappingFile);
             AssetBundle mappingBundle = AssetBundle.LoadFromFile(mappingFile);
 
-            string mapping = mappingBundle.LoadAsset<TextAsset>(AssetConfig.LoadMappingAssetName).text;
-            this.assetMapping = new AssetRuntimeMapping(mapping);
+            string mapping = mappingBundle.LoadAsset<TextAsset>(AssetConfig.MapName).text;
+            this.assetMapping = new AssetBundleMapping(mapping);
             mappingBundle.Unload(true);
 
             this.assetbundleCaching = new Dictionary<string, AssetBundle>();
             this.assetCaching = new Dictionary<string, UObject>();
         }
 
+        protected override void Awake()
+        {
+            base.Awake();
+            this.Initialize();
+        }
 
         #region AssetBundle
         public bool IsLoadedBundle(string bundleName)

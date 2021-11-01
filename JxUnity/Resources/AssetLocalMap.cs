@@ -6,7 +6,10 @@ using System.IO;
 
 namespace JxUnity.Resources
 {
-    public class AssetMapObject : ScriptableObject
+    /// <summary>
+    /// 仅在加载模式为本地加载模式时使用
+    /// </summary>
+    public class AssetLocalMap : ScriptableObject
     {
         [Serializable]
         public class AssetSet
