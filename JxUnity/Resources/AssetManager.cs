@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Reflection;
 
 using UnityEngine;
+using JxUnity.Resources.Private;
 
 namespace JxUnity.Resources
 {
@@ -16,38 +17,13 @@ namespace JxUnity.Resources
 
     public static class AssetManager
     {
-        public static AssetLoadMode AssetLoadMode { get; private set; }
+        /// <summary>
+        /// get loadmode in runtime
+        /// </summary>
+        public static AssetLoadMode AssetLoadMode { get; internal set; }
 
-        private static Func<string, Type, UnityEngine.Object> LoadAssetAtPath;
-        private static bool IsModeEnabled;
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void StaticAwake()
-        {
-            if (Application.isEditor)
-            {
-                var editor = Assembly.Load("UnityEditor");
-                var db = editor.GetType("UnityEditor.AssetDatabase");
-                var load = db.GetMethod("LoadAssetAtPath", new Type[] { typeof(string), typeof(Type) });
-                LoadAssetAtPath = (Func<string, Type, UnityEngine.Object>)load.CreateDelegate(typeof(Func<string, Type, UnityEngine.Object>));
-
-                var assetEditor = Assembly.Load("JxUnity.Resources.Editor");
-                var assetType = assetEditor.GetType("ResourceBuilder");
-                var assetProp = assetType.GetProperty("IsEditorSimulator", BindingFlags.Public | BindingFlags.Static);
-                IsModeEnabled = (bool)assetProp.GetValue(null);
-            }
-            else
-            {
-                LoadAssetAtPath = null;
-                IsModeEnabled = true;
-            }
-
-            var set = UnityEngine.Resources.Load<ResourcePackageSettings>("ResourcePackageSettings");
-            if (set != null)
-            {
-                AssetLoadMode = set.DefaultLoadMode;
-            }
-        }
+        internal static Func<string, Type, UnityEngine.Object> LoadAssetAtPath;
+        internal static bool IsModeEnabled;
 
         private static AssetBundleMapping assetMapping;
         private static UnityEngine.Object GetLocalMapItem(string path, Type type)

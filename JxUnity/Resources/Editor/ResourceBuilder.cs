@@ -6,6 +6,7 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 using JxUnity.Resources;
+using JxUnity.Resources.Private;
 
 public class ResourceBuilder : Editor
 {

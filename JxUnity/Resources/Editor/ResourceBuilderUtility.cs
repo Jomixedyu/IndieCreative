@@ -3,10 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
+using JxUnity.Resources.Private;
 
 public static class ResourceBuilderUtility
 {
-
     #region base IO
 
     private static readonly string[] ResourceExts = {".prefab", ".fbx", ".obj",

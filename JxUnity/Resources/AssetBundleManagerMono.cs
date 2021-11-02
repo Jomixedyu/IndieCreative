@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 using UObject = UnityEngine.Object;
 using System.Collections;
+using JxUnity.Resources.Private;
+using System.IO;
 
 namespace JxUnity.Resources
 {
@@ -33,9 +35,13 @@ namespace JxUnity.Resources
         private Dictionary<string, UObject> assetCaching = null;
 
         //加载依赖表和资源映射表
-        private void Awake()
+        internal void Initialize()
         {
-            AssetBundle manifestBundle = AssetBundle.LoadFromFile(AssetConfig.LoadManifestBundle);
+            string manifestFilename = string.Format("{0}/{1}", 
+                AssetConfig.LoadBundleRootPath, 
+                Path.GetFileName(AssetConfig.LoadBundleRootPath));
+
+            AssetBundle manifestBundle = AssetBundle.LoadFromFile(manifestFilename);
             this.manifest = manifestBundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
             manifestBundle.Unload(false);
 
@@ -123,11 +129,11 @@ namespace JxUnity.Resources
             this.assetCaching.Add(path, req.asset);
             cb?.Invoke(req.asset);
         }
-        public bool IsLoadedAsset(string path)
+        internal bool IsLoadedAsset(string path)
         {
             return this.assetCaching.ContainsKey(path);
         }
-        public void AddAssetCache(string path, UObject asset)
+        internal void AddAssetCache(string path, UObject asset)
         {
             if (this.IsLoadedAsset(path))
             {
@@ -135,12 +141,13 @@ namespace JxUnity.Resources
             }
             this.assetCaching.Add(path, asset);
         }
-        public UObject GetAssetCache(string path)
+        internal UObject GetAssetCache(string path)
         {
             UObject obj = null;
             this.assetCaching.TryGetValue(path, out obj);
             return obj;
         }
+
 
         public UObject LoadAsset(string path, Type type)
         {

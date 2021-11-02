@@ -1,5 +1,6 @@
 ﻿
 using JxUnity.Resources;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -17,66 +18,104 @@ public class ResourcePackageBuilderWindow : EditorWindow
         win.Show();
     }
 
+    private string outputFolder;
     private string outputPath;
 
+    private BuildTarget buildTarget;
     private bool isClearTargetFolder;
 
-    private bool platformAndroid;
-    private bool platformIOS;
-    private bool platformWindows = true;
-    private bool platformWindows64;
-    private bool platformOSX;
-    private bool platformLinux;
+    private Dictionary<BuildTarget, string> targetNames;
 
-    private bool PlatformAndroid { get => platformAndroid; set { if (value) RefreshPlatform(); platformAndroid = value; } }
-    private bool PlatformIOS { get => platformIOS; set { if (value) RefreshPlatform(); platformIOS = value; } }
-    private bool PlatformWindows { get => platformWindows; set { if (value) RefreshPlatform(); platformWindows = value; } }
-    private bool PlatformWindows64 { get => platformWindows64; set { if (value) RefreshPlatform(); platformWindows64 = value; } }
-    private bool PlatformOSX { get => platformOSX; set { if (value) RefreshPlatform(); platformOSX = value; } }
-    private bool PlatformLinux { get => platformLinux; set { if (value) RefreshPlatform(); platformLinux = value; } }
-    private void RefreshPlatform()
+    private bool buildPass;
+
+    private void OnEnable()
     {
-        platformAndroid = false;
-        platformIOS = false;
-        platformWindows = false;
-        platformWindows64 = false;
-        platformOSX = false;
-        platformLinux = false;
+        targetNames = new Dictionary<BuildTarget, string>()
+        {
+            [BuildTarget.StandaloneWindows] = "win",
+            [BuildTarget.StandaloneWindows64] = "win",
+            [BuildTarget.StandaloneLinux64] = "linux",
+            [BuildTarget.StandaloneOSX] = "osx",
+            [BuildTarget.Android] = "android",
+            [BuildTarget.iOS] = "ios",
+        };
+
+        var platform = Application.platform;
+
+        if (platform == RuntimePlatform.WindowsEditor)
+        {
+            this.buildTarget = BuildTarget.StandaloneWindows;
+        }
+        else if (platform == RuntimePlatform.LinuxEditor)
+        {
+            this.buildTarget = BuildTarget.StandaloneLinux64;
+        }
+        else if (platform == RuntimePlatform.OSXEditor)
+        {
+            this.buildTarget = BuildTarget.StandaloneOSX;
+        }
     }
 
     private void OnGUI()
     {
+        this.buildPass = true;
+
         GUILayout.Label("output path");
-        this.outputPath = GUILayout.TextField(this.outputPath);
+        this.outputFolder = GUILayout.TextField(this.outputFolder);
+
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button("StreamingAssets/BuildResPck"))
-        {
-            this.outputPath = Application.streamingAssetsPath + "/BuildResPck";
-        }
-        if (GUILayout.Button("root/BuildResPck"))
-        {
-            this.outputPath = AssetNameUtility.GetPROJ() + "/BuildResPck";
-        }
+        if (GUILayout.Button("StreamingAssets"))
+            this.outputFolder = Application.streamingAssetsPath;
+
+        if (GUILayout.Button("%project%"))
+            this.outputFolder = AssetNameUtility.GetPROJ();
         GUILayout.EndHorizontal();
-        GUILayout.Space(20);
-        GUILayout.Label("build target");
-
-        this.PlatformAndroid = GUILayout.Toggle(this.PlatformAndroid, "Android");
-        this.PlatformIOS = GUILayout.Toggle(this.PlatformIOS, "iOS");
-        this.PlatformWindows = GUILayout.Toggle(this.PlatformWindows, "Windows");
-        this.PlatformWindows64 = GUILayout.Toggle(this.PlatformWindows64, "Windows64");
-        this.PlatformOSX = GUILayout.Toggle(this.PlatformOSX, "OSX(intel 64)");
-        this.PlatformLinux = GUILayout.Toggle(this.PlatformLinux, "Linux64");
 
         GUILayout.Space(20);
+
+        this.buildTarget = (BuildTarget)EditorGUILayout.EnumPopup("BuildTarget", this.buildTarget);
+
+        GUILayout.Space(5);
+
+        string targetName;
+        targetNames.TryGetValue(this.buildTarget, out targetName);
+
+        this.outputPath = null;
+        if (targetName != null)
+        {
+            if (!string.IsNullOrWhiteSpace(this.outputFolder))
+            {
+                this.outputPath = this.outputFolder + "/ResPck_" + targetName;
+                GUILayout.Label(this.outputPath);
+            }
+            else
+            {
+                GUILayout.Label("ERROR: input output path");
+                this.buildPass = false;
+            }
+        }
+        else
+        {
+            GUILayout.Label("ERROR: build target not supported");
+            this.buildPass = false;
+        }
+
+        GUILayout.Space(20);
+
         this.isClearTargetFolder = GUILayout.Toggle(this.isClearTargetFolder, "clear target folder");
 
-        if (GUILayout.Button("Build")) this.Build_Click();
+        GUILayout.Space(20);
+
+        EditorGUI.BeginDisabledGroup(!this.buildPass);
+        if (GUILayout.Button("Build"))
+        {
+            this.Build_Click();
+        }
+        EditorGUI.EndDisabledGroup();
     }
 
     private void Build_Click()
     {
-
         string path = this.outputPath;
 
         //文件夹存在并且不为空
@@ -97,26 +136,6 @@ public class ResourcePackageBuilderWindow : EditorWindow
         if (!Directory.Exists(path))
         {
             Directory.CreateDirectory(path);
-        }
-
-        BuildTarget buildTarget = BuildTarget.NoTarget;
-        if (this.platformWindows)
-            buildTarget = BuildTarget.StandaloneWindows;
-        else if (this.platformWindows64)
-            buildTarget = BuildTarget.StandaloneWindows64;
-        else if (this.platformAndroid)
-            buildTarget = BuildTarget.Android;
-        else if (this.platformIOS)
-            buildTarget = BuildTarget.iOS;
-        else if (this.platformOSX)
-            buildTarget = BuildTarget.StandaloneOSX;
-        else if (this.platformLinux)
-            buildTarget = BuildTarget.StandaloneLinux64;
-
-        if (buildTarget == BuildTarget.NoTarget)
-        {
-            EditorUtility.DisplayDialog("error", "no build target!", "ok");
-            return;
         }
 
         BuildPipeline.BuildAssetBundles(path, BuildAssetBundleOptions.None, buildTarget);

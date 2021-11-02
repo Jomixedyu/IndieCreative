@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using JxUnity.Resources.Private;
 
 namespace JxUnity.Resources
 {
