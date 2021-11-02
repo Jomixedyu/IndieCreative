@@ -254,6 +254,12 @@ public class ResourceBuilder : Editor
         IsEditorSimulator = false;
         Debug.Log("Disable Editor Simulator!");
     }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void StaticInit()
+    {
+        Debug.Log($"[JxUnity.Resources] LoadMode: {AssetSettingsProvider.GetDefaultLoadMode()}, IsSimulator: {IsEditorSimulator}");
+    }
 }
 
 public static class AssetSettingsProviderExt
