@@ -17,7 +17,6 @@ public class ResourcePackageBuilderWindow : EditorWindow
         win.Show();
     }
 
-    private bool isCopyToStreamingAssets;
     private string outputPath;
 
     private bool isClearTargetFolder;
@@ -50,13 +49,13 @@ public class ResourcePackageBuilderWindow : EditorWindow
         GUILayout.Label("output path");
         this.outputPath = GUILayout.TextField(this.outputPath);
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button("StreamingAssets/ResourcePackage"))
+        if (GUILayout.Button("StreamingAssets/BuildResPck"))
         {
-            this.outputPath = Application.streamingAssetsPath + "/ResourcePackage";
+            this.outputPath = Application.streamingAssetsPath + "/BuildResPck";
         }
-        if (GUILayout.Button("root/ResourcePackage"))
+        if (GUILayout.Button("root/BuildResPck"))
         {
-            this.outputPath = AssetNameUtility.GetPROJ() + "/ResourcePackage";
+            this.outputPath = AssetNameUtility.GetPROJ() + "/BuildResPck";
         }
         GUILayout.EndHorizontal();
         GUILayout.Space(20);

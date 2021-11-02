@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 namespace JxUnity.Resources
@@ -19,42 +18,5 @@ namespace JxUnity.Resources
         public const string MapFilename = "respck_info.bytes";
         public const string MapName = "respck_info";
 
-#if UNITY_EDITOR
-        public static bool IsEditorSimulator
-        {
-            get
-            {
-                return EditorPrefs.GetBool("AssetManager.IsEditorSimulator", false);
-            }
-            set
-            {
-                EditorPrefs.SetBool("AssetManager.IsEditorSimulator", value);
-            }
-        }
-
-        [MenuItem("ResourcePackage/LoadMode/Enable Editor Simulator", validate = true)]
-        public static bool EnableEditorSimulator_Validate()
-        {
-            return !IsEditorSimulator;
-        }
-        [MenuItem("ResourcePackage/LoadMode/Disable Editor Simulator", validate = true)]
-        public static bool DisableEditorSimulator_Validate()
-        {
-            return IsEditorSimulator;
-        }
-
-        [MenuItem("ResourcePackage/LoadMode/Enable Editor Simulator")]
-        public static void EnableEditorSimulator()
-        {
-            IsEditorSimulator = true;
-            Debug.Log("Enable Editor Simulator!");
-        }
-        [MenuItem("ResourcePackage/LoadMode/Disable Editor Simulator")]
-        public static void DisableEditorSimulator()
-        {
-            IsEditorSimulator = false;
-            Debug.Log("Disable Editor Simulator!");
-        }
-#endif
     }
 }

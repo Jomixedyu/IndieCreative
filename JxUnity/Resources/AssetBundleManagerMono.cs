@@ -7,8 +7,23 @@ using System.Collections;
 
 namespace JxUnity.Resources
 {
-    internal class AssetBundleManagerMono : MonoSingleton<AssetBundleManagerMono>
+    internal class AssetBundleManagerMono : MonoBehaviour
     {
+        private static AssetBundleManagerMono instance;
+        internal static AssetBundleManagerMono Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    var go = new GameObject($"__m_{nameof(AssetBundleManagerMono)}");
+                    DontDestroyOnLoad(go);
+                    instance = go.AddComponent<AssetBundleManagerMono>();
+                }
+                return instance;
+            }
+        }
+
         private AssetBundleManifest manifest = null;
 
         private AssetBundleMapping assetMapping = null;
@@ -18,7 +33,7 @@ namespace JxUnity.Resources
         private Dictionary<string, UObject> assetCaching = null;
 
         //加载依赖表和资源映射表
-        private void Initialize()
+        private void Awake()
         {
             AssetBundle manifestBundle = AssetBundle.LoadFromFile(AssetConfig.LoadManifestBundle);
             this.manifest = manifestBundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
@@ -33,12 +48,6 @@ namespace JxUnity.Resources
 
             this.assetbundleCaching = new Dictionary<string, AssetBundle>();
             this.assetCaching = new Dictionary<string, UObject>();
-        }
-
-        protected override void Awake()
-        {
-            base.Awake();
-            this.Initialize();
         }
 
         #region AssetBundle

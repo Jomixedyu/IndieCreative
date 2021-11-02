@@ -57,10 +57,6 @@ namespace JxUnity.Resources
         /// <returns></returns>
         public static string GetBundleNameWithoutVariant(string bundleName)
         {
-            if (AssetConfig.Variant == null)
-            {
-                return bundleName;
-            }
             string ext = "." + AssetConfig.Variant;
             if (bundleName.EndsWith(ext))
             {

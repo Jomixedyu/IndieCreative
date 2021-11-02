@@ -98,10 +98,7 @@ public class ResourceBuilder : Editor
         //    Debug.Log(item);
 
         //}
-        Debug.Log
-            (
-            AssetNameUtility.UnformatBundleName("Resour/abc.pck")
-            );
+
     }
 
     /// <summary>
@@ -149,7 +146,7 @@ public class ResourceBuilder : Editor
     [MenuItem("ResourcePackage/Generate Local ResObjects", false, 205)]
     private static void GenerateResObjects()
     {
-        if (AssetManager.AssetLoadMode != AssetLoadMode.Local)
+        if (AssetSettingsProvider.GetDefaultLoadMode() != AssetLoadMode.Local)
         {
             Debug.Log("LoadMode is not Local");
             return;
@@ -197,4 +194,126 @@ public class ResourceBuilder : Editor
         ResourcePackageBuilderWindow.ShowWindow();
     }
 
+
+    [MenuItem("ResourcePackage/Load Mode/Local", true)]
+    public static bool LoadModeLocalValid()
+    {
+        return AssetSettingsProvider.GetDefaultLoadMode() != AssetLoadMode.Local;
+    }
+    [MenuItem("ResourcePackage/Load Mode/Package", true)]
+    public static bool LoadModePackageValid()
+    {
+        return AssetSettingsProvider.GetDefaultLoadMode() != AssetLoadMode.Package;
+    }
+
+    [MenuItem("ResourcePackage/Load Mode/Local")]
+    public static void LoadModeLocal()
+    {
+        AssetSettingsProvider.SetDefaultLoadMode(AssetLoadMode.Local);
+        Debug.Log("Resources Load Mode: Local");
+    }
+    [MenuItem("ResourcePackage/Load Mode/Package")]
+    public static void LoadModePackage()
+    {
+        AssetSettingsProvider.SetDefaultLoadMode(AssetLoadMode.Package);
+        Debug.Log("Resources Load Mode: Package");
+    }
+
+    public static bool IsEditorSimulator
+    {
+        get
+        {
+            return EditorPrefs.GetBool("AssetManager.IsEditorSimulator", false);
+        }
+        set
+        {
+            EditorPrefs.SetBool("AssetManager.IsEditorSimulator", value);
+        }
+    }
+
+    [MenuItem("ResourcePackage/Simulator/Enable Editor Simulator", validate = true)]
+    public static bool EnableEditorSimulator_Validate()
+    {
+        return !IsEditorSimulator;
+    }
+    [MenuItem("ResourcePackage/Simulator/Disable Editor Simulator", validate = true)]
+    public static bool DisableEditorSimulator_Validate()
+    {
+        return IsEditorSimulator;
+    }
+
+    [MenuItem("ResourcePackage/Simulator/Enable Editor Simulator")]
+    public static void EnableEditorSimulator()
+    {
+        IsEditorSimulator = true;
+        Debug.Log("Enable Editor Simulator!");
+    }
+    [MenuItem("ResourcePackage/Simulator/Disable Editor Simulator")]
+    public static void DisableEditorSimulator()
+    {
+        IsEditorSimulator = false;
+        Debug.Log("Disable Editor Simulator!");
+    }
+}
+
+public static class AssetSettingsProviderExt
+{
+    [SettingsProvider]
+    public static SettingsProvider Get()
+    {
+        return new AssetSettingsProvider();
+    }
+}
+
+public class AssetSettingsProvider : SettingsProvider
+{
+    private SerializedObject serobj;
+    private const string ConfigPath = "Assets/Resources/ResourcePackageSettings.asset";
+
+    private SerializedProperty ser_Mode;
+
+    public AssetSettingsProvider()
+        : base("Project/Resource Package", SettingsScope.Project, null)
+    {
+    }
+    public override void OnGUI(string searchContext)
+    {
+        base.OnGUI(searchContext);
+        EditorGUILayout.PropertyField(this.ser_Mode);
+        this.serobj.ApplyModifiedProperties();
+    }
+
+    public override void OnActivate(string searchContext, UnityEngine.UIElements.VisualElement rootElement)
+    {
+        base.OnActivate(searchContext, rootElement);
+        var assetObj = AssetDatabase.LoadAssetAtPath<ResourcePackageSettings>(ConfigPath);
+        if (assetObj == null)
+        {
+            assetObj = ScriptableObject.CreateInstance<ResourcePackageSettings>();
+            AssetDatabase.CreateAsset(assetObj, ConfigPath);
+            AssetDatabase.Refresh();
+        }
+
+        this.serobj = new SerializedObject(assetObj);
+
+        this.ser_Mode = this.serobj.FindProperty("DefaultLoadMode");
+    }
+
+    public static AssetLoadMode GetDefaultLoadMode()
+    {
+        var set = AssetDatabase.LoadAssetAtPath<ResourcePackageSettings>(ConfigPath);
+        return set != null ? set.DefaultLoadMode : AssetLoadMode.Local;
+    }
+    public static void SetDefaultLoadMode(AssetLoadMode mode)
+    {
+        var set = AssetDatabase.LoadAssetAtPath<ResourcePackageSettings>(ConfigPath);
+        if (set == null)
+        {
+            set = ScriptableObject.CreateInstance<ResourcePackageSettings>();
+            AssetDatabase.CreateAsset(set, ConfigPath);
+            AssetDatabase.Refresh();
+        }
+        set.DefaultLoadMode = mode;
+        AssetDatabase.SaveAssets();
+    }
 }

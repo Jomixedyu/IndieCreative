@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Reflection;
 
 using UnityEngine;
-using System.Runtime.CompilerServices;
-
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace JxUnity.Resources
 {
@@ -19,7 +16,38 @@ namespace JxUnity.Resources
 
     public static class AssetManager
     {
-        public static AssetLoadMode AssetLoadMode { get; set; } = AssetLoadMode.Local;
+        public static AssetLoadMode AssetLoadMode { get; private set; }
+
+        private static Func<string, Type, UnityEngine.Object> LoadAssetAtPath;
+        private static bool IsModeEnabled;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void StaticAwake()
+        {
+            if (Application.isEditor)
+            {
+                var editor = Assembly.Load("UnityEditor");
+                var db = editor.GetType("UnityEditor.AssetDatabase");
+                var load = db.GetMethod("LoadAssetAtPath", new Type[] { typeof(string), typeof(Type) });
+                LoadAssetAtPath = (Func<string, Type, UnityEngine.Object>)load.CreateDelegate(typeof(Func<string, Type, UnityEngine.Object>));
+
+                var assetEditor = Assembly.Load("JxUnity.Resources.Editor");
+                var assetType = assetEditor.GetType("ResourceBuilder");
+                var assetProp = assetType.GetProperty("IsEditorSimulator", BindingFlags.Public | BindingFlags.Static);
+                IsModeEnabled = (bool)assetProp.GetValue(null);
+            }
+            else
+            {
+                LoadAssetAtPath = null;
+                IsModeEnabled = true;
+            }
+
+            var set = UnityEngine.Resources.Load<ResourcePackageSettings>("ResourcePackageSettings");
+            if (set != null)
+            {
+                AssetLoadMode = set.DefaultLoadMode;
+            }
+        }
 
         private static AssetBundleMapping assetMapping;
         private static UnityEngine.Object GetLocalMapItem(string path, Type type)
@@ -51,31 +79,18 @@ namespace JxUnity.Resources
         public static object Load(string path, Type type)
         {
             if (string.IsNullOrEmpty(path)) return null;
+            if (!IsModeEnabled)
+            {
+                return LoadAssetAtPath("Assets/" + path, type);
+            }
             switch (AssetLoadMode)
             {
                 //打包资源
                 case AssetLoadMode.Package:
-#if UNITY_EDITOR
-                    if (!AssetConfig.IsEditorSimulator)
-                        return AssetDatabase.LoadAssetAtPath("Assets/" + path, type);
-                    else
-                        return AssetBundleManagerMono.Instance.LoadAsset(path, type);
-#else
-                return AssetBundleManagerMono.Instance.LoadAsset(path, type);
-#endif
+                    return AssetBundleManagerMono.Instance.LoadAsset(path, type);
+
                 case AssetLoadMode.Local:
-#if UNITY_EDITOR
-                    if (!AssetConfig.IsEditorSimulator)
-                    {
-                        return AssetDatabase.LoadAssetAtPath("Assets/" + path, type);
-                    }
-                    else
-                    {
-                        return GetLocalMapItem(path, type);
-                    }
-#else
-                return GetRuntimeMappingItem(path, type);
-#endif
+                    return GetLocalMapItem(path, type);
             }
             return null;
         }
@@ -101,38 +116,24 @@ namespace JxUnity.Resources
 
         public static void LoadAsync(string path, Type type, Action<UnityEngine.Object> cb)
         {
-            if (cb == null)
-            {
-                return;
-            }
             if (string.IsNullOrEmpty(path))
             {
                 cb.Invoke(null);
                 return;
             }
-            path = path.Replace("\\", "/");
+            if (!IsModeEnabled)
+            {
+                cb.Invoke(LoadAssetAtPath("Assets/" + path, type));
+                return;
+            }
 
             switch (AssetLoadMode)
             {
                 case AssetLoadMode.Package:
-#if UNITY_EDITOR
-                    if (!AssetConfig.IsEditorSimulator)
-                        cb.Invoke(AssetDatabase.LoadAssetAtPath("Assets/" + path, type));
-                    else
-                        AssetBundleManagerMono.Instance.LoadAssetAsync(path, type, cb);
-#else
-                AssetBundleManagerMono.Instance.LoadAssetAsync(path, type, cb);
-#endif
+                    AssetBundleManagerMono.Instance.LoadAssetAsync(path, type, cb);
                     break;
                 case AssetLoadMode.Local:
-#if UNITY_EDITOR
-                    if (!AssetConfig.IsEditorSimulator)
-                        cb.Invoke(AssetDatabase.LoadAssetAtPath("Assets/" + path, type));
-                    else
-                        cb.Invoke(GetLocalMapItem(path, type));
-#else
-                cb.Invoke(GetRuntimeMappingItem(path, type));
-#endif
+                    cb.Invoke(GetLocalMapItem(path, type));
                     break;
             }
         }
