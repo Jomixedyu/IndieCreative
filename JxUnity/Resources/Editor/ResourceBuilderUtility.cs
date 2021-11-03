@@ -178,9 +178,9 @@ public static class ResourceBuilderUtility
     /// </summary>
     public static void RemoveAllNames()
     {
-        foreach (var item in GetUsedAssetBundleNames())
+        foreach (var item in AssetDatabase.GetAllAssetBundleNames())
         {
-            RemoveName(AssetNameUtility.BundleNameToROOT(item));
+            AssetDatabase.RemoveAssetBundleName(item, true);
         }
     }
 
