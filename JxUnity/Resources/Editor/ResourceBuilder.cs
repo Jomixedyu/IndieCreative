@@ -189,7 +189,7 @@ public class ResourceBuilder : Editor
     }
 
 
-    [MenuItem("ResourcePackage/Build ResourcePackage", false, 210)]
+    [MenuItem("ResourcePackage/Build Resource Package", false, 210)]
     public static void BuildResourcePackage()
     {
         ResourcePackageBuilderWindow.ShowWindow();
