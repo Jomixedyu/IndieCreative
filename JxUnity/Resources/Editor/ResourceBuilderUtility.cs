@@ -137,7 +137,10 @@ public static class ResourceBuilderUtility
     public static void SetName(string rootName, string abName, string variant)
     {
         AssetImporter assetImporter = AssetImporter.GetAtPath(rootName);
-        assetImporter.SetAssetBundleNameAndVariant(abName, variant);
+        if (assetImporter != null)
+        {
+            assetImporter.SetAssetBundleNameAndVariant(abName, variant);
+        }
     }
     /// <summary>
     /// 按路径和默认后缀设置ab包名字

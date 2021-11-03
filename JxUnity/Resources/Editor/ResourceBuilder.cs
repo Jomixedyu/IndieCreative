@@ -158,32 +158,41 @@ public class ResourceBuilder : Editor
 
         System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
         stopwatch.Start();
-
-        foreach (string abName in ResourceBuilderUtility.GetUsedAssetBundleNames())
+        try
         {
-            AssetLocalMap ser = ScriptableObject.CreateInstance<AssetLocalMap>();
-            foreach (string assetROOT in AssetDatabase.GetAssetPathsFromAssetBundle(abName))
+            AssetDatabase.StartAssetEditing();
+            foreach (string abName in ResourceBuilderUtility.GetUsedAssetBundleNames())
             {
-                var assetObjects = AssetDatabase.LoadAllAssetsAtPath(assetROOT);
-                foreach (UnityEngine.Object item in assetObjects)
+                AssetLocalMap ser = ScriptableObject.CreateInstance<AssetLocalMap>();
+                foreach (string assetROOT in AssetDatabase.GetAssetPathsFromAssetBundle(abName))
                 {
-                    ser.Add(item.name, item);
+                    var assetObjects = AssetDatabase.LoadAllAssetsAtPath(assetROOT);
+                    foreach (UnityEngine.Object item in assetObjects)
+                    {
+                        ser.Add(item.name, item);
+                    }
                 }
-            }
 
-            string assetsoPath = resdir + "/" + AssetNameUtility.UnformatBundleName(abName) + ".asset";
-            string assetsoDir = Path.GetDirectoryName(assetsoPath);
-            if (!Directory.Exists(assetsoDir))
-            {
-                Directory.CreateDirectory(assetsoDir);
-            }
+                string assetsoPath = resdir + "/" + AssetNameUtility.UnformatBundleName(abName) + ".asset";
+                string assetsoDir = Path.GetDirectoryName(assetsoPath);
+                if (!Directory.Exists(assetsoDir))
+                {
+                    Directory.CreateDirectory(assetsoDir);
+                }
 
-            AssetDatabase.CreateAsset(ser, assetsoPath);
+                AssetDatabase.CreateAsset(ser, assetsoPath);
+            }
+            AssetDatabase.Refresh();
         }
-
-        AssetDatabase.Refresh();
-
-        stopwatch.Stop();
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+        }
+        finally
+        {
+            stopwatch.Stop();
+            AssetDatabase.StopAssetEditing();
+        }
 
         Debug.Log("Local ResObjects Generated! ms: " + stopwatch.ElapsedMilliseconds.ToString());
     }
