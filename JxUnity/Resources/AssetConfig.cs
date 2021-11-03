@@ -66,7 +66,7 @@ namespace JxUnity.Resources.Private
 
                 if (AssetManager.AssetLoadMode == AssetLoadMode.Package)
                 {
-                    _ = AssetBundleManagerMono.Instance;
+                    _ = AssetPackageLoaderMono.Instance;
                 }
             }
 

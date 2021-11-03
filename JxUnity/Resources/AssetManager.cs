@@ -6,6 +6,7 @@ using System.Reflection;
 
 using UnityEngine;
 using JxUnity.Resources.Private;
+using System.Collections;
 
 namespace JxUnity.Resources
 {
@@ -13,6 +14,32 @@ namespace JxUnity.Resources
     {
         Local,
         Package,
+    }
+    internal class AssetLocalManager : MonoBehaviour
+    {
+        private static AssetLocalManager instance;
+        public static AssetLocalManager Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    var go = new GameObject($"__m_{nameof(AssetLocalManager)}");
+                    DontDestroyOnLoad(go);
+                    instance = go.AddComponent<AssetLocalManager>();
+                }
+                return instance;
+            }
+        }
+        private IEnumerator LoadAsyncCo(string path, Type type)
+        {
+            yield return UnityEngine.Resources.LoadAsync(path, type);
+
+        }
+        public void LoadAysnc(string path, Type type)
+        {
+            UnityEngine.Resources.LoadAsync(path, type);
+        }
     }
 
     public static class AssetManager
@@ -43,6 +70,8 @@ namespace JxUnity.Resources
             }
             string packagepath = AssetNameUtility.UnformatBundleName(item.assetPackageName);
             AssetLocalMap res = UnityEngine.Resources.Load<AssetLocalMap>($"{AssetConfig.LocalRoot}/{packagepath}");
+            var req = UnityEngine.Resources.LoadAsync<>();
+
             return res.Get(item.assetName, type);
         }
 
@@ -63,7 +92,7 @@ namespace JxUnity.Resources
             {
                 //打包资源
                 case AssetLoadMode.Package:
-                    return AssetBundleManagerMono.Instance.LoadAsset(path, type);
+                    return AssetPackageLoaderMono.Instance.LoadAsset(path, type);
 
                 case AssetLoadMode.Local:
                     return GetLocalMapItem(path, type);
@@ -106,7 +135,7 @@ namespace JxUnity.Resources
             switch (AssetLoadMode)
             {
                 case AssetLoadMode.Package:
-                    AssetBundleManagerMono.Instance.LoadAssetAsync(path, type, cb);
+                    AssetPackageLoaderMono.Instance.LoadAssetAsync(path, type, cb);
                     break;
                 case AssetLoadMode.Local:
                     cb.Invoke(GetLocalMapItem(path, type));

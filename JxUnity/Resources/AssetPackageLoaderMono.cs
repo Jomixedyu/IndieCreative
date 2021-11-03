@@ -9,18 +9,18 @@ using System.IO;
 
 namespace JxUnity.Resources
 {
-    internal class AssetBundleManagerMono : MonoBehaviour
+    internal class AssetPackageLoaderMono : MonoBehaviour
     {
-        private static AssetBundleManagerMono instance;
-        internal static AssetBundleManagerMono Instance
+        private static AssetPackageLoaderMono instance;
+        internal static AssetPackageLoaderMono Instance
         {
             get
             {
                 if (instance == null)
                 {
-                    var go = new GameObject($"__m_{nameof(AssetBundleManagerMono)}");
+                    var go = new GameObject($"__m_{nameof(AssetPackageLoaderMono)}");
                     DontDestroyOnLoad(go);
-                    instance = go.AddComponent<AssetBundleManagerMono>();
+                    instance = go.AddComponent<AssetPackageLoaderMono>();
                 }
                 return instance;
             }
@@ -165,6 +165,7 @@ namespace JxUnity.Resources
             else
             {
                 //TODO: 如果没有ab应该去加载ab，这里暂时直接取缓存
+                this.LoadAssetBundle(item.assetPackageName);
                 var ab = this.GetAssetBundleCache(item.assetPackageName);
                 UObject asset = ab.LoadAsset(item.assetName, type);
                 return asset;

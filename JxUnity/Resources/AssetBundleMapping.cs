@@ -34,8 +34,8 @@ namespace JxUnity.Resources
                     continue;
                 }
                 string[] relation = item.Trim().Split(':');
-                var assetPath = relation[0];
-                var assetName = relation[1];
+                var assetPath = relation[0].ToLower();
+                var assetName = relation[1].ToLower();
                 var abName = relation[2];
                 if (this.mappingTable.ContainsKey(assetPath))
                 {
