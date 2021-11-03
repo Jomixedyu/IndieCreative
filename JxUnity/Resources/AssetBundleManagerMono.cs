@@ -35,7 +35,7 @@ namespace JxUnity.Resources
         private Dictionary<string, UObject> assetCaching = null;
 
         //加载依赖表和资源映射表
-        internal void Initialize()
+        private void Awake()
         {
             string manifestFilename = string.Format("{0}/{1}", 
                 AssetConfig.LoadBundleRootPath, 
@@ -155,7 +155,7 @@ namespace JxUnity.Resources
             var item = this.assetMapping.Mapping(path);
             if (item == null)
             {
-                throw new ArgumentException("asset not found");
+                return null;
             }
 
             if (this.IsLoadedAsset(path))

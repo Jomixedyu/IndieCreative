@@ -27,7 +27,8 @@ public static class AssetSettingsProvider
             AssetDatabase.Refresh();
         }
         set.DefaultLoadMode = mode;
-        AssetDatabase.SaveAssets();
+        EditorUtility.SetDirty(set);
+        //AssetDatabase.SaveAssets();
     }
 
 
