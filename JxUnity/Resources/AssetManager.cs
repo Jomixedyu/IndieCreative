@@ -15,32 +15,6 @@ namespace JxUnity.Resources
         Local,
         Package,
     }
-    internal class AssetLocalManager : MonoBehaviour
-    {
-        private static AssetLocalManager instance;
-        public static AssetLocalManager Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    var go = new GameObject($"__m_{nameof(AssetLocalManager)}");
-                    DontDestroyOnLoad(go);
-                    instance = go.AddComponent<AssetLocalManager>();
-                }
-                return instance;
-            }
-        }
-        private IEnumerator LoadAsyncCo(string path, Type type)
-        {
-            yield return UnityEngine.Resources.LoadAsync(path, type);
-
-        }
-        public void LoadAysnc(string path, Type type)
-        {
-            UnityEngine.Resources.LoadAsync(path, type);
-        }
-    }
 
     public static class AssetManager
     {
@@ -51,29 +25,6 @@ namespace JxUnity.Resources
 
         internal static Func<string, Type, UnityEngine.Object> LoadAssetAtPath;
         internal static bool IsModeEnabled;
-
-        private static AssetBundleMapping assetMapping;
-        private static UnityEngine.Object GetLocalMapItem(string path, Type type)
-        {
-            if (assetMapping == null)
-            {
-                string filename = $"{AssetConfig.LocalRoot}/{AssetConfig.ResourceFolderName.ToLower()}/{AssetConfig.MapFilename}";
-                var runtimeMapping = UnityEngine.Resources.Load<AssetLocalMap>(filename);
-
-                TextAsset x = (TextAsset)runtimeMapping.Get(AssetConfig.MapName, typeof(TextAsset));
-                assetMapping = new AssetBundleMapping(x.text);
-            }
-            AssetBundleMapping.MappingItem item = assetMapping.Mapping(path);
-            if (item == null)
-            {
-                return null;
-            }
-            string packagepath = AssetNameUtility.UnformatBundleName(item.assetPackageName);
-            AssetLocalMap res = UnityEngine.Resources.Load<AssetLocalMap>($"{AssetConfig.LocalRoot}/{packagepath}");
-            var req = UnityEngine.Resources.LoadAsync<>();
-
-            return res.Get(item.assetName, type);
-        }
 
         /// <summary>
         /// 同步模式加载资源
@@ -95,7 +46,9 @@ namespace JxUnity.Resources
                     return AssetPackageLoaderMono.Instance.LoadAsset(path, type);
 
                 case AssetLoadMode.Local:
-                    return GetLocalMapItem(path, type);
+                    return AssetLocalLoaderMono.Instance.Load(path, type);
+                default:
+                    break;
             }
             return null;
         }
@@ -105,19 +58,6 @@ namespace JxUnity.Resources
         {
             return Load(path, typeof(T)) as T;
         }
-
-        //public static Dictionary<ResourceRequest, Action<UnityEngine.Object>> assetsAsyncDict
-        //    = new Dictionary<ResourceRequest, Action<UnityEngine.Object>>();
-
-        //private static void _AddAsyncItem(ResourceRequest req, Action<UnityEngine.Object> act)
-        //{
-        //    assetsAsyncDict.Add(req, new Action<UnityEngine.Object>((asset) => { act(asset); }));
-        //}
-        //private static void _AssetsAsyncCallBack(ResourceRequest id)
-        //{
-        //    assetsAsyncDict[id].Invoke(id.asset);
-        //    assetsAsyncDict.Remove(id);
-        //}
 
         public static void LoadAsync(string path, Type type, Action<UnityEngine.Object> cb)
         {
@@ -138,7 +78,7 @@ namespace JxUnity.Resources
                     AssetPackageLoaderMono.Instance.LoadAssetAsync(path, type, cb);
                     break;
                 case AssetLoadMode.Local:
-                    cb.Invoke(GetLocalMapItem(path, type));
+                    AssetLocalLoaderMono.Instance.LoadAsync(path, type, cb);
                     break;
             }
         }

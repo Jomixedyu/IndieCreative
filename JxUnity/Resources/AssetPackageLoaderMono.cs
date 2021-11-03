@@ -9,10 +9,10 @@ using System.IO;
 
 namespace JxUnity.Resources
 {
-    internal class AssetPackageLoaderMono : MonoBehaviour
+    internal sealed class AssetPackageLoaderMono : MonoBehaviour
     {
         private static AssetPackageLoaderMono instance;
-        internal static AssetPackageLoaderMono Instance
+        public static AssetPackageLoaderMono Instance
         {
             get
             {

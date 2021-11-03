@@ -48,7 +48,7 @@ namespace JxUnity.Resources
         public MappingItem Mapping(string assetPath)
         {
             MappingItem item = null;
-            if (this.mappingTable.TryGetValue(assetPath, out item))
+            if (this.mappingTable.TryGetValue(assetPath.ToLower(), out item))
             {
                 return item;
             }
