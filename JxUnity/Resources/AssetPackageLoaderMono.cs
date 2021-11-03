@@ -37,8 +37,8 @@ namespace JxUnity.Resources
         //加载依赖表和资源映射表
         private void Awake()
         {
-            string manifestFilename = string.Format("{0}/{1}", 
-                AssetConfig.LoadBundleRootPath, 
+            string manifestFilename = string.Format("{0}/{1}",
+                AssetConfig.LoadBundleRootPath,
                 Path.GetFileName(AssetConfig.LoadBundleRootPath));
 
             AssetBundle manifestBundle = AssetBundle.LoadFromFile(manifestFilename);

@@ -1,12 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Runtime.CompilerServices;
-using System.Reflection;
-
-using UnityEngine;
-using JxUnity.Resources.Private;
-using System.Collections;
 
 namespace JxUnity.Resources
 {

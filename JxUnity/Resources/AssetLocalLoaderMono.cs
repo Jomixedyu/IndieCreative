@@ -1,11 +1,7 @@
 ﻿using JxUnity.Resources.Private;
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace JxUnity.Resources
@@ -28,18 +24,6 @@ namespace JxUnity.Resources
         }
 
         private AssetBundleMapping assetMapping;
-        private UnityEngine.Object GetLocalMapItem(string path, Type type)
-        {
-            AssetBundleMapping.MappingItem item = assetMapping.Mapping(path);
-            if (item == null)
-            {
-                return null;
-            }
-            string packagepath = AssetNameUtility.UnformatBundleName(item.assetPackageName);
-            AssetLocalMap res = UnityEngine.Resources.Load<AssetLocalMap>($"{AssetConfig.LocalRoot}/{packagepath}");
-
-            return res.Get(item.assetName, type);
-        }
 
         private void Awake()
         {
@@ -53,15 +37,40 @@ namespace JxUnity.Resources
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public UnityEngine.Object Load(string path, Type type)
         {
-            return this.GetLocalMapItem(path, type);
+            AssetBundleMapping.MappingItem item = assetMapping.Mapping(path);
+            if (item == null)
+            {
+                return null;
+            }
+            string resPath = AssetNameUtility.UnformatBundleName(item.assetPackageName);
+            AssetLocalMap res = UnityEngine.Resources.Load<AssetLocalMap>($"{AssetConfig.LocalRoot}/{resPath}");
+            if (res == null)
+            {
+                return null;
+            }
+            return res.Get(item.assetName, type);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IEnumerator LoadAsyncCo(string path, Type type, Action<UnityEngine.Object> cb)
         {
-            var req = UnityEngine.Resources.LoadAsync(path, type);
+            AssetBundleMapping.MappingItem item = assetMapping.Mapping(path);
+            if (item == null)
+            {
+                cb?.Invoke(null);
+                yield break;
+            }
+
+            string resPath = AssetNameUtility.UnformatBundleName(item.assetPackageName);
+            var req = UnityEngine.Resources.LoadAsync<AssetLocalMap>($"{AssetConfig.LocalRoot}/{resPath}");
             yield return req;
-            cb?.Invoke(req.asset);
+            AssetLocalMap res = req.asset as AssetLocalMap;
+            if (res == null)
+            {
+                cb?.Invoke(null);
+                yield break;
+            }
+            cb?.Invoke(res.Get(item.assetName, type));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
