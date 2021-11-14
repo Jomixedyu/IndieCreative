@@ -19,6 +19,10 @@ public abstract class TextSerializer
     public abstract string Format { get; }
     public abstract string Serialize(object obj);
     public abstract object Deserialize(string text, Type type);
+    public T Deserialize<T>(string text)
+    {
+        return (T)Deserialize(text, typeof(T));
+    }
 
     public object Read(string path, Type type)
     {
