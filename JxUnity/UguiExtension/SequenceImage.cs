@@ -62,13 +62,13 @@ namespace JxUnity.Ugui
                 }
                 this.count += Time.deltaTime;
                 float frameTime = this.Speed / this.FrameRate;
-                if (this.count >= frameTime)
+                while (this.count >= frameTime)
                 {
                     this.index++;
                     if (this.images.Count() == this.index) this.index = 0;
-                    this.image.sprite = this.images[this.index];
-                    this.count = 0;
+                    this.count -= frameTime;
                 }
+                this.image.sprite = this.images[this.index];
             }
         }
 
