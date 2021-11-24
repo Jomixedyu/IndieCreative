@@ -51,39 +51,6 @@ public abstract class TextSerializer
         File.WriteAllText(path, Serialize(obj));
     }
 
-    public Task<Exception> WriteAsync(string path, object obj)
-    {
-        return Task.Run<Exception>(() =>
-        {
-            Exception e = null;
-            try
-            {
-                Write(path, obj);
-            }
-            catch (Exception _e)
-            {
-                e = _e;
-            }
-            return e;
-        });
-    }
-    public void WriteAsync(string path, object obj, Action<Exception> result)
-    {
-        Task.Run(() =>
-        {
-            Exception e = null;
-            try
-            {
-                Write(path, obj);
-            }
-            catch (Exception _e)
-            {
-                e = _e;
-            }
-            result?.Invoke(e);
-        });
-    }
-
     public class UTF8StringWriter : StringWriter
     {
         private static readonly Encoding UTF8 = new UTF8Encoding(false);
