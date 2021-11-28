@@ -19,7 +19,7 @@ public abstract class TextSerializer
     /// <summary>
     /// Newtonsoft.Json
     /// </summary>
-    public static TextSerializer Json => _json ?? (_json= new TextNewtonJsonSerializer());
+    public static TextSerializer Json => _json ?? (_json= new TextJsonSerializer());
 
     public abstract string Format { get; }
     public abstract string Serialize(object obj);
@@ -176,6 +176,22 @@ public class TextXmlSerializer : TextSerializer
         return xs.Deserialize(sr);
     }
 }
+
+public class TextJsonSerializer : TextSerializer
+{
+    public override string Format => "json";
+
+    public override object Deserialize(string text, Type type)
+    {
+        return UnityEngine.JsonUtility.FromJson(text, type);
+    }
+
+    public override string Serialize(object obj)
+    {
+        return UnityEngine.JsonUtility.ToJson(obj);
+    }
+}
+
 public class TextNewtonJsonSerializer : TextSerializer
 {
     public override string Format => "json";
