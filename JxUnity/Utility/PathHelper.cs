@@ -14,6 +14,7 @@ public static class PathHelper
     public static readonly string Log = $"{WritablePath}/Log";
     public static readonly string ScreenShot = $"{WritablePath}/ScreenShot";
     public static readonly string Icon = $"{WritablePath}/Icon";
+    public static readonly string Mod = $"{WritablePath}/Mod";
 
 
     private static string GetWritablePath()
