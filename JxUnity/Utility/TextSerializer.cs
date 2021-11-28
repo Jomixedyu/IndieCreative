@@ -59,7 +59,41 @@ public abstract class TextSerializer
                 syncCtx.Send(_ => callback?.Invoke(result, e), null);
             }
         });
+    }
+    public Task<T> ReadAsync<T>(string path)
+    {
+        return Task<T>.Run(() =>
+        {
+            Exception e = null;
+            T result = default;
+            try
+            {
+                result = (T)this.Read(path, typeof(T));
+            }
+            catch (Exception _e)
+            {
+                e = _e;
+            }
+            return result;
+        });
+    }
 
+    public Task<object> ReadAsync(string path, Type type)
+    {
+        return Task<object>.Run(() =>
+        {
+            Exception e = null;
+            object result = null;
+            try
+            {
+                result = this.Read(path, type);
+            }
+            catch (Exception _e)
+            {
+                e = _e;
+            }
+            return result;
+        });
     }
 
     public void Write(string path, object obj)
@@ -75,6 +109,7 @@ public abstract class TextSerializer
         }
         File.WriteAllText(path, Serialize(obj));
     }
+
     public void WriteAsync(string path, object obj, Action<Exception> callback)
     {
         var syncCtx = SynchronizationContext.Current;
@@ -93,6 +128,23 @@ public abstract class TextSerializer
             {
                 syncCtx.Send(_e => callback?.Invoke(_e as Exception), e);
             }
+        });
+    }
+
+    public Task<Exception> WriteAsync(string path, object obj)
+    {
+        return Task<Exception>.Run(() =>
+        {
+            Exception e = null;
+            try
+            {
+                Write(path, obj);
+            }
+            catch (Exception _e)
+            {
+                e = _e;
+            }
+            return e;
         });
     }
 

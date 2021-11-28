@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public static class Texture2DUtility
@@ -14,6 +16,45 @@ public static class Texture2DUtility
     {
         File.WriteAllBytes(path, tex.EncodeToPNG());
     }
+
+    public static void WriteTextureAsync(string path, Texture2D tex, Action<Exception> callback)
+    {
+        var syncCtx = SynchronizationContext.Current;
+        Task.Run(() =>
+        {
+            Exception e = null;
+            try
+            {
+                WriteTexture(path, tex);
+            }
+            catch (Exception _e)
+            {
+                e = _e;
+            }
+            finally
+            {
+                syncCtx.Send(_e => callback?.Invoke(_e as Exception), e);
+            }
+        });
+    }
+
+    public static Task<Exception> WriteTextureAsync(string path, Texture2D texture)
+    {
+        return Task<Exception>.Run(() =>
+        {
+            Exception e = null;
+            try
+            {
+                WriteTexture(path, texture);
+            }
+            catch (Exception _e)
+            {
+                e = _e;
+            }
+            return e;
+        });
+    }
+
     /// <summary>
     /// 从磁盘加载Texture2D
     /// </summary>
