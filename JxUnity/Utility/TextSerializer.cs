@@ -8,14 +8,18 @@ using System.Xml.Serialization;
 
 public abstract class TextSerializer
 {
+    private static TextSerializer _xml;
+    private static TextSerializer _json;
+
     /// <summary>
     /// System.Xml
     /// </summary>
-    public static TextSerializer Xml { get; } = new TextXmlSerializer();
+    public static TextSerializer Xml => _xml ?? (_xml = new TextXmlSerializer());
+
     /// <summary>
     /// Newtonsoft.Json
     /// </summary>
-    public static TextSerializer Json { get; } = new TextNewtonJsonSerializer();
+    public static TextSerializer Json => _json ?? (_json= new TextNewtonJsonSerializer());
 
     public abstract string Format { get; }
     public abstract string Serialize(object obj);
