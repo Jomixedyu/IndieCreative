@@ -2,6 +2,7 @@
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
@@ -19,6 +20,7 @@ public abstract class TextSerializer
     public abstract string Format { get; }
     public abstract string Serialize(object obj);
     public abstract object Deserialize(string text, Type type);
+
     public T Deserialize<T>(string text)
     {
         return (T)Deserialize(text, typeof(T));
@@ -26,15 +28,34 @@ public abstract class TextSerializer
 
     public object Read(string path, Type type)
     {
-        if (!File.Exists(path))
-        {
-            return null;
-        }
         return Deserialize(File.ReadAllText(path), type);
     }
     public T Read<T>(string path)
     {
         return (T)Read(path, typeof(T));
+    }
+
+    public void ReadAsync(string path, Type type, Action<object, Exception> callback)
+    {
+        var syncCtx = SynchronizationContext.Current;
+        Task.Run(() =>
+        {
+            Exception e = null;
+            object result = null;
+            try
+            {
+                result = this.Read(path, type);
+            }
+            catch (Exception _e)
+            {
+                e = _e;
+            }
+            finally
+            {
+                syncCtx.Send(_ => callback?.Invoke(result, e), null);
+            }
+        });
+
     }
 
     public void Write(string path, object obj)
@@ -49,6 +70,26 @@ public abstract class TextSerializer
             Directory.CreateDirectory(dir);
         }
         File.WriteAllText(path, Serialize(obj));
+    }
+    public void WriteAsync(string path, object obj, Action<Exception> callback)
+    {
+        var syncCtx = SynchronizationContext.Current;
+        Task.Run(() =>
+        {
+            Exception e = null;
+            try
+            {
+                Write(path, obj);
+            }
+            catch (Exception _e)
+            {
+                e = _e;
+            }
+            finally
+            {
+                syncCtx.Send(_e => callback?.Invoke(_e as Exception), e);
+            }
+        });
     }
 
     public class UTF8StringWriter : StringWriter
