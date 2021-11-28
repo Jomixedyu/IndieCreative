@@ -4,23 +4,47 @@ using UnityEngine;
 
 namespace JxUnity.Timers
 {
-    public static class Schedule
+    /// <summary>
+    /// 待办事项时间表
+    /// </summary>
+    public class Schedule
     {
+        private static Schedule _uiWaitDelay;
+        public static Schedule UiWaitDelay => _uiWaitDelay ?? (_uiWaitDelay = new Schedule(nameof(UiWaitDelay)));
+
+        private static Schedule _systemWaitDelay;
+        public static Schedule SystemWaitDelay => _systemWaitDelay ?? (_systemWaitDelay = new Schedule(nameof(SystemWaitDelay)));
+
+        private static Schedule _gameWaitDelay;
+        public static Schedule GameWaitDelay => _gameWaitDelay ?? (_gameWaitDelay = new Schedule(nameof(GameWaitDelay)));
+
+        public string Group { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="group">待办组名</param>
+        public Schedule(string group)
+        {
+            this.Group = group;
+        }
+
         /// <summary>
         /// 添加一个待办事项
         /// </summary>
         /// <param name="time">等待时间</param>
         /// <param name="cb">待办内容</param>
-        public static void Add(float time, Action cb)
+        public void Add(float time, Action cb)
         {
-            ScheduleMono.Instance.Add(time, cb);
+            ScheduleMono.Instance.Add(this.Group, time, cb);
         }
+
         /// <summary>
         /// 按顺序完成所有待办事项
         /// </summary>
-        public static void CompleteAll()
+        public void CompleteAll()
         {
-            ScheduleMono.Instance.CompleteAll();
+            ScheduleMono.Instance.CompleteAll(this.Group);
         }
     }
     /// <summary>
@@ -45,7 +69,7 @@ namespace JxUnity.Timers
             return ++this._icount;
         }
 
-        private Dictionary<int, Schedule> schedule;
+        private Dictionary<string, Dictionary<int, Schedule>> groups;
 
         private List<int> waitRemoveList;
 
@@ -65,50 +89,69 @@ namespace JxUnity.Timers
         }
         private void Awake()
         {
-            this.schedule = new Dictionary<int, Schedule>();
+            this.groups = new Dictionary<string, Dictionary<int, Schedule>>();
             this.waitRemoveList = new List<int>();
         }
 
-        internal void Add(float time, Action cb)
+        internal void Add(string group, float time, Action cb)
         {
-            this.schedule.Add(this.GetId(), new Schedule(Time.time + time, cb));
+            Dictionary<int, Schedule> schedules;
+            if (!this.groups.TryGetValue(group, out schedules))
+            {
+                schedules = new Dictionary<int, Schedule>();
+                this.groups.Add(group, schedules);
+            }
+
+            schedules.Add(this.GetId(), new Schedule(Time.time + time, cb));
         }
 
-        internal void CompleteAll()
+        internal void CompleteAll(string group)
         {
-            if (this.schedule.Count == 0)
+            if (this.groups.Count == 0)
             {
                 return;
             }
 
-            List<Schedule> schedules = new List<Schedule>(this.schedule.Values);
+            Dictionary<int, Schedule> schedule;
+            if (!this.groups.TryGetValue(group, out schedule))
+            {
+                return;
+            }
+
+            List<Schedule> schedules = new List<Schedule>(schedule.Values);
             schedules.Sort((x, y) => x.endtime < y.endtime ? 1 : 0);
 
             foreach (Schedule item in schedules)
             {
                 item.cb?.Invoke();
             }
-            this.schedule.Clear();
+
+            this.groups.Remove(group);
         }
 
         private void Update()
         {
-            foreach (var item in this.schedule)
+            foreach (var schedules in this.groups)
             {
-                if (item.Value.endtime <= Time.time)
+                foreach (var schedule in schedules.Value)
                 {
-                    this.waitRemoveList.Add(item.Key);
+                    if (schedule.Value.endtime <= Time.time)
+                    {
+                        this.waitRemoveList.Add(schedule.Key);
+                    }
+                }
+                if (this.waitRemoveList.Count > 0)
+                {
+                    foreach (int item in this.waitRemoveList)
+                    {
+                        schedules.Value[item].cb?.Invoke();
+                        schedules.Value.Remove(item);
+                    }
+                    this.waitRemoveList.Clear();
                 }
             }
-            if (this.waitRemoveList.Count > 0)
-            {
-                foreach (int item in this.waitRemoveList)
-                {
-                    this.schedule[item].cb?.Invoke();
-                    this.schedule.Remove(item);
-                }
-                this.waitRemoveList.Clear();
-            }
+
+
         }
     }
 }
