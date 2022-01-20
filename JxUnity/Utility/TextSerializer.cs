@@ -17,12 +17,12 @@ public abstract class TextSerializer
     public static TextSerializer Xml => _xml ?? (_xml = new TextXmlSerializer());
 
     /// <summary>
-    /// Newtonsoft.Json
+    /// UnityJson
     /// </summary>
-    public static TextSerializer Json => _json ?? (_json= new TextJsonSerializer());
+    public static TextSerializer Json => _json ?? (_json = new TextJsonSerializer());
 
     public abstract string Format { get; }
-    public abstract string Serialize(object obj);
+    public abstract string Serialize(object obj, bool isReadability = false);
     public abstract object Deserialize(string text, Type type);
 
     public T Deserialize<T>(string text)
@@ -96,7 +96,7 @@ public abstract class TextSerializer
         });
     }
 
-    public void Write(string path, object obj)
+    public void Write(string path, object obj, bool isReadability = false)
     {
         if (obj == null)
         {
@@ -107,10 +107,10 @@ public abstract class TextSerializer
         {
             Directory.CreateDirectory(dir);
         }
-        File.WriteAllText(path, Serialize(obj));
+        File.WriteAllText(path, Serialize(obj, isReadability));
     }
 
-    public void WriteAsync(string path, object obj, Action<Exception> callback)
+    public void WriteAsync(string path, object obj, bool isReadability = false, Action<Exception> callback = null)
     {
         var syncCtx = SynchronizationContext.Current;
         Task.Run(() =>
@@ -118,7 +118,7 @@ public abstract class TextSerializer
             Exception e = null;
             try
             {
-                Write(path, obj);
+                Write(path, obj, isReadability);
             }
             catch (Exception _e)
             {
@@ -131,14 +131,14 @@ public abstract class TextSerializer
         });
     }
 
-    public Task<Exception> WriteAsync(string path, object obj)
+    public Task<Exception> WriteAsync(string path, object obj, bool isReadability = false)
     {
         return Task<Exception>.Run(() =>
         {
             Exception e = null;
             try
             {
-                Write(path, obj);
+                Write(path, obj, isReadability);
             }
             catch (Exception _e)
             {
@@ -160,7 +160,7 @@ public class TextXmlSerializer : TextSerializer
 {
     public override string Format => "xml";
 
-    public override string Serialize(object obj)
+    public override string Serialize(object obj, bool isReadability = false)
     {
         XmlSerializer xs = new XmlSerializer(obj.GetType());
         StringBuilder sb = new StringBuilder();
@@ -186,9 +186,9 @@ public class TextJsonSerializer : TextSerializer
         return UnityEngine.JsonUtility.FromJson(text, type);
     }
 
-    public override string Serialize(object obj)
+    public override string Serialize(object obj, bool isReadability = false)
     {
-        return UnityEngine.JsonUtility.ToJson(obj);
+        return UnityEngine.JsonUtility.ToJson(obj, isReadability);
     }
 }
 
@@ -196,19 +196,26 @@ public class TextNewtonJsonSerializer : TextSerializer
 {
     public override string Format => "json";
 
-    private Func<object, string> ser;
+    private MethodInfo serMethod;
     private Func<string, Type, object> deser;
+
+    private Enum indented;
+    private Enum none;
 
     public TextNewtonJsonSerializer()
     {
         var ass = Assembly.Load("Newtonsoft.Json");
         var type = ass.GetType("Newtonsoft.Json.JsonConvert");
 
-        var serMethod = type.GetMethod("SerializeObject", new Type[] { typeof(object) });
-        this.ser = (Func<object, string>)serMethod.CreateDelegate(typeof(Func<object, string>));
+        var formatting = ass.GetType("Newtonsoft.Json.Formatting");
+
+        this.serMethod = type.GetMethod("SerializeObject", new Type[] { typeof(object), formatting });
 
         var deserMethod = type.GetMethod("DeserializeObject", new Type[] { typeof(string), typeof(Type) });
         this.deser = (Func<string, Type, object>)deserMethod.CreateDelegate(typeof(Func<string, Type, object>));
+
+        this.none = (Enum)Enum.Parse(formatting, "None");
+        this.indented = (Enum)Enum.Parse(formatting, "Indented");
     }
 
     public override object Deserialize(string text, Type type)
@@ -220,12 +227,13 @@ public class TextNewtonJsonSerializer : TextSerializer
         return this.deser.Invoke(text, type);
     }
 
-    public override string Serialize(object obj)
+    public override string Serialize(object obj, bool isReadability = false)
     {
-        if (this.ser == null)
+        if (this.serMethod == null)
         {
             throw new NotImplementedException();
         }
-        return this.ser.Invoke(obj);
+        object[] ctorparam = new object[] { obj, isReadability ? this.indented : this.none };
+        return (string)this.serMethod.Invoke(null, ctorparam);
     }
 }
