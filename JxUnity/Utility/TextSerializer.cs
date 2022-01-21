@@ -17,9 +17,28 @@ public abstract class TextSerializer
     public static TextSerializer Xml => _xml ?? (_xml = new TextXmlSerializer());
 
     /// <summary>
-    /// UnityJson
+    /// Json
     /// </summary>
-    public static TextSerializer Json => _json ?? (_json = new TextJsonSerializer());
+    public static TextSerializer Json
+    {
+        get
+        {
+            if (_json != null)
+            {
+                return _json;
+            }
+            if (TextNewtonJsonSerializer.HasAssembly())
+            {
+                _json = new TextNewtonJsonSerializer();
+            }
+            else
+            {
+                UnityEngine.Debug.LogWarning("TextSerializer: not found newtonsoft.json, use to unityjson");
+                _json = new TextJsonSerializer();
+            }
+            return _json;
+        }
+    }
 
     public abstract string Format { get; }
     public abstract string Serialize(object obj, bool isReadability = false);
@@ -201,6 +220,11 @@ public class TextNewtonJsonSerializer : TextSerializer
 
     private Enum indented;
     private Enum none;
+
+    public static bool HasAssembly()
+    {
+        return Assembly.Load("Newtonsoft.Json") != null;
+    }
 
     public TextNewtonJsonSerializer()
     {
