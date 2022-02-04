@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -148,7 +149,7 @@ public static class ResourceBuilderUtility
     /// <param name="rootName"></param>
     public static void SetName(string rootName)
     {
-        SetName(rootName, AssetNameUtility.ROOTToBundleName(rootName), AssetConfig.Variant);
+        SetName(rootName, AssetNameUtility.ROOTToBundleName(rootName), ResDBConfig.Variant);
     }
     /// <summary>
     /// 设置ab包名（如果是文件夹：移除文件夹下所有资产包名）
@@ -173,12 +174,20 @@ public static class ResourceBuilderUtility
         SetName(_ROOT, null, null);
     }
 
+
+    public static List<string> GetResAllAssetBundleNames()
+    {
+        string prefix = ResDBConfig.ResDBFolderName.ToLower() + "/";
+        var it = AssetDatabase.GetAllAssetBundleNames().Where(s => s.StartsWith(prefix));
+        return new List<string>(it);
+    }
+
     /// <summary>
     /// 移除所有ab包
     /// </summary>
     public static void RemoveAllNames()
     {
-        foreach (var item in AssetDatabase.GetAllAssetBundleNames())
+        foreach (var item in GetResAllAssetBundleNames())
         {
             AssetDatabase.RemoveAssetBundleName(item, true);
         }
@@ -191,10 +200,10 @@ public static class ResourceBuilderUtility
     /// <returns></returns>
     public static List<string> GetUsedAssetBundleNames()
     {
-        var allNames = AssetDatabase.GetAllAssetBundleNames();
+        var allNames = GetResAllAssetBundleNames();
         var unusedNames = AssetDatabase.GetUnusedAssetBundleNames();
 
-        List<string> ret = new List<string>(allNames.Length);
+        List<string> ret = new List<string>(allNames.Count);
 
         foreach (string item in allNames)
         {

@@ -9,7 +9,7 @@ namespace JxUnity.ResDB
     /// <summary>
     /// 仅在加载模式为本地加载模式时使用
     /// </summary>
-    public class AssetLocalMap : ScriptableObject
+    public class ResDBInlineMap : ScriptableObject
     {
         [Serializable]
         public class AssetSet

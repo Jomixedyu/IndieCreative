@@ -6,18 +6,18 @@ using UnityEngine;
 
 namespace JxUnity.ResDB
 {
-    internal sealed class AssetLocalLoaderMono : MonoBehaviour
+    internal sealed class ResDBInlineLoaderMono : MonoBehaviour, IResDBLoader
     {
-        private static AssetLocalLoaderMono instance;
-        public static AssetLocalLoaderMono Instance
+        private static ResDBInlineLoaderMono instance;
+        public static ResDBInlineLoaderMono Instance
         {
             get
             {
                 if (instance == null)
                 {
-                    var go = new GameObject($"__m_{nameof(AssetLocalLoaderMono)}");
+                    var go = new GameObject($"__m_{nameof(ResDBInlineLoaderMono)}");
                     DontDestroyOnLoad(go);
-                    instance = go.AddComponent<AssetLocalLoaderMono>();
+                    instance = go.AddComponent<ResDBInlineLoaderMono>();
                 }
                 return instance;
             }
@@ -27,10 +27,10 @@ namespace JxUnity.ResDB
 
         private void Awake()
         {
-            string filename = $"{AssetConfig.LocalRoot}/{AssetConfig.ResourceFolderName.ToLower()}/{AssetConfig.MapFilename}";
-            var runtimeMapping = UnityEngine.Resources.Load<AssetLocalMap>(filename);
+            string filename = $"{ResDBConfig.LocalRoot}/{ResDBConfig.ResDBFolderName.ToLower()}/{ResDBConfig.MapFilename}";
+            var runtimeMapping = UnityEngine.Resources.Load<ResDBInlineMap>(filename);
 
-            TextAsset x = (TextAsset)runtimeMapping.Get(AssetConfig.MapName, typeof(TextAsset));
+            TextAsset x = (TextAsset)runtimeMapping.Get(ResDBConfig.MapName, typeof(TextAsset));
             assetMapping = new AssetBundleMapping(x.text);
         }
 
@@ -43,13 +43,14 @@ namespace JxUnity.ResDB
                 return null;
             }
             string resPath = AssetNameUtility.UnformatBundleName(item.assetPackageName);
-            AssetLocalMap res = UnityEngine.Resources.Load<AssetLocalMap>($"{AssetConfig.LocalRoot}/{resPath}");
+            ResDBInlineMap res = UnityEngine.Resources.Load<ResDBInlineMap>($"{ResDBConfig.LocalRoot}/{resPath}");
             if (res == null)
             {
                 return null;
             }
             return res.Get(item.assetName, type);
         }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IEnumerator LoadAsyncCo(string path, Type type, Action<UnityEngine.Object> cb)
@@ -62,9 +63,9 @@ namespace JxUnity.ResDB
             }
 
             string resPath = AssetNameUtility.UnformatBundleName(item.assetPackageName);
-            var req = UnityEngine.Resources.LoadAsync<AssetLocalMap>($"{AssetConfig.LocalRoot}/{resPath}");
+            var req = UnityEngine.Resources.LoadAsync<ResDBInlineMap>($"{ResDBConfig.LocalRoot}/{resPath}");
             yield return req;
-            AssetLocalMap res = req.asset as AssetLocalMap;
+            ResDBInlineMap res = req.asset as ResDBInlineMap;
             if (res == null)
             {
                 cb?.Invoke(null);
@@ -78,5 +79,6 @@ namespace JxUnity.ResDB
         {
             StartCoroutine(LoadAsyncCo(path, type, cb));
         }
+
     }
 }

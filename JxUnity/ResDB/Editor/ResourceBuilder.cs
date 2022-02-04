@@ -16,7 +16,14 @@ public class ResourceBuilder : Editor
     {
         foreach (string item in Selection.assetGUIDs)
         {
-            SetName(AssetDatabase.GUIDToAssetPath(item));
+            var path = AssetDatabase.GUIDToAssetPath(item);
+            var abName = AssetNameUtility.ROOTToBundleName(path);
+            if (!abName.StartsWith(ResDBConfig.BundlePrefix))
+            {
+                Debug.LogError("the file is not in folder ResDB: " + path);
+                continue;
+            }
+            SetName(path);
         }
         AssetDatabase.Refresh();
     }
@@ -27,6 +34,13 @@ public class ResourceBuilder : Editor
     {
         foreach (string item in Selection.assetGUIDs)
         {
+            var path = AssetDatabase.GUIDToAssetPath(item);
+            var abName = AssetNameUtility.ROOTToBundleName(path);
+            if (!abName.StartsWith(ResDBConfig.BundlePrefix))
+            {
+                Debug.LogError("the file is not in folder ResDB: " + path);
+                continue;
+            }
             SetSubNames(AssetDatabase.GUIDToAssetPath(item));
         }
         AssetDatabase.Refresh();
@@ -130,12 +144,12 @@ public class ResourceBuilder : Editor
             }
         }
 
-        if (!Directory.Exists($"Assets/{AssetConfig.ResourceFolderName}"))
+        if (!Directory.Exists($"Assets/{ResDBConfig.ResDBFolderName}"))
         {
-            Directory.CreateDirectory($"Assets/{AssetConfig.ResourceFolderName}");
+            Directory.CreateDirectory($"Assets/{ResDBConfig.ResDBFolderName}");
         }
 
-        string fileROOT = $"Assets/{AssetConfig.ResourceFolderName}/{AssetConfig.MapFilename}";
+        string fileROOT = $"Assets/{ResDBConfig.ResDBFolderName}/{ResDBConfig.MapFilename}";
         File.WriteAllText(fileROOT, sb.ToString());
 
         AssetDatabase.Refresh();
@@ -145,18 +159,17 @@ public class ResourceBuilder : Editor
         Debug.Log($"Resource Mapping Generated! count: {assetCount}, ms: {stopwatch.ElapsedMilliseconds}");
     }
 
-
     [MenuItem("ResDB/Generate Local ResObjects", false, 205)]
     private static void GenerateResObjects()
     {
-        if (AssetSettingsProvider.GetDefaultLoadMode() != AssetLoadMode.Local)
+        if (AssetSettingsProvider.GetDefaultLoadMode() != AssetLoadMode.Inline)
         {
             Debug.Log("LoadMode is not Local");
             return;
         }
         GenerateResourceMapping();
 
-        const string resdir = "Assets/Resources/LocalResPck";
+        string resdir = $"Assets/Resources/{ResDBConfig.LocalRoot}";
 
         System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
         stopwatch.Start();
@@ -165,7 +178,7 @@ public class ResourceBuilder : Editor
             AssetDatabase.StartAssetEditing();
             foreach (string abName in ResourceBuilderUtility.GetUsedAssetBundleNames())
             {
-                AssetLocalMap ser = ScriptableObject.CreateInstance<AssetLocalMap>();
+                ResDBInlineMap ser = ScriptableObject.CreateInstance<ResDBInlineMap>();
                 foreach (string assetROOT in AssetDatabase.GetAssetPathsFromAssetBundle(abName))
                 {
                     var assetObjects = AssetDatabase.LoadAllAssetsAtPath(assetROOT);
@@ -207,10 +220,10 @@ public class ResourceBuilder : Editor
     }
 
 
-    [MenuItem("ResDB/Load Mode/Local", true)]
+    [MenuItem("ResDB/Load Mode/Inline", true)]
     public static bool LoadModeLocalValid()
     {
-        return AssetSettingsProvider.GetDefaultLoadMode() != AssetLoadMode.Local;
+        return AssetSettingsProvider.GetDefaultLoadMode() != AssetLoadMode.Inline;
     }
     [MenuItem("ResDB/Load Mode/Package", true)]
     public static bool LoadModePackageValid()
@@ -218,28 +231,28 @@ public class ResourceBuilder : Editor
         return AssetSettingsProvider.GetDefaultLoadMode() != AssetLoadMode.Package;
     }
 
-    [MenuItem("ResDB/Load Mode/Local")]
+    [MenuItem("ResDB/Load Mode/Inline")]
     public static void LoadModeLocal()
     {
-        AssetSettingsProvider.SetDefaultLoadMode(AssetLoadMode.Local);
-        Debug.Log("Resources Load Mode: Local");
+        AssetSettingsProvider.SetDefaultLoadMode(AssetLoadMode.Inline);
+        Debug.Log("ResDB Load Mode: Inline");
     }
     [MenuItem("ResDB/Load Mode/Package")]
     public static void LoadModePackage()
     {
         AssetSettingsProvider.SetDefaultLoadMode(AssetLoadMode.Package);
-        Debug.Log("Resources Load Mode: Package");
+        Debug.Log("ResDB Load Mode: Package");
     }
 
     public static bool IsEditorSimulator
     {
         get
         {
-            return EditorPrefs.GetBool("AssetManager.IsEditorSimulator", false);
+            return EditorPrefs.GetBool("ResDB.IsEditorSimulator", false);
         }
         set
         {
-            EditorPrefs.SetBool("AssetManager.IsEditorSimulator", value);
+            EditorPrefs.SetBool("ResDB.IsEditorSimulator", value);
         }
     }
 

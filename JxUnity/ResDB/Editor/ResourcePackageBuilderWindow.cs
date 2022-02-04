@@ -1,5 +1,6 @@
 ﻿
 using JxUnity.ResDB;
+using JxUnity.ResDB.Private;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -85,7 +86,7 @@ public class ResourcePackageBuilderWindow : EditorWindow
         {
             if (!string.IsNullOrWhiteSpace(this.outputFolder))
             {
-                this.outputPath = this.outputFolder + "/ResPck_" + targetName;
+                this.outputPath = this.outputFolder + "/" + ResDBConfig.WorkingFolderName;
                 GUILayout.Label(this.outputPath);
             }
             else

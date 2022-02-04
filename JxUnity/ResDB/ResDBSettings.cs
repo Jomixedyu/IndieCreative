@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace JxUnity.ResDB
 {
-    public class ResourcePackageSettings : ScriptableObject
+    public class ResDBSettings : ScriptableObject
     {
-        public AssetLoadMode DefaultLoadMode;
+        public AssetLoadMode LoadMode;
     }
 }

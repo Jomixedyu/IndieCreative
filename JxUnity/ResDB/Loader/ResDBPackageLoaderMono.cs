@@ -6,21 +6,22 @@ using UObject = UnityEngine.Object;
 using System.Collections;
 using JxUnity.ResDB.Private;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace JxUnity.ResDB
 {
-    internal sealed class AssetPackageLoaderMono : MonoBehaviour
+    internal sealed class ResDBPackageLoaderMono : MonoBehaviour, IResDBLoader
     {
-        private static AssetPackageLoaderMono instance;
-        public static AssetPackageLoaderMono Instance
+        private static ResDBPackageLoaderMono instance;
+        public static ResDBPackageLoaderMono Instance
         {
             get
             {
                 if (instance == null)
                 {
-                    var go = new GameObject($"__m_{nameof(AssetPackageLoaderMono)}");
+                    var go = new GameObject($"__m_{nameof(ResDBPackageLoaderMono)}");
                     DontDestroyOnLoad(go);
-                    instance = go.AddComponent<AssetPackageLoaderMono>();
+                    instance = go.AddComponent<ResDBPackageLoaderMono>();
                 }
                 return instance;
             }
@@ -38,20 +39,19 @@ namespace JxUnity.ResDB
         private void Awake()
         {
             string manifestFilename = string.Format("{0}/{1}",
-                AssetConfig.LoadBundleRootPath,
-                Path.GetFileName(AssetConfig.LoadBundleRootPath));
+                ResDBConfig.WorkingPath, ResDBConfig.WorkingFolderName);
 
             AssetBundle manifestBundle = AssetBundle.LoadFromFile(manifestFilename);
             this.manifest = manifestBundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
             manifestBundle.Unload(false);
 
-            var mappingFile = AssetNameUtility.FormatBundleName(AssetConfig.LoadMappingFile);
+            var mappingFile = AssetNameUtility.FormatBundleName(ResDBConfig.LoadMappingFile);
             AssetBundle mappingBundle = AssetBundle.LoadFromFile(mappingFile);
 
-            string mapping = mappingBundle.LoadAsset<TextAsset>(AssetConfig.MapName).text;
+            string mapping = mappingBundle.LoadAsset<TextAsset>(ResDBConfig.MapName).text;
             this.assetMapping = new AssetBundleMapping(mapping);
             mappingBundle.Unload(true);
-            
+
             this.assetbundleCaching = new Dictionary<string, AssetBundle>();
             this.assetCaching = new Dictionary<string, UObject>();
         }
@@ -71,8 +71,11 @@ namespace JxUnity.ResDB
         //TODO: 应该要去加载依赖
         public void LoadAssetBundle(string bundleName)
         {
-            var fullName = AssetConfig.LoadBundleRootPath + "/" + bundleName;
-            if (this.IsLoadedBundle(bundleName)) { return; }
+            var fullName = $"{ResDBConfig.WorkingPath}/{bundleName}";
+            if (this.IsLoadedBundle(bundleName))
+            {
+                return;
+            }
             this.assetbundleCaching.Add(bundleName, AssetBundle.LoadFromFile(fullName));
         }
 
@@ -85,7 +88,7 @@ namespace JxUnity.ResDB
         }
         public void LoadAssetBundleAsync(string bundleName, Action<AssetBundle> cb)
         {
-            bundleName = AssetConfig.LoadBundleRootPath + "/" + bundleName;
+            bundleName = ResDBConfig.WorkingPath + "/" + bundleName;
             if (this.IsLoadedBundle(bundleName))
             {
                 cb?.Invoke(this.GetAssetBundleCache(bundleName));
@@ -122,9 +125,9 @@ namespace JxUnity.ResDB
         #endregion
 
         #region Assets
-        private IEnumerator LoadAssetCo(AssetBundle ab, string path, string name, Action<UObject> cb)
+        private IEnumerator LoadAssetCo(AssetBundle ab, string path, string name, Type type, Action<UObject> cb)
         {
-            var req = ab.LoadAssetAsync(name);
+            var req = ab.LoadAssetAsync(name, type);
             yield return req;
             this.assetCaching.Add(path, req.asset);
             cb?.Invoke(req.asset);
@@ -149,7 +152,8 @@ namespace JxUnity.ResDB
         }
 
 
-        public UObject LoadAsset(string path, Type type)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private UObject LoadAsset(string path, Type type)
         {
             path = path.ToLower();
             var item = this.assetMapping.Mapping(path);
@@ -172,7 +176,8 @@ namespace JxUnity.ResDB
             }
         }
 
-        public void LoadAssetAsync(string path, Type type, Action<UObject> assetCallBack)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void LoadAssetAsync(string path, Type type, Action<UObject> assetCallBack)
         {
             path = path.ToLower();
             var item = this.assetMapping.Mapping(path);
@@ -189,9 +194,21 @@ namespace JxUnity.ResDB
             {
                 //TODO: 如果没有ab应该去加载ab，这里暂时直接取缓存
                 var ab = this.GetAssetBundleCache(item.assetPackageName);
-                StartCoroutine(LoadAssetCo(ab, path, item.assetName, assetCallBack));
+                StartCoroutine(LoadAssetCo(ab, path, item.assetName, type, assetCallBack));
             }
         }
+
+
         #endregion
+
+        public UObject Load(string index, Type type)
+        {
+            return this.LoadAsset(index, type);
+        }
+
+        public void LoadAsync(string index, Type type, Action<UObject> cb)
+        {
+            this.LoadAssetAsync(index, type, cb);
+        }
     }
 }

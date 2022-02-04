@@ -6,22 +6,25 @@ using UnityEngine;
 
 namespace JxUnity.ResDB.Private
 {
-    public static class AssetConfig
+    public static class ResDBConfig
     {
         public const string Variant = "pck";
-        public const string LocalRoot = "LocalResPck";
-        public const string ResourceFolderName = "ResPck";
+        public const string LocalRoot = "LocalResDB";
+        public const string ResDBFolderName = "ResDB";
 
-        public const string MapFilename = "respck_info.bytes";
-        public const string MapName = "respck_info";
+        public const string MapFilename = "resdb_info.bytes";
+        public const string MapName = "resdb_info";
 
-#if UNITY_EDITOR
-        public static readonly string LoadBundleRootPath = Path.GetDirectoryName(Application.dataPath) + "/ResPck_win";
-#endif
-        public static readonly string LoadManifestBundle = LoadBundleRootPath + "/AssetsPackage";
-        public static readonly string LoadResourcePath = LoadBundleRootPath + "/respck";
-        public static readonly string LoadMappingFile = LoadResourcePath + "/respck_info.bytes";
+        public static readonly string BundlePrefix = $"{ResDBFolderName.ToLower()}/";
 
+        public static readonly string WorkingFolderName = "ResourceDB";
+        public static readonly string WorkingPath = System.Environment.CurrentDirectory + "/" + WorkingFolderName;
+
+        private static readonly string LoadResourcePath = WorkingPath + "/resdb";
+        public static readonly string LoadMappingFile = LoadResourcePath + "/resdb_info.bytes";
+
+
+        public const string kSettingObjectName = "ResDBSettings";
 
         public static Dictionary<RuntimePlatform, string> PlatformName = new Dictionary<RuntimePlatform, string>()
         {
@@ -35,15 +38,15 @@ namespace JxUnity.ResDB.Private
             [RuntimePlatform.IPhonePlayer] = "ios",
         };
 
-        internal static ResourcePackageSettings resourcePackageSettings;
-
+        internal static ResDBSettings resourcePackageSettings;
+        
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void StaticAwake()
+        private static void UnityStaticConstructor()
         {
-            resourcePackageSettings = UnityEngine.Resources.Load<ResourcePackageSettings>("ResourcePackageSettings");
+            resourcePackageSettings = UnityEngine.Resources.Load<ResDBSettings>(kSettingObjectName);
             if (resourcePackageSettings != null)
             {
-                AssetManager.AssetLoadMode = resourcePackageSettings.DefaultLoadMode;
+                ResDatabase.AssetLoadMode = resourcePackageSettings.LoadMode;
             }
 
             if (Application.isEditor)
@@ -51,23 +54,18 @@ namespace JxUnity.ResDB.Private
                 var editor = Assembly.Load("UnityEditor");
                 var db = editor.GetType("UnityEditor.AssetDatabase");
                 var load = db.GetMethod("LoadAssetAtPath", new Type[] { typeof(string), typeof(Type) });
-                AssetManager.LoadAssetAtPath = 
+                ResDBEditorLoader.LoadAssetAtPath = 
                     (Func<string, Type, UnityEngine.Object>)load.CreateDelegate(typeof(Func<string, Type, UnityEngine.Object>));
 
-                var assetEditor = Assembly.Load("JxUnity.Resources.Editor");
+                var assetEditor = Assembly.Load("JxUnity.ResDB.Editor");
                 var assetType = assetEditor.GetType("ResourceBuilder");
                 var assetProp = assetType.GetProperty("IsEditorSimulator", BindingFlags.Public | BindingFlags.Static);
-                AssetManager.IsModeEnabled = (bool)assetProp.GetValue(null);
+                ResDatabase.IsRealMode = (bool)assetProp.GetValue(null);
             }
             else
             {
-                AssetManager.LoadAssetAtPath = null;
-                AssetManager.IsModeEnabled = true;
-
-                if (AssetManager.AssetLoadMode == AssetLoadMode.Package)
-                {
-                    _ = AssetPackageLoaderMono.Instance;
-                }
+                ResDBEditorLoader.LoadAssetAtPath = null;
+                ResDatabase.IsRealMode = true;
             }
 
         }

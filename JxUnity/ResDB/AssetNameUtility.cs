@@ -26,7 +26,7 @@ namespace JxUnity.ResDB
         {
             path = path.Replace('\\', '/');
 
-            var abExt = AssetConfig.Variant != null ? "." + AssetConfig.Variant : string.Empty;
+            var abExt = ResDBConfig.Variant != null ? "." + ResDBConfig.Variant : string.Empty;
 
             return $"{path}{abExt}";
         }
@@ -38,9 +38,9 @@ namespace JxUnity.ResDB
         public static string UnformatBundleName(string bundleName)
         {
             var name = Path.GetFileName(bundleName);
-            if (!string.IsNullOrEmpty(AssetConfig.Variant))
+            if (!string.IsNullOrEmpty(ResDBConfig.Variant))
             {
-                var ext = "." + AssetConfig.Variant;
+                var ext = "." + ResDBConfig.Variant;
                 if (!name.EndsWith(ext))
                 {
                     throw new ArgumentException("bundle ext name is not exist");
@@ -58,7 +58,7 @@ namespace JxUnity.ResDB
         /// <returns></returns>
         public static string GetBundleNameWithoutVariant(string bundleName)
         {
-            string ext = "." + AssetConfig.Variant;
+            string ext = "." + ResDBConfig.Variant;
             if (bundleName.EndsWith(ext))
             {
                 return bundleName.Substring(0, bundleName.Length - ext.Length);
@@ -68,7 +68,7 @@ namespace JxUnity.ResDB
 
         public static string ROOTToBundleName(string _ROOT)
         {
-            return ROOTToASSET(_ROOT);
+            return ROOTToASSET(_ROOT).ToLower();
         }
 
         public static string ROOTToASSET(string _ROOT)

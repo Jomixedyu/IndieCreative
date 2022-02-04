@@ -1,10 +1,12 @@
 ﻿using JxUnity.ResDB;
+using JxUnity.ResDB.Private;
 using UnityEditor;
 using UnityEngine;
 
 public static class AssetSettingsProvider
 {
-    private const string ConfigPath = "Assets/Resources/ResourcePackageSettings.asset";
+    
+    private static readonly string ConfigPath = $"Assets/Resources/{ResDBConfig.kSettingObjectName}.asset";
 
     [SettingsProvider]
     public static SettingsProvider GetProvider()
@@ -14,19 +16,19 @@ public static class AssetSettingsProvider
 
     public static AssetLoadMode GetDefaultLoadMode()
     {
-        var set = AssetDatabase.LoadAssetAtPath<ResourcePackageSettings>(ConfigPath);
-        return set != null ? set.DefaultLoadMode : AssetLoadMode.Local;
+        var set = AssetDatabase.LoadAssetAtPath<ResDBSettings>(ConfigPath);
+        return set != null ? set.LoadMode : AssetLoadMode.Inline;
     }
     public static void SetDefaultLoadMode(AssetLoadMode mode)
     {
-        var set = AssetDatabase.LoadAssetAtPath<ResourcePackageSettings>(ConfigPath);
+        var set = AssetDatabase.LoadAssetAtPath<ResDBSettings>(ConfigPath);
         if (set == null)
         {
-            set = ScriptableObject.CreateInstance<ResourcePackageSettings>();
+            set = ScriptableObject.CreateInstance<ResDBSettings>();
             AssetDatabase.CreateAsset(set, ConfigPath);
             AssetDatabase.Refresh();
         }
-        set.DefaultLoadMode = mode;
+        set.LoadMode = mode;
         EditorUtility.SetDirty(set);
         //AssetDatabase.SaveAssets();
     }
@@ -38,7 +40,7 @@ public static class AssetSettingsProvider
         private SerializedProperty ser_Mode;
 
         public Provider()
-            : base("Project/Resource Package", SettingsScope.Project, null)
+            : base("Project/JxUnity.ResDB", SettingsScope.Project, null)
         {
         }
         public override void OnGUI(string searchContext)
@@ -51,16 +53,16 @@ public static class AssetSettingsProvider
         public override void OnActivate(string searchContext, UnityEngine.UIElements.VisualElement rootElement)
         {
             base.OnActivate(searchContext, rootElement);
-            var assetObj = AssetDatabase.LoadAssetAtPath<ResourcePackageSettings>(ConfigPath);
+            var assetObj = AssetDatabase.LoadAssetAtPath<ResDBSettings>(ConfigPath);
             if (assetObj == null)
             {
-                assetObj = ScriptableObject.CreateInstance<ResourcePackageSettings>();
+                assetObj = ScriptableObject.CreateInstance<ResDBSettings>();
                 AssetDatabase.CreateAsset(assetObj, ConfigPath);
                 AssetDatabase.Refresh();
             }
 
             this.serobj = new SerializedObject(assetObj);
-            this.ser_Mode = this.serobj.FindProperty("DefaultLoadMode");
+            this.ser_Mode = this.serobj.FindProperty("LoadMode");
         }
     }
 }
