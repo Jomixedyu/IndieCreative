@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace JxUnity.Resources
+namespace JxUnity.ResDB
 {
     public enum AssetLoadMode
     {

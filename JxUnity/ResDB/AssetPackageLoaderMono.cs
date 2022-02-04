@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 using UObject = UnityEngine.Object;
 using System.Collections;
-using JxUnity.Resources.Private;
+using JxUnity.ResDB.Private;
 using System.IO;
 
-namespace JxUnity.Resources
+namespace JxUnity.ResDB
 {
     internal sealed class AssetPackageLoaderMono : MonoBehaviour
     {
@@ -51,7 +51,7 @@ namespace JxUnity.Resources
             string mapping = mappingBundle.LoadAsset<TextAsset>(AssetConfig.MapName).text;
             this.assetMapping = new AssetBundleMapping(mapping);
             mappingBundle.Unload(true);
-
+            
             this.assetbundleCaching = new Dictionary<string, AssetBundle>();
             this.assetCaching = new Dictionary<string, UObject>();
         }

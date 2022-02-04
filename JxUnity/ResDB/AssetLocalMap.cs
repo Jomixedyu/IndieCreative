@@ -4,7 +4,7 @@ using System;
 using Object = UnityEngine.Object;
 using System.IO;
 
-namespace JxUnity.Resources
+namespace JxUnity.ResDB
 {
     /// <summary>
     /// 仅在加载模式为本地加载模式时使用

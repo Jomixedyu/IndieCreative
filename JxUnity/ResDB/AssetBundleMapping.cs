@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace JxUnity.Resources
+namespace JxUnity.ResDB
 {
     internal class AssetBundleMapping : IEnumerable<KeyValuePair<string, AssetBundleMapping.MappingItem>>
     {
@@ -10,12 +10,14 @@ namespace JxUnity.Resources
         {
             public string assetPath { get; private set; }
             public string assetName { get; private set; }
+            public string guid { get; private set; }
             public string assetPackageName { get; private set; }
 
-            public MappingItem(string assetPath, string assetName, string assetBundleName)
+            public MappingItem(string assetPath, string assetName, string guid, string assetBundleName)
             {
                 this.assetPath = assetPath;
                 this.assetName = assetName;
+                this.guid = guid;
                 this.assetPackageName = assetBundleName;
             }
         }
@@ -36,12 +38,13 @@ namespace JxUnity.Resources
                 string[] relation = item.Trim().Split(':');
                 var assetPath = relation[0].ToLower();
                 var assetName = relation[1].ToLower();
-                var abName = relation[2];
+                var guid = relation[2].ToLower();
+                var abName = relation[3];
                 if (this.mappingTable.ContainsKey(assetPath))
                 {
                     throw new ArgumentException("AssetMapping: asset path exist: " + assetPath);
                 }
-                this.mappingTable.Add(assetPath, new MappingItem(assetPath, assetName, abName));
+                this.mappingTable.Add(assetPath, new MappingItem(assetPath, assetName, guid, abName));
             }
         }
 

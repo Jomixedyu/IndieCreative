@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using UnityEngine;
 
-namespace JxUnity.Resources.Private
+namespace JxUnity.ResDB.Private
 {
     public static class AssetConfig
     {

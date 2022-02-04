@@ -1,11 +1,8 @@
 {
-    "name": "JxUnity.Resources.Editor",
-    "references": [
-        "JxUnity.Resources"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "name": "JxUnity.ResDB",
+    "rootNamespace": "",
+    "references": [],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

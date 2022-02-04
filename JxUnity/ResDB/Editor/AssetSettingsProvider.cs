@@ -1,4 +1,4 @@
-﻿using JxUnity.Resources;
+﻿using JxUnity.ResDB;
 using UnityEditor;
 using UnityEngine;
 

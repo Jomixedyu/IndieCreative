@@ -1,9 +1,9 @@
-﻿using JxUnity.Resources;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
-using JxUnity.Resources.Private;
+using JxUnity.ResDB;
+using JxUnity.ResDB.Private;
 
 public static class ResourceBuilderUtility
 {

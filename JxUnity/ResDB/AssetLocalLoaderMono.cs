@@ -1,10 +1,10 @@
-﻿using JxUnity.Resources.Private;
+﻿using JxUnity.ResDB.Private;
 using System;
 using System.Collections;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace JxUnity.Resources
+namespace JxUnity.ResDB
 {
     internal sealed class AssetLocalLoaderMono : MonoBehaviour
     {

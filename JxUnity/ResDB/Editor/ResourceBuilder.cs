@@ -5,13 +5,13 @@ using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
-using JxUnity.Resources;
-using JxUnity.Resources.Private;
+using JxUnity.ResDB;
+using JxUnity.ResDB.Private;
 
 public class ResourceBuilder : Editor
 {
-    [MenuItem("Assets/ResourcePackage/Set Selected Name")]
-    [MenuItem("ResourcePackage/Set Selected Name", false, 0)]
+    [MenuItem("Assets/ResDB/Set Selected Name")]
+    [MenuItem("ResDB/Set Selected Name", false, 0)]
     public static void SetSelectName()
     {
         foreach (string item in Selection.assetGUIDs)
@@ -21,8 +21,8 @@ public class ResourceBuilder : Editor
         AssetDatabase.Refresh();
     }
 
-    [MenuItem("Assets/ResourcePackage/Set Selected SubNames")]
-    [MenuItem("ResourcePackage/Set Selected SubNames", false, 5)]
+    [MenuItem("Assets/ResDB/Set Selected SubNames")]
+    [MenuItem("ResDB/Set Selected SubNames", false, 5)]
     public static void SetSelectSubNames()
     {
         foreach (string item in Selection.assetGUIDs)
@@ -42,8 +42,8 @@ public class ResourceBuilder : Editor
         ResourceBuilderUtility.ResetSubNames(rootName);
     }
 
-    [MenuItem("Assets/ResourcePackage/Remove Selected Name")]
-    [MenuItem("ResourcePackage/Remove Selected Name", false, 10)]
+    [MenuItem("Assets/ResDB/Remove Selected Name")]
+    [MenuItem("ResDB/Remove Selected Name", false, 10)]
     public static void RemoveSelectName()
     {
         foreach (string item in Selection.assetGUIDs)
@@ -54,8 +54,8 @@ public class ResourceBuilder : Editor
         AssetDatabase.Refresh();
     }
 
-    [MenuItem("Assets/ResourcePackage/Remove Selected SubNames")]
-    [MenuItem("ResourcePackage/Remove Selected SubNames", false, 15)]
+    [MenuItem("Assets/ResDB/Remove Selected SubNames")]
+    [MenuItem("ResDB/Remove Selected SubNames", false, 15)]
     public static void RemoveSelectSubNames()
     {
         foreach (string item in Selection.assetGUIDs)
@@ -69,7 +69,7 @@ public class ResourceBuilder : Editor
         AssetDatabase.Refresh();
     }
 
-    [MenuItem("ResourcePackage/Remove All Names", false, 100)]
+    [MenuItem("ResDB/Remove All Names", false, 100)]
     public static void RemoveAllNames()
     {
         if (!EditorUtility.DisplayDialog("warn", "remove all ab names", "yes", "no"))
@@ -82,14 +82,14 @@ public class ResourceBuilder : Editor
         EditorUtility.DisplayDialog("msg", "done", "ok");
     }
 
-    [MenuItem("ResourcePackage/Remove Unused Names", false, 105)]
+    [MenuItem("ResDB/Remove Unused Names", false, 105)]
     public static void RemoveUnusedNames()
     {
         AssetDatabase.RemoveUnusedAssetBundleNames();
         AssetDatabase.Refresh();
     }
 
-    [MenuItem("ResourcePackage/Check Valid", false, 105)]
+    [MenuItem("ResDB/Check Valid", false, 105)]
     public static void CheckValid()
     {
         //AssetDatabase.IsValidFolder();
@@ -105,7 +105,7 @@ public class ResourceBuilder : Editor
     /// <summary>
     /// 生成映射表
     /// </summary>
-    [MenuItem("ResourcePackage/Generate Resource Mapping", false, 200)]
+    [MenuItem("ResDB/Generate Resource Mapping", false, 200)]
     public static void GenerateResourceMapping()
     {
         System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
@@ -122,6 +122,8 @@ public class ResourceBuilder : Editor
                 sb.Append(AssetNameUtility.ROOTToASSET(assetROOT));
                 sb.Append(':');
                 sb.Append(Path.GetFileNameWithoutExtension(assetROOT));
+                sb.Append(':');
+                sb.Append(AssetDatabase.AssetPathToGUID(assetROOT));
                 sb.Append(':');
                 sb.Append(abName);
                 sb.Append('\n');
@@ -144,7 +146,7 @@ public class ResourceBuilder : Editor
     }
 
 
-    [MenuItem("ResourcePackage/Generate Local ResObjects", false, 205)]
+    [MenuItem("ResDB/Generate Local ResObjects", false, 205)]
     private static void GenerateResObjects()
     {
         if (AssetSettingsProvider.GetDefaultLoadMode() != AssetLoadMode.Local)
@@ -198,31 +200,31 @@ public class ResourceBuilder : Editor
     }
 
 
-    [MenuItem("ResourcePackage/Build Resource Package", false, 210)]
+    [MenuItem("ResDB/Build Resource Package", false, 210)]
     public static void BuildResourcePackage()
     {
         ResourcePackageBuilderWindow.ShowWindow();
     }
 
 
-    [MenuItem("ResourcePackage/Load Mode/Local", true)]
+    [MenuItem("ResDB/Load Mode/Local", true)]
     public static bool LoadModeLocalValid()
     {
         return AssetSettingsProvider.GetDefaultLoadMode() != AssetLoadMode.Local;
     }
-    [MenuItem("ResourcePackage/Load Mode/Package", true)]
+    [MenuItem("ResDB/Load Mode/Package", true)]
     public static bool LoadModePackageValid()
     {
         return AssetSettingsProvider.GetDefaultLoadMode() != AssetLoadMode.Package;
     }
 
-    [MenuItem("ResourcePackage/Load Mode/Local")]
+    [MenuItem("ResDB/Load Mode/Local")]
     public static void LoadModeLocal()
     {
         AssetSettingsProvider.SetDefaultLoadMode(AssetLoadMode.Local);
         Debug.Log("Resources Load Mode: Local");
     }
-    [MenuItem("ResourcePackage/Load Mode/Package")]
+    [MenuItem("ResDB/Load Mode/Package")]
     public static void LoadModePackage()
     {
         AssetSettingsProvider.SetDefaultLoadMode(AssetLoadMode.Package);
@@ -241,24 +243,24 @@ public class ResourceBuilder : Editor
         }
     }
 
-    [MenuItem("ResourcePackage/Simulator/Enable Editor Simulator", validate = true)]
+    [MenuItem("ResDB/Simulator/Enable Editor Simulator", validate = true)]
     public static bool EnableEditorSimulator_Validate()
     {
         return !IsEditorSimulator;
     }
-    [MenuItem("ResourcePackage/Simulator/Disable Editor Simulator", validate = true)]
+    [MenuItem("ResDB/Simulator/Disable Editor Simulator", validate = true)]
     public static bool DisableEditorSimulator_Validate()
     {
         return IsEditorSimulator;
     }
 
-    [MenuItem("ResourcePackage/Simulator/Enable Editor Simulator")]
+    [MenuItem("ResDB/Simulator/Enable Editor Simulator")]
     public static void EnableEditorSimulator()
     {
         IsEditorSimulator = true;
         Debug.Log("Enable Editor Simulator!");
     }
-    [MenuItem("ResourcePackage/Simulator/Disable Editor Simulator")]
+    [MenuItem("ResDB/Simulator/Disable Editor Simulator")]
     public static void DisableEditorSimulator()
     {
         IsEditorSimulator = false;
@@ -268,6 +270,6 @@ public class ResourceBuilder : Editor
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void StaticInit()
     {
-        Debug.Log($"[JxUnity.Resources] LoadMode: {AssetSettingsProvider.GetDefaultLoadMode()}, IsSimulator: {IsEditorSimulator}");
+        Debug.Log($"[JxUnity.ResDB] LoadMode: {AssetSettingsProvider.GetDefaultLoadMode()}, IsSimulator: {IsEditorSimulator}");
     }
 }

@@ -1,5 +1,5 @@
 ﻿
-using JxUnity.Resources;
+using JxUnity.ResDB;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;

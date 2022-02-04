@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using JxUnity.Resources.Private;
+using JxUnity.ResDB.Private;
 
-namespace JxUnity.Resources
+namespace JxUnity.ResDB
 {
     /// <summary>
     /// 路径命名规则：
