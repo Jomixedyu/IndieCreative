@@ -2,6 +2,7 @@
 using JxUnity.ResDB;
 using JxUnity.ResDB.Private;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -41,20 +42,7 @@ public class ResourcePackageBuilderWindow : EditorWindow
             [BuildTarget.iOS] = "ios",
         };
 
-        var platform = Application.platform;
-
-        if (platform == RuntimePlatform.WindowsEditor)
-        {
-            this.buildTarget = BuildTarget.StandaloneWindows;
-        }
-        else if (platform == RuntimePlatform.LinuxEditor)
-        {
-            this.buildTarget = BuildTarget.StandaloneLinux64;
-        }
-        else if (platform == RuntimePlatform.OSXEditor)
-        {
-            this.buildTarget = BuildTarget.StandaloneOSX;
-        }
+        this.buildTarget = EditorUserBuildSettings.activeBuildTarget;
     }
 
     private void OnGUI()
@@ -139,8 +127,17 @@ public class ResourcePackageBuilderWindow : EditorWindow
             Directory.CreateDirectory(path);
         }
 
-        BuildPipeline.BuildAssetBundles(path, BuildAssetBundleOptions.None, buildTarget);
+        var option = 
+            BuildAssetBundleOptions.ChunkBasedCompression |
+            BuildAssetBundleOptions.DeterministicAssetBundle;
+
+        ResourceBuilder.GenerateResourceMapping();
+
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        BuildPipeline.BuildAssetBundles(path, option, buildTarget);
+        stopwatch.Stop();
+
         AssetDatabase.Refresh();
-        EditorUtility.DisplayDialog("notice", "done", "ok");
+        EditorUtility.DisplayDialog("notice", $"done. time: {stopwatch.ElapsedMilliseconds}", "ok");
     }
 }
