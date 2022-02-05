@@ -10,7 +10,9 @@ namespace JxUnity.Localization
         public string DisplayName { get; set; }
         public string LangType { get; set; }
         public string Author { get; set; }
+        public string Version { get; set; }
         public string Time { get; set; }
+
         public Dictionary<string, string> Records { get; set; }
 
         private void PutText(XmlDocument doc, XmlElement root, string name, string value)
@@ -29,6 +31,7 @@ namespace JxUnity.Localization
             this.PutText(doc, root, nameof(DisplayName), this.DisplayName);
             this.PutText(doc, root, nameof(LangType), this.LangType);
             this.PutText(doc, root, nameof(Author), this.Author);
+            this.PutText(doc, root, nameof(Version), this.Version);
             this.PutText(doc, root, nameof(Time), this.Time);
 
             var records = doc.CreateElement(nameof(Records));
@@ -68,6 +71,7 @@ namespace JxUnity.Localization
             this.DisplayName = root[nameof(DisplayName)].FirstChild.Value;
             this.LangType = root[nameof(LangType)].FirstChild.Value;
             this.Author = root[nameof(Author)].FirstChild.Value;
+            this.Version = root[nameof(Version)].FirstChild.Value;
             this.Time = root[nameof(Time)].FirstChild.Value;
             this.Records = new Dictionary<string, string>();
             foreach (XmlNode item in root[nameof(Records)])

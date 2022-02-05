@@ -30,6 +30,7 @@ namespace JxUnity.Localization
                 DisplayName = "简体中文",
                 LangType = SystemLanguage.ChineseSimplified.ToString(),
                 Author = "JomiXedYu",
+                Version = "0.0.0",
                 Time = DateTime.Now.ToString(),
                 Records = new Dictionary<string, string>()
                 {

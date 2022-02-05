@@ -13,10 +13,18 @@ namespace JxUnity.Localization
         public string StringId { get => stringId; set => stringId = value; }
 
         private Text txt;
-
+        
         public string GetText()
         {
             return LocalizationManager.GetString(this.stringId);
+        }
+        public void RefreshText()
+        {
+            var str = this.GetText();
+            if (str != null)
+            {
+                this.txt.text = str;
+            }
         }
 
         private void Awake()
@@ -34,7 +42,7 @@ namespace JxUnity.Localization
 
         private void OnEnable()
         {
-            this.txt.text = this.GetText();
+            this.RefreshText();
             LocalizationManager.LanguageChanged += this.OnLanguageChange;
         }
 
@@ -46,7 +54,7 @@ namespace JxUnity.Localization
         //语言变更刷新
         private void OnLanguageChange()
         {
-            this.txt.text = this.GetText();
+            this.RefreshText();
         }
     }
 }

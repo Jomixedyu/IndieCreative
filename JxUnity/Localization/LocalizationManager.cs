@@ -35,12 +35,12 @@ namespace JxUnity.Localization
                 {
                     currentTable = LoadLang(value);
                 }
+                Debug.Log("[JxLocalization] lang changed: " + currentLang);
                 LanguageChanged?.Invoke();
             }
         }
         private static LocalizedTable currentTable;
         public static event Action LanguageChanged;
-
 
         public static bool EnableCaching { get; set; } = true;
         private static Dictionary<string, WeakReference<LocalizedTable>> tableCaching
@@ -61,7 +61,16 @@ namespace JxUnity.Localization
 
         static bool IsExistLang(string name) => File.Exists(GetFilePath(name));
 
-        public static string GetString(string id)
+
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        private static void UnityStaticConstructor()
+        {
+            isTriedUseSystemLangFile = false;
+        }
+
+        private static bool isTriedUseSystemLangFile;
+        private static void TryUseSystemLangFile()
         {
             if (currentTable == null)
             {
@@ -69,13 +78,30 @@ namespace JxUnity.Localization
                 var langFilename_ = GetSystemLang().ToString();
                 if (!IsExistLang(langFilename_))
                 {
-                    throw new ArgumentNullException("not found system lang file.");
+                    Debug.LogWarning("[JxLocalization] not found system lang file: " + langFilename_);
                 }
-                CurrentLang = langFilename_;
+                else
+                {
+                    CurrentLang = langFilename_;
+                }
             }
-            if (currentTable.Records.TryGetValue(id, out var record))
+            isTriedUseSystemLangFile = true;
+        }
+
+        public static string GetString(string id)
+        {
+            if (currentTable == null && !isTriedUseSystemLangFile)
             {
-                return record;
+                TryUseSystemLangFile();
+            }
+
+            if (currentTable != null)
+            {
+                if (currentTable.Records.TryGetValue(id, out var record))
+                {
+                    return record;
+                }
+                Debug.LogWarning("[JxLocalization] not found lang record: " + id);
             }
             return null;
         }
