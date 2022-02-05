@@ -24,9 +24,8 @@
 
 基础的单例与Mono单例，状态机等常用设计模板类。
 ## AssetManagment
-该库正在进行功能实现迭代阶段，基本不会出现不兼容的更新，[查看文档](JxUnity/AssetManagment/README.md)
+资源管理框架完成后独立出去成为单独的库，并改名为ResDB，详见https://github.com/JomiXedYu/JxUnity.ResDB
 
-统一的资源读取接口，在Editor中直接读取资源，编译时可以选择放入Resources模式或打包成AssetsBundle，提供了资源分包等工具。
 ## JxUGUI
 该库已进入长期稳定版，[查看文档](JxUnity/Jxugui/README.md)
 
