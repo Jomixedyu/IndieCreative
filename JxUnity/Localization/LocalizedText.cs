@@ -3,47 +3,50 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(Text))]
-public class LocalizedText : MonoBehaviour
+namespace JxUnity.Localization
 {
-    [SerializeField]
-    private string stringId;
-    public string StringId { get => stringId; set => stringId = value; }
-
-    private Text text;
-
-    public string GetText()
+    [RequireComponent(typeof(Text))]
+    public class LocalizedText : MonoBehaviour
     {
-        return LocalizationManager.GetString(stringId);
-    }
+        [SerializeField]
+        private string stringId;
+        public string StringId { get => stringId; set => stringId = value; }
 
-    private void Awake()
-    {
-        if (text == null)
+        private Text txt;
+
+        public string GetText()
         {
-            text = GetComponent<Text>();
+            return LocalizationManager.GetString(this.stringId);
         }
-        if (text == null)
+
+        private void Awake()
         {
-            text = gameObject.AddComponent<Text>();
-            //throw new NullReferenceException("text component not found!");
+            if (this.txt == null)
+            {
+                this.txt = this.GetComponent<Text>();
+                if (this.txt == null)
+                {
+                    this.txt = this.gameObject.AddComponent<Text>();
+                }
+            }
+
         }
-    }
 
-    private void OnEnable()
-    {
-        text.text = GetText();
-        LocalizationManager.LanguageChanged += OnLanguageChange;
-    }
+        private void OnEnable()
+        {
+            this.txt.text = this.GetText();
+            LocalizationManager.LanguageChanged += this.OnLanguageChange;
+        }
 
-    private void OnDisable()
-    {
-        LocalizationManager.LanguageChanged -= OnLanguageChange;
-    }
+        private void OnDisable()
+        {
+            LocalizationManager.LanguageChanged -= this.OnLanguageChange;
+        }
 
-    //语言变更刷新
-    private void OnLanguageChange()
-    {
-        text.text = GetText();
+        //语言变更刷新
+        private void OnLanguageChange()
+        {
+            this.txt.text = this.GetText();
+        }
     }
 }
