@@ -13,6 +13,10 @@ namespace JxUnity.Localization
             get => currentLang;
             set
             {
+                if (!IsExistLang(value))
+                {
+                    throw new ArgumentOutOfRangeException("not found lang file");
+                }
                 currentLang = value;
                 if (EnableCaching)
                 {
@@ -38,15 +42,20 @@ namespace JxUnity.Localization
         public static event Action LanguageChanged;
 
 
+        public static bool EnableCaching { get; set; } = true;
         private static Dictionary<string, WeakReference<LocalizedTable>> tableCaching
             = new Dictionary<string, WeakReference<LocalizedTable>>();
 
-        public static bool EnableCaching { get; set; } = true;
 
         public static readonly string FolderName = "Lang";
         public static string ReadPath { get; } = System.Environment.CurrentDirectory + "/" + FolderName;
 
-        static LocalizedTable LoadLang(string name) => LocalizedSerializer.LoadAndDeserialize(GetFilePath(name));
+        static LocalizedTable LoadLang(string name)
+        {
+            var table = new LocalizedTable();
+            table.OpenAndDeserialize(GetFilePath(name));
+            return table;
+        }
 
         static string GetFilePath(string name) => $"{ReadPath}/{name}.xml";
 
@@ -54,24 +63,31 @@ namespace JxUnity.Localization
 
         public static string GetString(string id)
         {
-            return string.Empty;
+            if (currentTable == null)
+            {
+                //try to find systemlang
+                var langFilename_ = GetSystemLang().ToString();
+                if (!IsExistLang(langFilename_))
+                {
+                    throw new ArgumentNullException("not found system lang file.");
+                }
+                CurrentLang = langFilename_;
+            }
+            if (currentTable.Records.TryGetValue(id, out var record))
+            {
+                return record;
+            }
+            return null;
         }
 
-        private static string GetSystemLang()
+        public static SystemLanguage GetSystemLang()
         {
             switch (Application.systemLanguage)
             {
                 case SystemLanguage.Chinese:
-                case SystemLanguage.ChineseSimplified:
-                    return LocalizedType.zh_CN;
-                case SystemLanguage.ChineseTraditional:
-                    return LocalizedType.zh_TW;
-                case SystemLanguage.English:
-                    return LocalizedType.en_US;
-                case SystemLanguage.Japanese:
-                    return LocalizedType.ja_JP;
+                    return SystemLanguage.ChineseSimplified;
             }
-            return null;
+            return Application.systemLanguage;
         }
     }
 

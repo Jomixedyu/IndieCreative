@@ -27,16 +27,24 @@ namespace JxUnity.Localization
             PreparePath();
             var table = new LocalizedTable()
             {
+                DisplayName = "简体中文",
+                LangType = SystemLanguage.ChineseSimplified.ToString(),
                 Author = "JomiXedYu",
                 Time = DateTime.Now.ToString(),
-                LangRecords = new List<LocalizedRecord>()
+                Records = new Dictionary<string, string>()
                 {
-                    new LocalizedRecord("exm","helloworld"),
+                    {"sys_hello", "你好" },
+                    {"sys_open", "打开" }
                 }
             };
-            var content = LocalizedSerializer.Serialize(table);
-            string name = "exm";
-            File.WriteAllText(GetFilePath(name), content);
+
+            string name = LocalizationManager.GetSystemLang().ToString();
+            table.SerializeAndSave(GetFilePath(name));
+
+            var t1 = new LocalizedTable();
+            t1.OpenAndDeserialize(GetFilePath(name));
+
+            Debug.Log("complete");
         }
     }
 
@@ -64,7 +72,7 @@ namespace JxUnity.Localization
                     var filename = Path.GetFileName(file);
                     File.Copy(file, $"{outputLang}/{filename}");
                 }
-                Debug.Log("JxLocalization: build complete!");
+                Debug.Log("JxLocalization: build completed!");
             }
 
         }
