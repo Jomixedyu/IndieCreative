@@ -126,7 +126,7 @@ public static class TransformExtension
     /// 移除所有子物体
     /// </summary>
     /// <param name="component"></param>
-    public static void RemoveChildren(this Component component)
+    public static void DestoryChildren(this Component component)
     {
         Transform transform = component.transform;
         for (int i = 0; i < transform.childCount; i++)
