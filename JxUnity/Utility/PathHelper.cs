@@ -26,9 +26,11 @@ public static class PathHelper
         switch (Application.platform)
         {
             case RuntimePlatform.WindowsPlayer:
-                return System.Environment.CurrentDirectory;
+                return global::System.AppDomain.CurrentDomain.BaseDirectory;
             case RuntimePlatform.Android:
                 return Application.persistentDataPath;
+            case RuntimePlatform.IPhonePlayer:
+                return Application.temporaryCachePath;
             default:
                 break;
         }
