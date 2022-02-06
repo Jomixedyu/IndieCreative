@@ -11,35 +11,11 @@ namespace JxUnity.Localization
         public static string CurrentLang
         {
             get => currentLang;
-            set
-            {
-                if (!IsExistLang(value))
-                {
-                    throw new ArgumentOutOfRangeException("not found lang file");
-                }
-                currentLang = value;
-                if (EnableCaching)
-                {
-                    if (tableCaching.TryGetValue(value, out var weakCache)
-                        && weakCache.TryGetTarget(out var cache))
-                    {
-                        currentTable = cache;
-                    }
-                    else
-                    {
-                        currentTable = LoadLang(value);
-                        tableCaching.Add(value, new WeakReference<LocalizedTable>(currentTable));
-                    }
-                }
-                else
-                {
-                    currentTable = LoadLang(value);
-                }
-                Debug.Log("[JxLocalization] lang changed: " + currentLang);
-                LanguageChanged?.Invoke();
-            }
         }
+
         private static LocalizedTable currentTable;
+        public static string CurrentLocale => currentTable?.Locale;
+
         public static event Action LanguageChanged;
 
         public static bool EnableCaching { get; set; } = true;
@@ -48,13 +24,59 @@ namespace JxUnity.Localization
 
 
         public static readonly string FolderName = "Lang";
-        public static string ReadPath { get; } = System.Environment.CurrentDirectory + "/" + FolderName;
+        public static string ReadPath => GetWritablePath() + "/" + FolderName;
+        private static string GetWritablePath()
+        {
+            if (Application.isEditor)
+            {
+                return Application.streamingAssetsPath;
+            }
+            switch (Application.platform)
+            {
+                case RuntimePlatform.WindowsPlayer:
+                    return global::System.AppDomain.CurrentDomain.BaseDirectory;
+                case RuntimePlatform.Android:
+                    return Application.persistentDataPath;
+                case RuntimePlatform.IPhonePlayer:
+                    return Application.temporaryCachePath;
+                default:
+                    break;
+            }
+            return null;
+        }
 
-        static LocalizedTable LoadLang(string name)
+        static LocalizedTable LoadLangFile(string name)
         {
             var table = new LocalizedTable();
             table.OpenAndDeserialize(GetFilePath(name));
             return table;
+        }
+        public static void LoadLang(string value)
+        {
+            if (!IsExistLang(value))
+            {
+                throw new ArgumentOutOfRangeException("not found lang file");
+            }
+            currentLang = value;
+            if (EnableCaching)
+            {
+                if (tableCaching.TryGetValue(value, out var weakCache)
+                    && weakCache.TryGetTarget(out var cache))
+                {
+                    currentTable = cache;
+                }
+                else
+                {
+                    currentTable = LoadLangFile(value);
+                    tableCaching.Add(value, new WeakReference<LocalizedTable>(currentTable));
+                }
+            }
+            else
+            {
+                currentTable = LoadLangFile(value);
+            }
+            Debug.Log("[JxLocalization] lang changed: " + currentLang);
+            LanguageChanged?.Invoke();
         }
 
         static string GetFilePath(string name) => $"{ReadPath}/{name}.xml";
@@ -75,14 +97,15 @@ namespace JxUnity.Localization
             if (currentTable == null)
             {
                 //try to find systemlang
-                var langFilename_ = GetSystemLang().ToString();
+                var langFilename_ = GetLocaleDefaultFilename(GetSystemLocale());
                 if (!IsExistLang(langFilename_))
                 {
-                    Debug.LogWarning("[JxLocalization] not found system lang file: " + langFilename_);
+                    Debug.LogWarning("[JxLocalization] not found system lang file: " + langFilename_ + ", path: " + ReadPath);
                 }
                 else
                 {
-                    CurrentLang = langFilename_;
+                    Debug.Log("[JxLocalization] find system lang file: " + langFilename_ + ", path: " + ReadPath);
+                    LoadLang(langFilename_);
                 }
             }
             isTriedUseSystemLangFile = true;
@@ -106,14 +129,25 @@ namespace JxUnity.Localization
             return null;
         }
 
-        public static SystemLanguage GetSystemLang()
+        private static Dictionary<string, string> localeDefaultFilename = new Dictionary<string, string>()
         {
-            switch (Application.systemLanguage)
+            { "zh-CN", "简体中文-中国" },
+            { "zh-TW", "繁體中文-台灣" },
+            { "en-US", "English-US" }
+        };
+
+        public static string GetLocaleDefaultFilename(string locale)
+        {
+            if (localeDefaultFilename.TryGetValue(locale, out var value))
             {
-                case SystemLanguage.Chinese:
-                    return SystemLanguage.ChineseSimplified;
+                return value;
             }
-            return Application.systemLanguage;
+            return locale;
+        }
+
+        public static string GetSystemLocale()
+        {
+            return System.Globalization.CultureInfo.InstalledUICulture.Name;
         }
     }
 

@@ -10,25 +10,25 @@ namespace JxUnity.Localization
 {
     internal class LocalizedEditor
     {
+        internal static string GeneratedPath = LocalizationManager.ReadPath;
 
-        private static string GetFilePath(string name) => $"{LocalizationManager.ReadPath}/{name}.xml";
+        internal static string GetFilePath(string name) => $"{GeneratedPath}/{name}.xml";
 
-        private static void PreparePath()
+        private static void PreparePath(string path)
         {
-            if (!Directory.Exists(LocalizationManager.ReadPath))
+            if (!Directory.Exists(path))
             {
-                Directory.CreateDirectory(LocalizationManager.ReadPath);
+                Directory.CreateDirectory(path);
             }
         }
 
         [MenuItem("JxLocalization/GenExample")]
         public static void GenExample()
         {
-            PreparePath();
+            PreparePath(GeneratedPath);
             var table = new LocalizedTable()
             {
-                DisplayName = "简体中文",
-                LangType = SystemLanguage.ChineseSimplified.ToString(),
+                Locale = "zh-CN",
                 Author = "JomiXedYu",
                 Version = "0.0.0",
                 Time = DateTime.Now.ToString(),
@@ -39,14 +39,20 @@ namespace JxUnity.Localization
                 }
             };
 
-            string name = LocalizationManager.GetSystemLang().ToString();
+            string name = LocalizationManager.GetLocaleDefaultFilename(LocalizationManager.GetSystemLocale());
             table.SerializeAndSave(GetFilePath(name));
+            AssetDatabase.Refresh();
 
-            var t1 = new LocalizedTable();
-            t1.OpenAndDeserialize(GetFilePath(name));
-
-            Debug.Log("complete");
+            Debug.Log("completed!");
         }
+    }
+
+    internal class BuildResult
+    {
+        public BuildTarget platform;
+        public string outFolder;
+        public string filenameWithoutExt;
+        public string outputFilename;
     }
 
     internal class LocalizedE : IPostprocessBuildWithReport
@@ -55,27 +61,37 @@ namespace JxUnity.Localization
 
         public void OnPostprocessBuild(BuildReport report)
         {
-            string output = Path.GetDirectoryName(report.summary.outputPath);
-            string outputLang = output + "/" + LocalizationManager.FolderName;
-
-            if (Directory.Exists(outputLang))
+            BuildResult buildResult = new BuildResult()
             {
-                Directory.Delete(outputLang, true);
-            }
+                platform = report.summary.platform,
+                outFolder = Path.GetDirectoryName(report.summary.outputPath),
+                filenameWithoutExt = Path.GetFileNameWithoutExtension(report.summary.outputPath),
+                outputFilename = report.summary.outputPath
+            };
 
-            if (Directory.Exists(LocalizationManager.ReadPath))
+            var platform = report.summary.platform;
+
+            if (platform == BuildTarget.StandaloneWindows ||
+                platform == BuildTarget.StandaloneWindows64)
             {
-                Directory.CreateDirectory(outputLang);
-
-                var files = Directory.GetFiles(LocalizationManager.ReadPath);
-                foreach (var file in files)
-                {
-                    var filename = Path.GetFileName(file);
-                    File.Copy(file, $"{outputLang}/{filename}");
-                }
-                Debug.Log("JxLocalization: build completed!");
+                Windows(report, buildResult);
             }
-
         }
+
+        private void Windows(BuildReport report, BuildResult result)
+        {
+            var readPath = result.outFolder + "/" + LocalizationManager.FolderName;
+
+            var srcPath = $"{result.outFolder}/{result.filenameWithoutExt}_Data/StreamingAssets/{LocalizationManager.FolderName}";
+
+            if (Directory.Exists(readPath))
+            {
+                Directory.Delete(readPath, true);
+            }
+            Debug.Log($"[JxLocalization]: move {srcPath} to {readPath}");
+            Directory.Move(srcPath, readPath);
+            Debug.Log("[JxLocalization]: build completed!");
+        }
+
     }
 }

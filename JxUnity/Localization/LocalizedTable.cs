@@ -7,8 +7,7 @@ namespace JxUnity.Localization
 {
     public class LocalizedTable
     {
-        public string DisplayName { get; set; }
-        public string LangType { get; set; }
+        public string Locale { get; set; }
         public string Author { get; set; }
         public string Version { get; set; }
         public string Time { get; set; }
@@ -28,8 +27,7 @@ namespace JxUnity.Localization
             XmlElement root = doc.CreateElement(nameof(LocalizedTable));
             doc.AppendChild(root);
 
-            this.PutText(doc, root, nameof(DisplayName), this.DisplayName);
-            this.PutText(doc, root, nameof(LangType), this.LangType);
+            this.PutText(doc, root, nameof(Locale), this.Locale);
             this.PutText(doc, root, nameof(Author), this.Author);
             this.PutText(doc, root, nameof(Version), this.Version);
             this.PutText(doc, root, nameof(Time), this.Time);
@@ -68,8 +66,7 @@ namespace JxUnity.Localization
         private void DeserializeXml(XmlDocument doc)
         {
             var root = doc[nameof(LocalizedTable)];
-            this.DisplayName = root[nameof(DisplayName)].FirstChild.Value;
-            this.LangType = root[nameof(LangType)].FirstChild.Value;
+            this.Locale = root[nameof(Locale)].FirstChild.Value;
             this.Author = root[nameof(Author)].FirstChild.Value;
             this.Version = root[nameof(Version)].FirstChild.Value;
             this.Time = root[nameof(Time)].FirstChild.Value;
