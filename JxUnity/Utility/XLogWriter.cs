@@ -18,51 +18,56 @@ public static class XLogWriter
 
     private static string GetDefaultLogFolder()
     {
-        return System.Environment.CurrentDirectory + "/Log";
+        return GetWritablePath() + "/Log";
     }
 
-    /// <summary>
-    /// 在编译打包后的游戏状态下写出日志。
-    /// </summary>
-    /// <param name="outFolder">日志输出文件夹，如不参入，默认参数为'执行目录/Log'</param>
-    /// <param name="bufferCount">缓冲区储存数量，满后写出到文件</param>
-    public static void InitInPlayMode(string outFolder = null, int bufferCount = 5)
+    private static string GetWritablePath()
     {
-        if (!Application.isEditor)
+        if (Application.isEditor)
         {
-            if (string.IsNullOrEmpty(outFolder))
+            return System.Environment.CurrentDirectory;
+        }
+        switch (Application.platform)
+        {
+            case RuntimePlatform.WindowsPlayer:
+                return global::System.AppDomain.CurrentDomain.BaseDirectory;
+            case RuntimePlatform.Android:
+                return Application.persistentDataPath;
+            case RuntimePlatform.IPhonePlayer:
+                return Application.temporaryCachePath;
+            default:
+                break;
+        }
+        return null;
+    }
+
+    [Flags]
+    public enum OutState
+    {
+        Editor = 1,
+        DebugBuild = 1 << 1,
+        ReleaseBuild = 1 << 2,
+    }
+
+    public static void Initialize(
+        string outFolder = null,
+        int bufferCount = 5,
+        OutState state = OutState.DebugBuild | OutState.ReleaseBuild)
+    {
+        if ((state.HasFlag(OutState.Editor) && Application.isEditor)
+            || (state.HasFlag(OutState.DebugBuild) && Debug.isDebugBuild)
+            || (state.HasFlag(OutState.ReleaseBuild) && !Debug.isDebugBuild)
+            )
+        {
+            if (outFolder == null)
             {
                 outFolder = GetDefaultLogFolder();
             }
             Init(outFolder, bufferCount);
         }
     }
-    /// <summary>
-    /// 在编译打包后的游戏状态并且编译版本不为Development Build的情况下写出日志。
-    /// </summary>
-    /// <param name="outFolder">日志输出文件夹，如不参入，默认参数为'执行目录/Log'</param>
-    /// <param name="bufferCount">缓冲区储存数量，满后写出到文件</param>
-    public static void InitInReleasePlayMode(string outFolder = null, int bufferCount = 5)
-    {
-        if (!Application.isEditor)
-        {
-            if (!Debug.isDebugBuild)
-            {
-                if (string.IsNullOrEmpty(outFolder))
-                {
-                    outFolder = GetDefaultLogFolder();
-                }
-                Init(outFolder, bufferCount);
-            }
-        }
-    }
 
-    /// <summary>
-    /// 初始化写出日志。
-    /// </summary>
-    /// <param name="outFolder"></param>
-    /// <param name="bufferCount"></param>
-    public static void Init(string outFolder, int bufferCount = 5)
+    private static void Init(string outFolder, int bufferCount)
     {
         IsOutFile = true;
 
