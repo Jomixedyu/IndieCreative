@@ -114,4 +114,25 @@ public static class Texture2DUtility
         return result;
     }
 
+    public static Color CalcAvgColor(this Texture2D tex, int xSampleStep, int ySampleStep)
+    {
+        Color rc = Color.black;
+
+        int width = tex.width;
+        int height = tex.height;
+
+        int xstep = width / xSampleStep;
+        int ystep = height / ySampleStep;
+
+        for (int w = 0; w < width; w += xstep)
+        {
+            for (int h = 0; h < width; h += ystep)
+            {
+                Color c = tex.GetPixel(w, h);
+                rc += c;
+            }
+        }
+        rc = rc / ((width / xstep) * (height / ystep));
+        return rc;
+    }
 }
