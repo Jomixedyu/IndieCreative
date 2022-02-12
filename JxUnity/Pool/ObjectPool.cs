@@ -2,8 +2,25 @@
 using System.Collections.Generic;
 using System.Reflection;
 
+public struct ObjectPoolRAII<T> : IDisposable where T : class, new()
+{
+    public T Item { get; private set; }
+    public ObjectPoolRAII(T item)
+    {
+        this.Item = item;
+    }
+    public static implicit operator T(ObjectPoolRAII<T> item)
+    {
+        return item.Item;
+    }
+    public void Dispose()
+    {
+        ObjectPool<T>.Recycle(this.Item);
+    }
+}
+
 /// <summary>
-/// 简易对象的对象池，回收时执行构造函数设置默认值（释放引用）。
+/// 对象池，回收时执行构造函数设置默认值（释放引用）。
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public static class ObjectPool<T> where T : class, new()
@@ -17,7 +34,10 @@ public static class ObjectPool<T> where T : class, new()
         queue = new Queue<T>();
         ctorInfo = typeof(T).GetConstructor(new Type[0]);
     }
-
+    public static ObjectPoolRAII<T> Use()
+    {
+        return new ObjectPoolRAII<T>(Get());
+    }
     public static T Get()
     {
         if (queue.Count == 0)
