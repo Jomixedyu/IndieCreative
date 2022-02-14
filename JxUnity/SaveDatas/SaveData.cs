@@ -5,6 +5,7 @@ using System.Text;
 
 namespace JxUnity.SaveDatas
 {
+    //UTF-8 with BOM
     public class SaveData
     {
         private Dictionary<string, Value> datas
@@ -66,9 +67,9 @@ namespace JxUnity.SaveDatas
             }
         }
 
-        public object GetObject(string path, Type type, object inst = null)
+        public object GetObject(string path, Type type)
         {
-            return SaveDataUtility.Pack(path, type, inst, s =>
+            return SaveDataUtility.Pack(path, type, s =>
             {
                 if (this.datas.TryGetValue(s, out var oldv))
                 {
@@ -78,22 +79,19 @@ namespace JxUnity.SaveDatas
             });
         }
 
-        public static SaveData Load(string text)
+        public static SaveData Load(Stream stream)
         {
             SaveData saveData = new SaveData();
+            BinaryReader br = new BinaryReader(stream);
 
-            //待优化，split的gc很高
-            foreach (var item in text.Split('\n'))
+            (string name, string type, string value) info = default;
+
+            while ((info = SaveDataUtility.DeserializeRecord(br)).name != null)
             {
-                if (string.IsNullOrWhiteSpace(item))
+                var v = ValuesPool.PopOrCreate(info.type, info.value);
+                if (v != null)
                 {
-                    continue;
-                }
-                var infos = SaveDataUtility.DeserializeRecord(item);
-                var value = ValuesPool.PopOrCreate(infos.type, infos.value);
-                if (value != null)
-                {
-                    saveData.datas.Add(infos.name, value);
+                    saveData.datas.Add(info.name, v);
                 }
             }
 
@@ -104,6 +102,7 @@ namespace JxUnity.SaveDatas
 
         public string SerializeText()
         {
+            sb.Clear();
             foreach (var item in this.datas)
             {
                 var rec = SaveDataUtility.SerializeRecord(item.Key, item.Value.TypeName, item.Value.ToString());

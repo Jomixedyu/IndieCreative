@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace JxUnity.SaveDatas
 {
     internal class SaveDataUtility
     {
+        private static StringBuilder sb = new StringBuilder();
+
         private static Type[] saveableTypes = new Type[]
         {
             typeof(string), typeof(bool), typeof(int), typeof(float)
@@ -27,6 +31,40 @@ namespace JxUnity.SaveDatas
             string type = record.Substring(s1 + 1, s2 - s1 - 1);
             string value = record.Substring(s2 + 1);
             return (name, type, value);
+        }
+        public static (string name, string type, string value) DeserializeRecord(BinaryReader br)
+        {
+            string name = null, type = null, value = null;
+            char c = default;
+
+            while (br.BaseStream.CanRead && (c = br.ReadChar()) != '\n')
+            {
+                if (c == ':')
+                {
+                    name = sb.ToString();
+                    sb.Clear();
+                    continue;
+                }
+                else if (c == '=')
+                {
+                    type = sb.ToString();
+                    sb.Clear();
+                    continue;
+                }
+                else if (c == '\n')
+                {
+                    value = sb.ToString();
+                    sb.Clear();
+                    continue;
+                }
+                sb.Append(c);
+            }
+            return (name, type, value);
+        }
+        public static (string name, string type, string value) DeserializeRecord(Stream stream)
+        {
+            BinaryReader br = new BinaryReader(stream);
+            return DeserializeRecord(br);
         }
 
         private static void Unpack(FieldInfo info, object inst, string prefix, IList<(string name, string type, string value)> output)
@@ -89,9 +127,9 @@ namespace JxUnity.SaveDatas
 
         }
 
-        public static object Pack(string path, Type type, object _inst, Func<string, Value> dataProvider)
+        public static object Pack(string path, Type type, Func<string, Value> dataProvider)
         {
-            var inst = _inst ?? Activator.CreateInstance(type);
+            var inst = Activator.CreateInstance(type);
 
             path = (string.IsNullOrEmpty(path) ? "" : path + ".") + type.Name;
             foreach (var info in type.GetFields())

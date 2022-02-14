@@ -20,8 +20,9 @@ namespace JxUnity.SaveDatas
                 Data = new SaveData();
                 return;
             }
-            var ser = File.ReadAllText(FullFilename);
-            Data = SaveData.Load(ser);
+            var fs = File.Open(FullFilename, FileMode.Open, FileAccess.Read, FileShare.Read);
+            Data = SaveData.Load(fs);
+            fs.Close();
         }
 
         public static void Save()
