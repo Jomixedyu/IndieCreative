@@ -23,7 +23,7 @@ namespace JxUnity.Utility
             cmds.Add(func.name, func);
         }
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         private static void UnityStaticConstructor()
         {
             cmds = new Dictionary<string, PlayerConsoleFunction>();
