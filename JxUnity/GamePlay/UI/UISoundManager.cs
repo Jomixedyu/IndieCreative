@@ -64,8 +64,13 @@ namespace JxUnity.GamePlay.UI
         {
             if (this.config == null)
             {
-                Debug.LogWarning("UISoundManager: not found config");
-                return;
+                var asset = Resources.Load<UISoundConfigAsset>("UISoundConfigAsset");
+                this.config = asset;
+                if (asset == null)
+                {
+                    Debug.LogWarning("UISoundManager: not found config");
+                    return;
+                }
             }
 
             AudioClip clip = this.GetClip(group, type);

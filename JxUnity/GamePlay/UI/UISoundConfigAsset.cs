@@ -15,7 +15,7 @@ namespace JxUnity.GamePlay.UI
     }
 
     [Serializable]
-    [CreateAssetMenu(menuName = "GamePlay/UI/UISoundConfigAsset")]
+    [CreateAssetMenu(fileName = "UISoundConfigAsset", menuName = "GamePlay/UI/UISoundConfigAsset")]
     public class UISoundConfigAsset : ScriptableObject
     {
         [SerializeField]
