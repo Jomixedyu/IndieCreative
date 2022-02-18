@@ -59,8 +59,12 @@ namespace JxUnity.GamePlay.UI
             }
             return null;
         }
+        public void Play(AudioClip clip)
+        {
+            this.audioPool.Play(clip);
+        }
 
-        public void Play(string group, UISoundConfigGroupType type)
+        public void PlayByGroup(string group, UISoundConfigGroupType type)
         {
             if (this.config == null)
             {

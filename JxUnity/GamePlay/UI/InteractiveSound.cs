@@ -14,27 +14,27 @@ namespace JxUnity.GamePlay.UI
 
         private void OnEnable()
         {
-            UISoundManager.Instance.Play(this.soundGroupName, UISoundConfigGroupType.Enable);
+            UISoundManager.Instance.PlayByGroup(this.soundGroupName, UISoundConfigGroupType.Enable);
         }
 
         private void OnDisable()
         {
-            UISoundManager.Instance.Play(this.soundGroupName, UISoundConfigGroupType.Disable);
+            UISoundManager.Instance.PlayByGroup(this.soundGroupName, UISoundConfigGroupType.Disable);
         }
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            UISoundManager.Instance.Play(this.soundGroupName, UISoundConfigGroupType.Enter);
+            UISoundManager.Instance.PlayByGroup(this.soundGroupName, UISoundConfigGroupType.Enter);
         }
 
         public void OnPointerDown(PointerEventData eventData)
         {
-            UISoundManager.Instance.Play(this.soundGroupName, UISoundConfigGroupType.Down);
+            UISoundManager.Instance.PlayByGroup(this.soundGroupName, UISoundConfigGroupType.Down);
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            UISoundManager.Instance.Play(this.soundGroupName, UISoundConfigGroupType.Exit);
+            UISoundManager.Instance.PlayByGroup(this.soundGroupName, UISoundConfigGroupType.Exit);
         }
     }
 }

@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "JxUnity.Media",
-        "JxUnity.Basic"
+        "JxUnity.Basic",
+        "JxUnity.Ugui"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
