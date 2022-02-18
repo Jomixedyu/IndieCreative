@@ -1,6 +1,6 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace JxUnity.Utility
 {
@@ -14,18 +14,47 @@ namespace JxUnity.Utility
 
     public static class PlayerConsole
     {
-        private static Dictionary<string, PlayerConsoleFunction> cmds
-            = new Dictionary<string, PlayerConsoleFunction>();
+        private static Dictionary<string, PlayerConsoleFunction> cmds;
 
         public static event Action<string> MessageChannel;
 
         public static void Register(PlayerConsoleFunction func)
         {
-            if (cmds.ContainsKey(func.name))
-            {
-                cmds.Remove(func.name);
-            }
             cmds.Add(func.name, func);
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void UnityStaticConstructor()
+        {
+            cmds = new Dictionary<string, PlayerConsoleFunction>();
+
+            Register(new PlayerConsoleFunction()
+            {
+                name = "?",
+                function = Help,
+                description = "all command",
+                help = "/?",
+            });
+            Register(new PlayerConsoleFunction()
+            {
+                name = "help",
+                function = HelpFile,
+                description = "help file",
+                help = "/help command"
+            });
+        }
+
+        private static void Help()
+        {
+            foreach (var item in cmds)
+            {
+                Print($"/{item.Key} {item.Value.description}");
+            }
+        }
+
+        private static void HelpFile(string name)
+        {
+            Print(cmds[name].help);
         }
 
         private static List<string> args = new List<string>(8);
