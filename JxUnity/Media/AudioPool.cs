@@ -123,7 +123,9 @@ namespace JxUnity.Media
         protected List<AudioState> pool;
         [SerializeField]
         private bool[] poolState;
-
+        //[SerializeField][Range(0f, 1f)]
+        //private float m_volume = 1f;
+        [SerializeField]
         private float volume = 1f;
         public float Volume
         {
@@ -182,6 +184,7 @@ namespace JxUnity.Media
             }
 
             AudioState aus = GetUsableAudio();
+            aus.Volume = volume;
             aus.Play(ac, name, isLoop, isFade);
         }
 

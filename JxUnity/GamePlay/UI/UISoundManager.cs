@@ -50,6 +50,10 @@ namespace JxUnity.GamePlay.UI
                             return item.Exit;
                         case UISoundConfigGroupType.Down:
                             return item.Down;
+                        case UISoundConfigGroupType.Enable:
+                            return item.Enable;
+                        case UISoundConfigGroupType.Disable:
+                            return item.Disable;
                     }
                 }
             }

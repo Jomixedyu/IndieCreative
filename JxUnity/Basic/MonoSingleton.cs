@@ -2,7 +2,7 @@
 using UnityEngine;
 
 public abstract class MonoSingleton<T>
-    : MonoBehaviour, IDisposable where T : MonoSingleton<T>
+    : MonoBehaviour where T : MonoSingleton<T>
 {
     [SerializeField]
     private bool IsDontDestroyOnInit = true;
@@ -55,7 +55,6 @@ public abstract class MonoSingleton<T>
     protected void SetInstance(T obj)
     {
         mInstance = obj;
-        isDisposed = false;
     }
     /// <summary>
     /// 检查单例实例是否已经存在，如果存在则销毁旧的实例
@@ -82,19 +81,4 @@ public abstract class MonoSingleton<T>
         }
     }
 
-    protected bool isDisposed = false;
-    public virtual void Dispose()
-    {
-        if (isDisposed)
-        {
-            return;
-        }
-        isDisposed = true;
-
-        mInstance = null;
-        if (gameObject != null)
-        {
-            UnityEngine.Object.Destroy(gameObject);
-        }
-    }
 }
