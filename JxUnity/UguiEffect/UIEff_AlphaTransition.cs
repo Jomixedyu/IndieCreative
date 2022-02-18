@@ -118,7 +118,7 @@ public class UIEff_AlphaTransition : MonoBehaviour
         OnHide();
         if (this.IsInactiveAfterHide)
         {
-            this.gameObject.SetActive(true);
+            this.gameObject.SetActive(false);
         }
     }
 
