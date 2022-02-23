@@ -6,10 +6,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
+public class TextSerializerSettings
+{
+    public bool IsWriteTypename { get; set; } = false;
+    public bool IsStringEnum { get; set; } = false;
+}
+
 public abstract class TextSerializer
 {
     private static TextSerializer _xml;
-    private static TextSerializer _json;
+    private static TextSerializer _ujson;
+    private static TextNewtonJsonSerializer _ntJson;
 
     /// <summary>
     /// System.Xml
@@ -17,48 +24,70 @@ public abstract class TextSerializer
     public static TextSerializer Xml => _xml ?? (_xml = new TextXmlSerializer());
 
     /// <summary>
-    /// Json
+    /// unity json
+    /// </summary>
+    public static TextSerializer uJson => _ujson ?? (_ujson = new TextJsonSerializer());
+
+    private static bool isTriedGetNtJson = false;
+
+    /// <summary>
+    /// newtonsoft.json，如果程序集不存在则为null
+    /// </summary>
+    public static TextNewtonJsonSerializer ntJson
+    {
+        get
+        {
+            if (_ntJson != null)
+            {
+                return _ntJson;
+            }
+            if (!isTriedGetNtJson)
+            {
+                if (TextNewtonJsonSerializer.HasAssembly())
+                {
+                    _ntJson = new TextNewtonJsonSerializer();
+                }
+                isTriedGetNtJson = true;
+            }
+            return _ntJson; //nullable
+        }
+    }
+
+
+    /// <summary>
+    /// 首选newtonJson，如果不存在则使用unityJson
     /// </summary>
     public static TextSerializer Json
     {
         get
         {
-            if (_json != null)
+            if (ntJson != null)
             {
-                return _json;
+                return ntJson;
             }
-            if (TextNewtonJsonSerializer.HasAssembly())
-            {
-                _json = new TextNewtonJsonSerializer();
-            }
-            else
-            {
-                UnityEngine.Debug.LogWarning("TextSerializer: not found newtonsoft.json, use to unityjson");
-                _json = new TextJsonSerializer();
-            }
-            return _json;
+            return uJson;
         }
     }
 
     public abstract string Format { get; }
-    public abstract string Serialize(object obj, bool isReadability = false);
-    public abstract object Deserialize(string text, Type type);
+    public abstract string Serialize(object obj, bool isReadability = false, TextSerializerSettings settings = null);
+    public abstract object Deserialize(string text, Type type, TextSerializerSettings settings = null);
 
-    public T Deserialize<T>(string text)
+    public T Deserialize<T>(string text, TextSerializerSettings settings = null)
     {
-        return (T)Deserialize(text, typeof(T));
+        return (T)Deserialize(text, typeof(T), settings);
     }
 
-    public object Read(string path, Type type)
+    public object Read(string path, Type type, TextSerializerSettings settings = null)
     {
-        return Deserialize(File.ReadAllText(path), type);
+        return Deserialize(File.ReadAllText(path), type, settings);
     }
-    public T Read<T>(string path)
+    public T Read<T>(string path, TextSerializerSettings settings = null)
     {
-        return (T)Read(path, typeof(T));
+        return (T)Read(path, typeof(T), settings);
     }
 
-    public void ReadAsync(string path, Type type, Action<object, Exception> callback)
+    public void ReadAsync(string path, Type type, Action<object, Exception> callback, TextSerializerSettings settings = null)
     {
         var syncCtx = SynchronizationContext.Current;
         Task.Run(() =>
@@ -67,7 +96,7 @@ public abstract class TextSerializer
             object result = null;
             try
             {
-                result = this.Read(path, type);
+                result = this.Read(path, type, settings);
             }
             catch (Exception _e)
             {
@@ -79,7 +108,7 @@ public abstract class TextSerializer
             }
         });
     }
-    public Task<T> ReadAsync<T>(string path)
+    public Task<T> ReadAsync<T>(string path, TextSerializerSettings settings = null)
     {
         return Task<T>.Run(() =>
         {
@@ -87,7 +116,7 @@ public abstract class TextSerializer
             T result = default;
             try
             {
-                result = (T)this.Read(path, typeof(T));
+                result = (T)this.Read(path, typeof(T), settings);
             }
             catch (Exception _e)
             {
@@ -97,7 +126,7 @@ public abstract class TextSerializer
         });
     }
 
-    public Task<object> ReadAsync(string path, Type type)
+    public Task<object> ReadAsync(string path, Type type, TextSerializerSettings settings = null)
     {
         return Task<object>.Run(() =>
         {
@@ -105,7 +134,7 @@ public abstract class TextSerializer
             object result = null;
             try
             {
-                result = this.Read(path, type);
+                result = this.Read(path, type, settings);
             }
             catch (Exception _e)
             {
@@ -115,21 +144,31 @@ public abstract class TextSerializer
         });
     }
 
-    public void Write(string path, object obj, bool isReadability = false)
+    public static void Write(string path, string content)
     {
-        if (obj == null)
-        {
-            return;
-        }
         string dir = Path.GetDirectoryName(path);
         if (!Directory.Exists(dir))
         {
             Directory.CreateDirectory(dir);
         }
-        File.WriteAllText(path, Serialize(obj, isReadability));
+        File.WriteAllText(path, content);
     }
 
-    public void WriteAsync(string path, object obj, bool isReadability = false, Action<Exception> callback = null)
+    public void Write(string path, object obj, bool isReadability = false, TextSerializerSettings settings = null)
+    {
+        if (obj == null)
+        {
+            return;
+        }
+        Write(path, Serialize(obj, isReadability, settings));
+    }
+
+    public void WriteAsync(
+        string path,
+        object obj,
+        bool isReadability = false,
+        TextSerializerSettings settings = null,
+        Action<Exception> callback = null)
     {
         var syncCtx = SynchronizationContext.Current;
         Task.Run(() =>
@@ -137,7 +176,7 @@ public abstract class TextSerializer
             Exception e = null;
             try
             {
-                Write(path, obj, isReadability);
+                Write(path, obj, isReadability, settings);
             }
             catch (Exception _e)
             {
@@ -150,14 +189,18 @@ public abstract class TextSerializer
         });
     }
 
-    public Task<Exception> WriteAsync(string path, object obj, bool isReadability = false)
+    public Task<Exception> WriteAsync(
+        string path,
+        object obj,
+        bool isReadability = false,
+        TextSerializerSettings settings = null)
     {
         return Task<Exception>.Run(() =>
         {
             Exception e = null;
             try
             {
-                Write(path, obj, isReadability);
+                Write(path, obj, isReadability, settings);
             }
             catch (Exception _e)
             {
@@ -179,7 +222,7 @@ public class TextXmlSerializer : TextSerializer
 {
     public override string Format => "xml";
 
-    public override string Serialize(object obj, bool isReadability = false)
+    public override string Serialize(object obj, bool isReadability = false, TextSerializerSettings settings = null)
     {
         XmlSerializer xs = new XmlSerializer(obj.GetType());
         StringBuilder sb = new StringBuilder();
@@ -188,7 +231,7 @@ public class TextXmlSerializer : TextSerializer
         sw.Close();
         return sb.ToString();
     }
-    public override object Deserialize(string text, Type type)
+    public override object Deserialize(string text, Type type, TextSerializerSettings settings = null)
     {
         XmlSerializer xs = new XmlSerializer(type);
         StringReader sr = new StringReader(text);
@@ -200,12 +243,12 @@ public class TextJsonSerializer : TextSerializer
 {
     public override string Format => "json";
 
-    public override object Deserialize(string text, Type type)
+    public override object Deserialize(string text, Type type, TextSerializerSettings settings = null)
     {
         return UnityEngine.JsonUtility.FromJson(text, type);
     }
 
-    public override string Serialize(object obj, bool isReadability = false)
+    public override string Serialize(object obj, bool isReadability = false, TextSerializerSettings settings = null)
     {
         return UnityEngine.JsonUtility.ToJson(obj, isReadability);
     }
@@ -216,48 +259,94 @@ public class TextNewtonJsonSerializer : TextSerializer
     public override string Format => "json";
 
     private MethodInfo serMethod;
-    private Func<string, Type, object> deser;
 
-    private Enum indented;
-    private Enum none;
+
+    private Type JsonSerializerSettings;
+
+    private MethodInfo deser;
+
+    private Enum Formatting_Indented;
+    private Enum Formatting_None;
+    private Enum TypeNameHandling_Objects;
+
+    private object StringEnumConverter;
 
     public static bool HasAssembly()
     {
         return Assembly.Load("Newtonsoft.Json") != null;
     }
 
+    private object GenSerializerSettings(bool typename, bool stringenum)
+    {
+        if (!typename && !stringenum)
+        {
+            return null;
+        }
+        object settings = Activator.CreateInstance(this.JsonSerializerSettings);
+        if (typename)
+        {
+            var prop = this.JsonSerializerSettings.GetProperty("TypeNameHandling");
+            prop.SetValue(settings, this.TypeNameHandling_Objects);
+        }
+        if (stringenum)
+        {
+            var propInfo = this.JsonSerializerSettings.GetProperty("Converters");
+            var prop = propInfo.GetValue(settings);
+            var method = propInfo.PropertyType.GetInterface("ICollection`1").GetMethod("Add");
+            method.Invoke(prop, new object[] { this.StringEnumConverter });
+        }
+        return settings;
+    }
+
     public TextNewtonJsonSerializer()
     {
         var ass = Assembly.Load("Newtonsoft.Json");
-        var type = ass.GetType("Newtonsoft.Json.JsonConvert");
+        var JsonConvert = ass.GetType("Newtonsoft.Json.JsonConvert");
+        this.JsonSerializerSettings = ass.GetType("Newtonsoft.Json.JsonSerializerSettings");
+        var Formatting = ass.GetType("Newtonsoft.Json.Formatting");
 
-        var formatting = ass.GetType("Newtonsoft.Json.Formatting");
+        this.serMethod = JsonConvert.GetMethod("SerializeObject", new Type[] { typeof(object), Formatting, JsonSerializerSettings });
 
-        this.serMethod = type.GetMethod("SerializeObject", new Type[] { typeof(object), formatting });
+        this.deser = JsonConvert.GetMethod("DeserializeObject", new Type[] { typeof(string), typeof(Type), this.JsonSerializerSettings });
 
-        var deserMethod = type.GetMethod("DeserializeObject", new Type[] { typeof(string), typeof(Type) });
-        this.deser = (Func<string, Type, object>)deserMethod.CreateDelegate(typeof(Func<string, Type, object>));
+        this.Formatting_None = (Enum)Enum.Parse(Formatting, "None");
+        this.Formatting_Indented = (Enum)Enum.Parse(Formatting, "Indented");
 
-        this.none = (Enum)Enum.Parse(formatting, "None");
-        this.indented = (Enum)Enum.Parse(formatting, "Indented");
+        var TypeNameHandling = ass.GetType("Newtonsoft.Json.TypeNameHandling");
+        this.TypeNameHandling_Objects = (Enum)Enum.Parse(TypeNameHandling, "Objects");
+
+        Type StringEnumConverter = ass.GetType("Newtonsoft.Json.Converters.StringEnumConverter");
+        this.StringEnumConverter = Activator.CreateInstance(StringEnumConverter);
     }
 
-    public override object Deserialize(string text, Type type)
+    public override object Deserialize(string text, Type type, TextSerializerSettings settings = null)
     {
         if (this.deser == null)
         {
             throw new NotImplementedException();
         }
-        return this.deser.Invoke(text, type);
+
+        bool isTypename = settings?.IsWriteTypename ?? false;
+        bool stringEnum = settings?.IsStringEnum ?? true;
+
+        var s = GenSerializerSettings(isTypename, stringEnum);
+
+        return this.deser.Invoke(null, new object[] { text, type, s });
     }
 
-    public override string Serialize(object obj, bool isReadability = false)
+    public override string Serialize(object obj, bool isReadability, TextSerializerSettings settings)
     {
         if (this.serMethod == null)
         {
             throw new NotImplementedException();
         }
-        object[] ctorparam = new object[] { obj, isReadability ? this.indented : this.none };
+        bool isTypename = settings?.IsWriteTypename ?? false;
+        bool stringEnum = settings?.IsStringEnum ?? true;
+
+        var s = GenSerializerSettings(isTypename, stringEnum);
+
+        object[] ctorparam = new object[] { obj, isReadability ? this.Formatting_Indented : this.Formatting_None, s };
+
         return (string)this.serMethod.Invoke(null, ctorparam);
     }
 }

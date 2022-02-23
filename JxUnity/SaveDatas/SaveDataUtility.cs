@@ -124,7 +124,6 @@ namespace JxUnity.SaveDatas
                     Pack(field, fieldInst, $"{path}{fieldName}", dataProvider);
                 }
             }
-
         }
 
         public static object Pack(string path, Type type, Func<string, Value> dataProvider)

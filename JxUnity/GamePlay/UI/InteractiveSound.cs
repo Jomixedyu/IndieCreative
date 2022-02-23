@@ -12,29 +12,54 @@ namespace JxUnity.GamePlay.UI
         [SerializeField]
         public string soundGroupName;
 
+        private Selectable selectable;
+
+        private bool IsInteracting()
+        {
+            if (selectable != null)
+            {
+                return selectable.interactable;
+            }
+            return true;
+        }
+
+        private void Awake()
+        {
+            selectable = this.GetComponent<Selectable>();
+        }
+
         private void OnEnable()
         {
-            UISoundManager.Instance.PlayByGroup(this.soundGroupName, UISoundConfigGroupType.Enable);
+            if (IsInteracting())
+            {
+                UISoundManager.Instance.PlayByGroup(this.soundGroupName, UISoundConfigGroupType.Enable);
+            }
         }
 
         private void OnDisable()
         {
-            UISoundManager.Instance.PlayByGroup(this.soundGroupName, UISoundConfigGroupType.Disable);
+            if (IsInteracting() && UISoundManager.HasInstance)
+            {
+                UISoundManager.Instance.PlayByGroup(this.soundGroupName, UISoundConfigGroupType.Disable);
+            }
         }
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            UISoundManager.Instance.PlayByGroup(this.soundGroupName, UISoundConfigGroupType.Enter);
+            if (IsInteracting())
+                UISoundManager.Instance.PlayByGroup(this.soundGroupName, UISoundConfigGroupType.Enter);
         }
 
         public void OnPointerDown(PointerEventData eventData)
         {
-            UISoundManager.Instance.PlayByGroup(this.soundGroupName, UISoundConfigGroupType.Down);
+            if (IsInteracting())
+                UISoundManager.Instance.PlayByGroup(this.soundGroupName, UISoundConfigGroupType.Down);
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            UISoundManager.Instance.PlayByGroup(this.soundGroupName, UISoundConfigGroupType.Exit);
+            if (IsInteracting())
+                UISoundManager.Instance.PlayByGroup(this.soundGroupName, UISoundConfigGroupType.Exit);
         }
     }
 }

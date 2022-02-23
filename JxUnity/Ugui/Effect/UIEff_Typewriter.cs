@@ -14,8 +14,8 @@ public class UIEff_Typewriter : BaseMeshEffect
 
     //每个字完成的透明度
     [SerializeField]
-    private byte advanceInterval = 16;
-    public byte AdvanceInterval { get => advanceInterval; }
+    private byte advancedValue = 24;
+    public byte AdvancedValue { get => advancedValue; }
 
     [SerializeField]
     private bool isPlaying = false;
@@ -72,7 +72,7 @@ public class UIEff_Typewriter : BaseMeshEffect
                 //文字索引超过当前渲染文字
                 if (i > currentIndex) break;
                 //如果当前渲染字超过设定的完成度则前进
-                if (opacity[currentIndex] >= this.advanceInterval)
+                if (opacity[currentIndex] >= this.advancedValue)
                 {
                     //不超过最大字数就前进一格字符
                     if (currentIndex < opacity.Length - 1)
@@ -80,7 +80,7 @@ public class UIEff_Typewriter : BaseMeshEffect
                 }
                 if (opacity[i] < 255)
                 {
-                    byte opacityStep = 2;
+                    byte opacityStep = 4;
                     if ((int)opacity[i] + opacityStep > 255)
                     {
                         opacity[i] = 255;
@@ -129,6 +129,9 @@ public class UIEff_Typewriter : BaseMeshEffect
         EndHandler?.Invoke();
     }
 
+    private List<UIVertex> vertexs = new List<UIVertex>();
+    private List<UIVertex> vertexFliter = new List<UIVertex>();
+
     public override void ModifyMesh(VertexHelper vh)
     {
 #if UNITY_EDITOR
@@ -136,11 +139,13 @@ public class UIEff_Typewriter : BaseMeshEffect
 #endif
         if (!IsActive()) return;
 
-        List<UIVertex> verts = new List<UIVertex>();
+        List<UIVertex> verts = vertexs;
+        verts.Clear();
         vh.GetUIVertexStream(verts);
 
         //6点转4点
-        List<UIVertex> vs = new List<UIVertex>();
+        List<UIVertex> vs = vertexFliter;
+        vs.Clear();
 
         for (int i = 1; i <= verts.Count; i += 3)
         {

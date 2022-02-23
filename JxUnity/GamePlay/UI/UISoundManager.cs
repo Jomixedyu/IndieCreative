@@ -36,6 +36,7 @@ namespace JxUnity.GamePlay.UI
                 this.audioPool = gameObject.AddComponent<AudioPool>();
             }
         }
+
         private AudioClip GetClip(string group, UISoundConfigGroupType type)
         {
             foreach (var item in this.config.Groups)
@@ -59,6 +60,7 @@ namespace JxUnity.GamePlay.UI
             }
             return null;
         }
+
         public void Play(AudioClip clip)
         {
             this.audioPool.Play(clip);

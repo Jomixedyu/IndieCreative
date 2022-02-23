@@ -31,14 +31,14 @@ namespace JxUnity.Utility
             Register(new PlayerConsoleFunction()
             {
                 name = "?",
-                function = Help,
+                function = new Action(Help),
                 description = "all command",
                 help = "/?",
             });
             Register(new PlayerConsoleFunction()
             {
                 name = "help",
-                function = HelpFile,
+                function = new Action<string>(HelpFile),
                 description = "help file",
                 help = "/help command"
             });
@@ -148,7 +148,7 @@ namespace JxUnity.Utility
                     objParams[i] = Convert.ChangeType(args[i + 1], paramsInfo[i].ParameterType);
                 }
             }
-            catch (Exception e)
+            catch
             {
                 Print(func.help);
                 return false;
