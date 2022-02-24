@@ -45,10 +45,9 @@ public static class ProcedureManager
         {
             assembly = Assembly.GetCallingAssembly();
         }
-        Type[] types = GetClassTypeByBase(assembly, typeof(ProcedureBase));
-        foreach (var item in types)
+        foreach (var type in GetClassTypeByBase(assembly, typeof(ProcedureBase)))
         {
-            AddState(item.GetType());
+            AddState(type);
         }
     }
 
