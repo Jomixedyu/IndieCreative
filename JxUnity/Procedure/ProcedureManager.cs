@@ -140,4 +140,9 @@ internal class ProcedureManagerMono : MonoBehaviour
         }
         this.procedures.Add(type.Name, (ProcedureBase)Activator.CreateInstance(type));
     }
+
+    private void Update()
+    {
+        this.GetCurrentState()?.OnUpdate();
+    }
 }
