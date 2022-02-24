@@ -117,7 +117,7 @@ internal class ProcedureManagerMono : MonoBehaviour
         this.prevState = this.curState;
         if (this.curState != null)
         {
-            this.procedures[name].OnLeave();
+            this.procedures[this.curState].OnLeave();
         }
         this.curState = name;
         if (name != null)
