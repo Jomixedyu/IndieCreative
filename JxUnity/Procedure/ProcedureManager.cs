@@ -3,16 +3,56 @@ using System;
 using System.Reflection;
 using UnityEngine;
 
+
+public abstract class ProcedureBase
+{
+    public virtual void OnEnter() { }
+    public virtual void OnLeave() { }
+    public virtual void OnUpdate() { }
+}
+
 /// <summary>
 /// 流程状态管理器
 /// </summary>
-public class ProcedureManager
+public static class ProcedureManager
 {
-    private static bool useCustomUpdater = false;
+    public static bool HasState(string name)
+    {
+        return ProcedureManagerMono.Instance.HasState(name);
+    }
 
-    private static FSM<string, ProcedureBase> procedures = new FSM<string, ProcedureBase>();
+    public static ProcedureBase GetCurrentState()
+    {
+        return ProcedureManagerMono.Instance.GetCurrentState();
+    }
+    public static void Change(string name)
+    {
+        ProcedureManagerMono.Instance.Change(name);
+    }
+    public static void Change<T>() where T : ProcedureBase
+    {
+        ProcedureManagerMono.Instance.Change(typeof(T).Name);
+    }
 
-    public static Type[] GetClassTypeByBase(Assembly ass, Type baseType)
+    public static void AddState(Type type)
+    {
+        ProcedureManagerMono.Instance.AddState(type);
+    }
+
+    public static void AddAssembly(Assembly assembly = null)
+    {
+        if (assembly == null)
+        {
+            assembly = Assembly.GetCallingAssembly();
+        }
+        Type[] types = GetClassTypeByBase(assembly, typeof(ProcedureBase));
+        foreach (var item in types)
+        {
+            AddState(item.GetType());
+        }
+    }
+
+    private static Type[] GetClassTypeByBase(Assembly ass, Type baseType)
     {
         Type[] ts = ass.GetTypes();
         List<Type> rst = new List<Type>();
@@ -26,88 +66,79 @@ public class ProcedureManager
         return rst.ToArray();
     }
 
-    public static void Initialize(Assembly assembly = null)
-    {
-        if (assembly == null)
-        {
-            assembly = Assembly.GetCallingAssembly();
-        }
-        Type[] types = GetClassTypeByBase(assembly, typeof(ProcedureBase));
-        foreach (Type item in types)
-        {
-            procedures.AddState(item.Name, (ProcedureBase)Activator.CreateInstance(item));
-        }
-    }
-
-    /// <summary>
-    /// 设置后需要手动调用Update函数
-    /// </summary>
-    public static void UseCustomUpdater()
-    {
-        useCustomUpdater = true;
-        if (ProcedureUpdater.HasInstance())
-        {
-            ProcedureUpdater.GetInstance().Dispose();
-        }
-    }
-    /// <summary>
-    /// 设置后自动调用Update函数
-    /// </summary>
-    public static void UseDefaultUpdater()
-    {
-        useCustomUpdater = false;
-        ProcedureUpdater.GetInstance();
-    }
-
-    /// <summary>
-    /// 更改流程状态
-    /// </summary>
-    /// <param name="typeName"></param>
-    public static void Change(string typeName)
-    {
-        if (!useCustomUpdater)
-        {
-            ProcedureUpdater.GetInstance();
-        }
-        if (!procedures.HasState(typeName))
-        {
-            Debug.LogError("procedure: " + typeName + " not found.");
-            return;
-        }
-        Debug.Log("change procedure: " + typeName);
-        procedures.ChangeState(typeName);
-    }
-    /// <summary>
-    /// 更改至上一个流程状态
-    /// </summary>
-    public static void ChangeToPrevProcedure()
-    {
-        if (procedures.LastStateIndex != null)
-        {
-            Change(procedures.LastStateIndex);
-        }
-    }
-    /// <summary>
-    /// 更改流程状态
-    /// </summary>
-    /// <typeparam name="TProcedure"></typeparam>
-    public static void Change<TProcedure>() where TProcedure : ProcedureBase
-    {
-        Change(typeof(TProcedure).Name);
-    }
-    /// <summary>
-    /// 获取当前流程状态
-    /// </summary>
-    /// <returns></returns>
-    public static ProcedureBase GetCurProcedure()
-    {
-        return procedures.GetCurState();
-    }
-
-    public static void Update()
-    {
-        procedures.GetCurState()?.OnUpdate();
-    }
-
 }
 
+internal class ProcedureManagerMono : MonoBehaviour
+{
+    private static ProcedureManagerMono instance;
+    public static ProcedureManagerMono Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                var go = new GameObject($"__m_ProcedureManagerMono");
+                DontDestroyOnLoad(go);
+                instance = go.AddComponent<ProcedureManagerMono>();
+            }
+            return instance;
+        }
+    }
+    public static bool HasInstance => instance != null;
+
+    private Dictionary<string, ProcedureBase> procedures;
+    private string curState;
+    private string prevState;
+
+    public string CurrentStateName => curState;
+
+    private void Awake()
+    {
+        this.curState = null;
+        this.prevState = null;
+        this.procedures = new Dictionary<string, ProcedureBase>();
+    }
+
+    public bool HasState(string name)
+    {
+        return this.procedures.ContainsKey(name);
+    }
+
+    public ProcedureBase GetCurrentState()
+    {
+        if (this.curState == null)
+        {
+            return null;
+        }
+        return this.procedures[this.curState];
+    }
+
+    public void Change(string name)
+    {
+        this.prevState = this.curState;
+        if (this.curState != null)
+        {
+            this.procedures[name].OnLeave();
+        }
+        this.curState = name;
+        if (name != null)
+        {
+            this.procedures[name].OnEnter();
+        }
+        Debug.Log("ProcedureChanged: " + name);
+    }
+
+    public void ChangeToPrev()
+    {
+        this.Change(this.prevState);
+    }
+
+    public void AddState(Type type)
+    {
+        if (!type.IsSubclassOf(typeof(ProcedureBase)))
+        {
+            throw new ArgumentException("ProcedureBase");
+        }
+        this.procedures.Add(type.Name, (ProcedureBase)Activator.CreateInstance(type));
+    }
+}
