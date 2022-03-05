@@ -1,7 +1,21 @@
 ﻿using UnityEngine;
 
-public class FPS : MonoSingleton<FPS>
+public class FPS : MonoBehaviour
 {
+    private static FPS instance;
+    public static FPS Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                var gameObject = new GameObject("__m_FPS");
+                DontDestroyOnLoad(gameObject);
+                instance = gameObject.AddComponent<FPS>();
+            }
+            return instance;
+        }
+    }
     private float time;
     private int frameCount;
     private string showText;
@@ -9,13 +23,8 @@ public class FPS : MonoSingleton<FPS>
     private Vector2 normSize = new Vector2(60, 40);
     private Rect rect = new Rect(15, 5, 60, 40);
 
-    protected override void Awake()
+    private void Awake()
     {
-        if (CheckInstanceAndDestroy())
-        {
-            return;
-        }
-        base.Awake();
         showText = "fps: 0";
     }
 
