@@ -7,6 +7,8 @@ using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using JxUnity.Subtitles;
 using System.IO;
+using System.Xml.Serialization;
+using System.Text;
 
 public class SubtitlesEditor : IPostprocessBuildWithReport
 {
@@ -46,6 +48,31 @@ public class SubtitlesEditor : IPostprocessBuildWithReport
         {
             SubtitlesManager.Serialize(table, fs);
         }
+        AssetDatabase.Refresh();
+    }
+
+    [MenuItem("JxSubtitles/GenConfigExample")]
+    public static void GenConfigExample()
+    {
+        PrepareDir();
+        string path = Folder + "/Config.xml";
+        SubtitlesConfig cfg = new SubtitlesConfig()
+        {
+            Fallback = "en-US",
+            SubtitlesName = new string[]
+            {
+                "¼òÌåÖÐÎÄ"
+            }
+        };
+
+        XmlSerializer xml = new XmlSerializer(typeof(SubtitlesConfig));
+
+        using (var fs = File.OpenWrite(path))
+        {
+            StreamWriter sw = new StreamWriter(fs, Encoding.Unicode);
+            xml.Serialize(sw, cfg);
+        }
+
         AssetDatabase.Refresh();
     }
 

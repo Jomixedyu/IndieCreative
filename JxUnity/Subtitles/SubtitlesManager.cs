@@ -186,23 +186,6 @@ namespace JxUnity.Subtitles
             }
         }
 
-        public static void FakeScanMod()
-        {
-            //for
-            string subid = "";
-            string cfgContent = "";
-            string spath = "";
-            SubtitlesConfig cfg = new SubtitlesConfig();
 
-            foreach (var name in cfg.SubtitlesName)
-            {
-                using (var fs = File.Open($"{spath}/{name}.xml", FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    var info = LoadInfo(fs);
-                    infos.Add(subid, info);
-                }
-            }
-
-        }
     }
 }
