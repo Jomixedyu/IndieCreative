@@ -6,11 +6,11 @@ using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
-namespace JxUnity.Localization
+namespace JxUnity.Languages
 {
-    internal class LocalizedEditor
+    internal class LanguagesEditor
     {
-        internal static string GeneratedPath = LocalizationManager.ReadPath;
+        internal static string GeneratedPath = LanguageManager.ReadPath;
 
         internal static string GetFilePath(string name) => $"{GeneratedPath}/{name}.xml";
 
@@ -22,25 +22,28 @@ namespace JxUnity.Localization
             }
         }
 
-        [MenuItem("JxLocalization/GenExample")]
-        public static void GenExample()
+        [MenuItem("JxLanguages/GenAllTemplate")]
+        public static void GenAllTemplate()
         {
             PreparePath(GeneratedPath);
-            var table = new LocalizedTable()
+
+            foreach (LanguageInfo info in LanguageManager.LangInfos)
             {
-                Locale = "zh-CN",
-                Author = "JomiXedYu",
-                Version = "0.0.0",
-                Time = DateTime.Now.ToString(),
-                Records = new Dictionary<string, string>()
+                var table = new LanguageTable()
                 {
-                    {"sys_hello", "你好" },
-                    {"sys_open", "打开" }
-                }
+                    DisplayName = info.DisplayName,
+                    Author = PlayerSettings.companyName,
+                    Version = "0.0.0",
+                    Time = DateTime.Now.ToString(),
+                    Records = new Dictionary<string, string>()
+                    {
+                        {"sys_langName", info.DisplayName },
+                    }
+                };
+                var path = GetFilePath(info.Name);
+                table.SerializeAndSave(path);
             };
 
-            string name = LocalizationManager.GetLocaleDefaultFilename(LocalizationManager.GetSystemLocale());
-            table.SerializeAndSave(GetFilePath(name));
             AssetDatabase.Refresh();
 
             Debug.Log("completed!");
@@ -80,17 +83,17 @@ namespace JxUnity.Localization
 
         private void Windows(BuildReport report, BuildResult result)
         {
-            var readPath = result.outFolder + "/" + LocalizationManager.FolderName;
+            var readPath = result.outFolder + "/" + LanguageManager.FolderName;
 
-            var srcPath = $"{result.outFolder}/{result.filenameWithoutExt}_Data/StreamingAssets/{LocalizationManager.FolderName}";
+            var srcPath = $"{result.outFolder}/{result.filenameWithoutExt}_Data/StreamingAssets/{LanguageManager.FolderName}";
 
             if (Directory.Exists(readPath))
             {
                 Directory.Delete(readPath, true);
             }
-            Debug.Log($"[JxLocalization]: move {srcPath} to {readPath}");
+            Debug.Log($"[JxLanguage]: move {srcPath} to {readPath}");
             Directory.Move(srcPath, readPath);
-            Debug.Log("[JxLocalization]: build completed!");
+            Debug.Log("[JxLanguage]: build completed!");
         }
 
     }

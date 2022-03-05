@@ -3,11 +3,12 @@ using System.IO;
 using System.Text;
 using System.Xml;
 
-namespace JxUnity.Localization
+namespace JxUnity.Languages
 {
-    public class LocalizedTable
+    public class LanguageTable
     {
-        public string Locale { get; set; }
+        public string DisplayName { get; set; }
+        public string Fallback { get; set; }
         public string Author { get; set; }
         public string Version { get; set; }
         public string Time { get; set; }
@@ -24,10 +25,11 @@ namespace JxUnity.Localization
         {
             XmlDocument doc = new XmlDocument();
 
-            XmlElement root = doc.CreateElement(nameof(LocalizedTable));
+            XmlElement root = doc.CreateElement(nameof(LanguageTable));
             doc.AppendChild(root);
 
-            this.PutText(doc, root, nameof(Locale), this.Locale);
+            this.PutText(doc, root, nameof(DisplayName), this.DisplayName);
+            this.PutText(doc, root, nameof(Fallback), this.Fallback);
             this.PutText(doc, root, nameof(Author), this.Author);
             this.PutText(doc, root, nameof(Version), this.Version);
             this.PutText(doc, root, nameof(Time), this.Time);
@@ -65,11 +67,12 @@ namespace JxUnity.Localization
 
         private void DeserializeXml(XmlDocument doc)
         {
-            var root = doc[nameof(LocalizedTable)];
-            this.Locale = root[nameof(Locale)].FirstChild.Value;
-            this.Author = root[nameof(Author)].FirstChild.Value;
-            this.Version = root[nameof(Version)].FirstChild.Value;
-            this.Time = root[nameof(Time)].FirstChild.Value;
+            var root = doc[nameof(LanguageTable)];
+            this.DisplayName = root[nameof(DisplayName)].FirstChild.Value;
+            this.Fallback = root[nameof(Fallback)].FirstChild?.Value;
+            this.Author = root[nameof(Author)].FirstChild?.Value;
+            this.Version = root[nameof(Version)].FirstChild?.Value;
+            this.Time = root[nameof(Time)].FirstChild?.Value;
             this.Records = new Dictionary<string, string>();
             foreach (XmlNode item in root[nameof(Records)])
             {

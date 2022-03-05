@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace JxUnity.Localization
+namespace JxUnity.Languages
 {
     [RequireComponent(typeof(Text))]
-    public class LocalizedText : MonoBehaviour
+    public class LanguageText : MonoBehaviour
     {
         [SerializeField]
         private string stringId;
@@ -16,7 +14,7 @@ namespace JxUnity.Localization
         
         public string GetText()
         {
-            return LocalizationManager.GetString(this.stringId);
+            return LanguageManager.GetString(this.stringId);
         }
         public void RefreshText()
         {
@@ -43,12 +41,12 @@ namespace JxUnity.Localization
         private void OnEnable()
         {
             this.RefreshText();
-            LocalizationManager.LanguageChanged += this.OnLanguageChange;
+            LanguageManager.LanguageChanged += this.OnLanguageChange;
         }
 
         private void OnDisable()
         {
-            LocalizationManager.LanguageChanged -= this.OnLanguageChange;
+            LanguageManager.LanguageChanged -= this.OnLanguageChange;
         }
 
         //语言变更刷新

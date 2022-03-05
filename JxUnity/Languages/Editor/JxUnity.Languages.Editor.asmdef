@@ -1,8 +1,8 @@
 {
-    "name": "JxUnity.Localization.Editor",
+    "name": "JxUnity.Languages.Editor",
     "rootNamespace": "",
     "references": [
-        "JxUnity.Localization"
+        "JxUnity.Languages"
     ],
     "includePlatforms": [
         "Editor"
