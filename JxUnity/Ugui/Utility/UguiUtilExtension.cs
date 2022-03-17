@@ -43,4 +43,11 @@ public static class UguiUtilExtension
     {
         return self.Find(childName).GetComponent<Image>();
     }
+
+
+    public static void SetCanvasSize(this Image self)
+    {
+        self.rectTransform.sizeDelta = self.canvas.renderingDisplaySize;
+    }
+
 }
