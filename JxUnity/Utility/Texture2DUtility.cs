@@ -1,12 +1,52 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public static class Texture2DUtility
 {
+
+    private class Texture2DUtilityMono : MonoBehaviour
+    {
+        private static Texture2DUtilityMono instance;
+        public static Texture2DUtilityMono Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new GameObject($"__m_{nameof(Texture2DUtilityMono)}").AddComponent<Texture2DUtilityMono>();
+                }
+                return instance;
+            }
+        }
+
+        public void Load(string uri, Action<Texture2D> cb)
+        {
+            StartCoroutine(_Load(uri, cb));
+        }
+
+        IEnumerator _Load(string uri, Action<Texture2D> cb)
+        {
+            UnityWebRequest req = new UnityWebRequest(uri);
+            var h = new DownloadHandlerTexture(true);
+            req.downloadHandler = h;
+            yield return req.SendWebRequest();
+            if (req.result == UnityWebRequest.Result.Success)
+            {
+                cb?.Invoke(h.texture);
+            }
+            else
+            {
+                cb?.Invoke(null);
+            }
+        }
+    }
+
     /// <summary>
     /// 将Texture2D写入磁盘
     /// </summary>
@@ -68,6 +108,27 @@ public static class Texture2DUtility
         tex2d.LoadImage(File.ReadAllBytes(path));
         return tex2d;
     }
+
+    public static void LoadTextureAsyncFromUri(string uri, Action<Texture2D> cb)
+    {
+        Texture2DUtilityMono.Instance.Load(uri, cb);
+    }
+
+    public static void LoadSpriteAsyncFromUri(string uri, Action<Sprite> cb)
+    {
+        Texture2DUtilityMono.Instance.Load(uri, t =>
+        {
+            if (t == null)
+            {
+                cb?.Invoke(null);
+            }
+            else
+            {
+                cb?.Invoke(Texture2dToSprite(t));
+            }
+        });
+    }
+
     /// <summary>
     /// 从磁盘加载Sprite
     /// </summary>
