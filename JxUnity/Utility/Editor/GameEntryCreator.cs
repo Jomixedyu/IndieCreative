@@ -8,9 +8,10 @@ public class GameEntryCreator
 {
 
     private static string script =
-@"using UnityEngine;
+@"using System.Collections;
+using UnityEngine;
 
-public static class Game
+public static class GameEntry
 {
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -22,9 +23,13 @@ public static class Game
     [RuntimeInitializeOnLoadMethod]
     private static void Loaded()
     {
-
+        ProcedureManager.StartCoroutine(LoadedCo());
     }
 
+    private static IEnumerator LoadedCo()
+    {
+        yield return null;
+    }
 
     public static void RequestQuit()
     {
@@ -40,6 +45,7 @@ public static class Game
 #endif
 
     }
+
 }";
 
     [MenuItem("Assets/Create/GameEntry", validate = true)]
