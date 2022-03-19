@@ -2,7 +2,7 @@
 using System;
 using System.Reflection;
 using UnityEngine;
-
+using System.Collections;
 
 public abstract class ProcedureBase
 {
@@ -65,6 +65,10 @@ public static class ProcedureManager
         return rst.ToArray();
     }
 
+    public static void StartCoroutine(IEnumerator enumerator)
+    {
+        ProcedureManagerMono.Instance.StartCoroutine(enumerator);
+    }
 }
 
 internal class ProcedureManagerMono : MonoBehaviour
