@@ -8,22 +8,39 @@ public class GameEntryCreator
 {
 
     private static string script =
-        "using UnityEngine;\n" +
-        "\n" +
-        "public static class GameEntry\n" +
-        "{\n" +
-        "    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]\n" +
-        "    private static void Entry()\n" +
-        "    {\n" +
-        "        \n" +
-        "    }\n" +
-        "\n" +
-        "    [RuntimeInitializeOnLoadMethod]\n" +
-        "    private static void Loaded()\n" +
-        "    {\n" +
-        "        \n" +
-        "    }\n" +
-        "}";
+@"using UnityEngine;
+
+public static class Game
+{
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void Entry()
+    {
+
+    }
+
+    [RuntimeInitializeOnLoadMethod]
+    private static void Loaded()
+    {
+
+    }
+
+
+    public static void RequestQuit()
+    {
+        Quit();
+    }
+
+    public static void Quit()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+
+    }
+}";
 
     [MenuItem("Assets/Create/GameEntry", validate = true)]
     public static bool ValidCreate()
