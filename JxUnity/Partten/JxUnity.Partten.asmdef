@@ -1,11 +1,7 @@
 {
-    "name": "JxUnity.GamePlay",
+    "name": "JxUnity.Partten",
     "rootNamespace": "",
-    "references": [
-        "JxUnity.Media",
-        "JxUnity.Ugui",
-        "JxUnity.Partten"
-    ],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

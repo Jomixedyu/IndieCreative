@@ -37,7 +37,7 @@ public class BuffMgr
         this.curFrame = frame;
 
         List<BuffAbstract> deleteBuff = null;
-
+        
         foreach (var item in buffs)
         {
             if (frame >= item.EndTime)
