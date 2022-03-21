@@ -1,7 +1,9 @@
 {
     "name": "JxUnity.Mods",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "JxUnity.Partten"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
