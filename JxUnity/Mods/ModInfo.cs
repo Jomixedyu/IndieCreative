@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace JxUnity.Mods
 {
     public class ModScriptInfo
@@ -24,6 +19,25 @@ namespace JxUnity.Mods
         public string Version { get; set; }
         public string Author { get; set; }
         public int Order { get; set; }
+
+        public static ModInfo CreateDefault()
+        {
+            return new ModInfo()
+            {
+                Author = "jomixedyu",
+                Description = "this is a description",
+                Id = "jomixedyu.testmod",
+                Name = "TestMod",
+                Version = "0.0.0",
+                Order = 0,
+                URL = "www.imxqy.com",
+                Script = new ModScriptInfo()
+                {
+                    ScriptName = "Script.dll",
+                    Class = "Entry",
+                }
+            };
+        }
     }
 
 }

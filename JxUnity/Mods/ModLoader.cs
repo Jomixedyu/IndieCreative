@@ -12,7 +12,7 @@ namespace JxUnity.Mods
         }
     }
 
-    public static class ModLoader
+    internal static class ModLoader
     {
         public static ModObject LoadMod(string path)
         {
@@ -25,7 +25,7 @@ namespace JxUnity.Mods
             }
 
             Action funEnable = null, funDisable = null;
-            if (string.IsNullOrWhiteSpace(modInfo.Script?.ScriptName))
+            if (!string.IsNullOrWhiteSpace(modInfo.Script?.ScriptName))
             {
                 var scriptPath = path + "/" + modInfo.Script.ScriptName;
                 Assembly ass = Assembly.LoadFrom(scriptPath);
