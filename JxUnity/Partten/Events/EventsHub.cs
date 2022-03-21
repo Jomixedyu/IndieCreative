@@ -6,13 +6,9 @@ using UnityEngine;
 public delegate void EventHandler(string eventId, object sender, EventArgsBase args);
 
 [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple = false)]
-public sealed class EventHandlerAttribute : System.Attribute
+public class EventHandlerAttribute : System.Attribute
 {
     public string EventId { get; set; }
-    public EventHandlerAttribute()
-    {
-
-    }
 
     public EventHandlerAttribute(string eventId)
     {
