@@ -1,5 +1,4 @@
 ﻿
-//using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -51,8 +50,6 @@ public class EventHub
 
     private Dictionary<string, EventTrigger> events
         = new Dictionary<string, EventTrigger>();
-    //private List<EventHandler> listener = new List<EventHandler>();
-
 
     public void Subscribe(string eventId, EventHandler receiver)
     {
@@ -66,7 +63,7 @@ public class EventHub
     }
 
 
-    public void Unsubscribe<T>(string eventId, EventHandler receiver)
+    public void Unsubscribe(string eventId, EventHandler receiver)
     {
         EventTrigger trigger;
         if (!events.TryGetValue(eventId, out trigger))
@@ -76,15 +73,6 @@ public class EventHub
         }
         trigger.RemoveReceiver(receiver);
     }
-
-    //public void Broadcast(string eventId, object sender, object args)
-    //{
-    //    EventTrigger trigger;
-    //    if (events.TryGetValue(eventId, out trigger))
-    //    {
-    //        trigger.Broadcast(sender, args);
-    //    }
-    //}
 
     public void Broadcast(string eventId, object sender, EventArgsBase arg)
     {
@@ -109,13 +97,19 @@ public class EventHub
             }
         }
     }
+    public void Unsubscribes(object obj)
+    {
+        System.Type type = obj.GetType();
+        var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        foreach (var method in methods)
+        {
+            if (method.IsDefined(typeof(EventHandlerAttribute), true))
+            {
+                var e = method.GetCustomAttribute<EventHandlerAttribute>(true);
+                var deleg = method.CreateDelegate(typeof(EventHandler), obj) as EventHandler;
+                Unsubscribe(e.EventId, deleg);
+            }
+        }
+    }
 
-    //public void AddHook(EventHandler receiver)
-    //{
-    //    listener.Add(receiver);
-    //}
-    //public void RemoveHook(EventHandler receiver)
-    //{
-    //    listener.Remove(receiver);
-    //}
 }
