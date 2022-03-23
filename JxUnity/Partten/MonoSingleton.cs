@@ -6,6 +6,8 @@ public abstract class MonoSingleton<T>
 {
     [SerializeField]
     private bool IsDontDestroyOnInit = true;
+    [SerializeField]
+    private bool IsKeepInstance = true;
 
     private static T mInstance = null;
 
@@ -36,9 +38,19 @@ public abstract class MonoSingleton<T>
     {
         get => mInstance != null;
     }
+
     protected virtual void Awake()
     {
-        SetInstance(this as T);
+        if (IsKeepInstance && KeepInstance())
+        {
+            //keep
+            return;
+        }
+        else
+        {
+            MoveInstance();
+        }
+
         if (IsDontDestroyOnInit)
         {
             if (this.transform.parent == null)
@@ -48,19 +60,31 @@ public abstract class MonoSingleton<T>
         }
     }
 
+    protected virtual void OnMoveConstructor(T oldInstance)
+    {
+
+    }
+
     public static T GetInstance()
     {
         return Instance;
     }
-    protected void SetInstance(T obj)
+    private void MoveInstance()
     {
-        mInstance = obj;
+        var old = mInstance;
+        mInstance = this as T;
+        OnMoveConstructor(old);
+        if (old != null)
+        {
+            Destroy(old.gameObject);
+        }
     }
+
     /// <summary>
-    /// 检查单例实例是否已经存在，如果存在则销毁旧的实例
+    /// 保持实例，如果有新实例则会销毁，并返回true
     /// </summary>
-    /// <returns>返回true为实例存在并已销毁</returns>
-    protected bool CheckInstanceAndDestroy()
+    /// <returns></returns>
+    private bool KeepInstance()
     {
         if (HasInstance)
         {
