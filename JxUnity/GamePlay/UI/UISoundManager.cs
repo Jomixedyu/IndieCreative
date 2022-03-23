@@ -23,13 +23,8 @@ namespace JxUnity.GamePlay.UI
             this.config = config;
         }
 
-        protected override void Awake()
+        protected override void OnMoveConstructor(UISoundManager oldInstance)
         {
-            if (CheckInstanceAndDestroy())
-            {
-                return;
-            }
-            base.Awake();
             this.audioPool = GetComponent<AudioPool>();
             if (this.audioPool == null)
             {
