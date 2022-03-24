@@ -63,7 +63,14 @@ namespace JxUnity.Mods
             Debug.Log("[ModManager] disable all");
             foreach (var mod in mods)
             {
-                mod.Disable();
+                try
+                {
+                    mod.Disable();
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError("[ModManager] disable error: " + ex.ToString());
+                }
             }
         }
     }

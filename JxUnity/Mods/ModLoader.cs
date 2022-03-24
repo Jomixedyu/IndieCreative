@@ -7,8 +7,15 @@ namespace JxUnity.Mods
 {
     public class ModException : Exception
     {
-        public ModException(string msg) : base(msg)
+        private ModInfo modInfo;
+        public ModInfo ModInfo => modInfo;
+        public ModException(ModInfo modInfo, string msg) : base(msg)
         {
+            this.modInfo = modInfo;
+        }
+        public override string ToString()
+        {
+            return $"modInfo: {modInfo}";
         }
     }
 
@@ -32,7 +39,7 @@ namespace JxUnity.Mods
                 var type = ass.GetType(modInfo.Script.Class, false, false);
                 if (type == null)
                 {
-                    throw new ModException($"class not found. mod: {modInfo.Id}");
+                    throw new ModException(modInfo, $"class not found.");
                 }
                 var binding = BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic;
                 funEnable = type.GetMethod("OnEnable", binding)?.CreateDelegate(typeof(Action)) as Action;

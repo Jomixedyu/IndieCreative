@@ -20,6 +20,11 @@ namespace JxUnity.Mods
         public string Author { get; set; }
         public int Order { get; set; }
 
+        public override string ToString()
+        {
+            return $"{{modId: {Id}, name: {Name}}}";
+        }
+
         public static ModInfo CreateDefault()
         {
             return new ModInfo()
