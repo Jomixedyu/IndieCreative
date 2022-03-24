@@ -115,7 +115,9 @@ namespace JxUnity.Jxugui
                 this.RegisterUI(uiInfo.UIName);
                 if (uiInfo.Attr.IsPreBind)
                 {
+
                     Type genericType = typeof(JuiBase<>).MakeGenericType(new Type[] { uiInfo.UIType });
+
                     var method = genericType.GetMethod("ResetInstance", BindingFlags.NonPublic | BindingFlags.Static);
                     //auto SetUI
                     method.Invoke(null, null);
@@ -300,7 +302,7 @@ namespace JxUnity.Jxugui
         {
             return this.ui[name];
         }
-        public Dictionary<string, JuiBaseAbstract> GetAllUI()
+        public IReadOnlyDictionary<string, JuiBaseAbstract> GetAllUI()
         {
             return this.ui;
         }
