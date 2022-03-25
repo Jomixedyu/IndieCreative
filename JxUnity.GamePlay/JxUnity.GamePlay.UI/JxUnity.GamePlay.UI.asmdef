@@ -1,0 +1,18 @@
+{
+    "name": "JxUnity.GamePlay.UI",
+    "rootNamespace": "",
+    "references": [
+        "JxUnity.Media",
+        "JxUnity.Partten",
+        "JxUnity.Ugui"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

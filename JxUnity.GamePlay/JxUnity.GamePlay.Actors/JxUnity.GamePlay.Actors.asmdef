@@ -1,0 +1,16 @@
+{
+    "name": "JxUnity.GamePlay.Actors",
+    "rootNamespace": "",
+    "references": [
+        "JxUnity.Pools"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
