@@ -13,7 +13,7 @@ namespace JxUnity.Mods
             ModInfo modInfo;
             using (var fs = File.OpenRead(cfgPath))
             {
-                modInfo = Serializer.DeserializeFromFile(fs);
+                modInfo = Serializer.DeserializeModInfoFromFile(fs);
             }
             return modInfo;
         }
