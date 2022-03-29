@@ -5,41 +5,30 @@ using System.Reflection;
 
 namespace JxUnity.Mods
 {
-    public class ModException : Exception
-    {
-        private ModInfo modInfo;
-        public ModInfo ModInfo => modInfo;
-        public ModException(ModInfo modInfo, string msg) : base(msg)
-        {
-            this.modInfo = modInfo;
-        }
-        public override string ToString()
-        {
-            return $"modInfo: {modInfo}";
-        }
-    }
 
     internal static class ModLoader
     {
-        public static ModObject LoadMod(string path)
+        public static ModInfo LoadInfo(string cfgPath)
         {
-            string cfg = path + "/config.xml";
-
             ModInfo modInfo;
-            using (var fs = File.OpenRead(cfg))
+            using (var fs = File.OpenRead(cfgPath))
             {
                 modInfo = Serializer.DeserializeFromFile(fs);
             }
+            return modInfo;
+        }
 
+        public static ModObject LoadMod(ModInfo modInfo, string modPath)
+        {
             Action funEnable = null, funDisable = null;
             if (!string.IsNullOrWhiteSpace(modInfo.Script?.ScriptName))
             {
-                var scriptPath = path + "/" + modInfo.Script.ScriptName;
+                var scriptPath = modPath + "/" + modInfo.Script.ScriptName;
                 Assembly ass = Assembly.LoadFrom(scriptPath);
                 var type = ass.GetType(modInfo.Script.Class, false, false);
                 if (type == null)
                 {
-                    throw new ModException(modInfo, $"class not found.");
+                    throw new ModModuleException(modInfo, $"class not found.");
                 }
                 var binding = BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic;
                 funEnable = type.GetMethod("OnEnable", binding)?.CreateDelegate(typeof(Action)) as Action;

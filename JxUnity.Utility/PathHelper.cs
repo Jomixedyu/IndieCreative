@@ -16,7 +16,6 @@ public static class PathHelper
     public static readonly string Icon = $"{WritablePath}/Icon";
     public static readonly string Mods = $"{WritablePath}/Mods";
 
-
     private static string GetWritablePath()
     {
         if (Application.isEditor)

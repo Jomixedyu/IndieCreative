@@ -26,7 +26,14 @@ namespace JxUnity.Mods
         {
             return $"{{modId: {Id}, name: {Name}}}";
         }
-
+        public override bool Equals(object obj)
+        {
+            return Id.Equals((obj as ModInfo)?.Id);
+        }
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
         public static ModInfo CreateDefault()
         {
             return new ModInfo()

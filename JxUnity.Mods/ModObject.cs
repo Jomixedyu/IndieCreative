@@ -13,6 +13,7 @@ namespace JxUnity.Mods
         protected Action OnDisableFunction;
 
         protected bool isEnabled = false;
+        public bool IsEnabled { get => isEnabled; }
 
         public ModObject(ModInfo info, Action onEnableFunction, Action onDisableFunction)
         {
