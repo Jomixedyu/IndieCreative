@@ -1,64 +1,96 @@
 # JxUnity.Framework
  ![](https://img.shields.io/github/license/JomiXedYu/JxCode.CoreLib?style=for-the-badge)
 
-面向小型独立游戏的Unity框架，为什么是小型呢？这里没有依赖注入，没有MVC，只有功能好用的好写的模块。  
-在JxUnity文件夹下，每一个文件夹都是一个模块，模块与模块之间实现了完全无耦合，可以任意的加载与卸载。
+Unity3d开发库，每个模块可独立使用。
 
 ## Content
 - [JxUnity.Framework](#jxunityframework)
-  - [Content](#content)
-  - [Basic](#basic)
-  - [AssetManagment](#assetmanagment)
+  - [Partten](#Partten)
+  - [Jxugui](#Jxugui)
+  - [Languages](#Languages)
   - [JxUGUI](#jxugui)
   - [Localization](#localization)
   - [Media](#media)
   - [Pool](#pool)
-  - [Procedure](#procedure)
+  - [Platforms](#Platforms)
+  - [Platforms.Steam](#Platforms.Steam)
+  - [Procedures](#procedures)
+  - [ResDB](#resdb)
+  - [SaveDatas](#Savedatas)
+  - [Subtitles](#subtitles)
+  - [Timers](#Timers)
   - [Utility](#utility)
+  - [Ugui](#Ugui)
   - [xLua](#xlua)
 
-## Basic
-该库已进入长期稳定版，[查看文档](JxUnity/Basic/README.md)
+## Partten
+该库已进入长期稳定版，[查看文档](JxUnity.Partten/README.md)
 
-基础的单例与Mono单例，状态机等常用设计模板类。
-## AssetManagment
-资源管理框架完成后独立出去成为单独的库，并改名为ResDB，详见https://github.com/JomiXedYu/JxUnity.ResDB
+单例，状态机，事件系统等常用模式。
+
 
 ## JxUGUI
-该库已进入长期稳定版，[查看文档](JxUnity/Jxugui/README.md)
+该库已进入长期稳定版，[查看文档](JxUnity.Jxugui/README.md)
 
 通过C#特性来自动绑定元素，脱离了MonoBehaviour，可以轻松在其他框架下如ILRuntime等环境中运行，每个顶级UI都是一个单例，增加了显示栈，焦点消息等功能。
-## Localization
-类库设计阶段，经常出现不兼容性更新。
+
+## Languages
+该库已进入长期稳定版，[查看文档](JxUnity.Languages/README.md)
+
+使unity支持多语言。
+
 ## Media
-该库已进入长期稳定版，[查看文档](JxUnity/Media/README.md)
+该库已进入长期稳定版，[查看文档](JxUnity.Media/README.md)
 
 实现了音效池与播放器等组件，解决音频截断，以及实现音乐淡入淡出等功能。
+
 ## Pool
 该库已进入长期稳定版，[查看文档](JxUnity/Pool/README.md)
 
-为C#与Mono对象提供对象池。
-## Procedure
-该库已进入长期稳定版，[查看文档](JxUnity/Procedure/README.md)
+为C#对象、mono对象、List对象提供对象池。
+
+## Platforms
+该库迭代中
+
+提供版本号管理，平台实现映射
+
+## Platforms.Steam
+该库迭代中，需要前置 JxUnity.Platforms，Steamworks.Net
+
+Steam平台实现
+## Proceduress
+该库已进入长期稳定版，[查看文档](JxUnity.Procedures/README.md)
 
 为游戏提供一个易用的全局状态机，只须继承，状态自动绑定。
+
+
+## ResDB
+迭代中
+
+资源打包与加载工具
+
+## SaveDatas
+迭代中
+
+可寻址的key/value型游戏存档读档工具
+
+## Subtitles
+该库已进入长期稳定版，[查看文档](JxUnity.Subtitles/README.md)
+
+支持本地化的字幕系统。
+
+## Timers
+该库已进入长期稳定版，[查看文档](JxUnity.Timer/README.md)
+
+待办事件表，跑马灯计时器，倒计时器
+
+## Ugui
+Ugui拓展，包含拖拽，序列图功能，打字机、闪烁等特效，与扩展工具。
 
 ## Utility
 该库将会不断的更新与迭代，但不会出现不兼容的更新，[查看文档](JxUnity/Utility/README.md)
 
 一个类就是一个工具，互相之间没有依赖，可以随意添加与删除。
-
-- 摄像机截屏：使用自定义的摄像机进行叠加截图
-- 协程任务：可以在外部暂停，继续，停止的封装。
-- 光标工具
-- 几何检测：扇形检测，矩形检测等函数。
-- 状态信息：显示在边缘的状态信息如FPS数与ms延迟等。
-- 碰撞拓展工具：提供更方便的碰撞检查工具。
-- 路径帮助器：不同平台的常用可写路径，如截图、存档、配置、日志等路径。
-- 文本类序列化器：支持xml与json的序列化与反序列化，支持异步与IO操作。
-- 贴图与精灵工具：可以从本地读取图片或将贴图或精灵写入到本地，缩放贴图等。
-- 变换拓展：添加与移除监听器，更多的子对象操作。
-- 日志记录器：将unity的日志写入本地。
 
 ## xLua
 该库还在完善阶段，可能会出现不兼容的更新，[查看文档](JxUnity/xLua/README.md)
