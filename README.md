@@ -11,6 +11,7 @@ Unity3d开发库，每个模块可独立使用。
   - [JxUGUI](#jxugui)
   - [Localization](#localization)
   - [Media](#media)
+  - [Mods](#mods)
   - [Pool](#pool)
   - [Platforms](#Platforms)
   - [Platforms.Steam](#Platforms.Steam)
@@ -44,6 +45,10 @@ Unity3d开发库，每个模块可独立使用。
 
 实现了音效池与播放器等组件，解决音频截断，以及实现音乐淡入淡出等功能。
 
+## Mods
+迭代中，[查看文档](JxUnity.Mods/README.md)
+
+让你的游戏支持Mods
 ## Pool
 该库已进入长期稳定版，[查看文档](JxUnity/Pool/README.md)
 
