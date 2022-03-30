@@ -48,6 +48,8 @@ Unity3d开发库，每个模块可独立使用。
 ## Mods
 迭代中，[查看文档](JxUnity.Mods/README.md)
 
+依赖：JxUnity.Partten
+
 让你的游戏支持Mods
 ## Pool
 该库已进入长期稳定版，[查看文档](JxUnity/Pool/README.md)
@@ -60,7 +62,9 @@ Unity3d开发库，每个模块可独立使用。
 提供版本号管理，平台实现映射
 
 ## Platforms.Steam
-该库迭代中，需要前置 JxUnity.Platforms，Steamworks.Net
+该库迭代中，需要前置 
+
+依赖：JxUnity.Platforms，Steamworks.Net
 
 Steam平台实现
 ## Proceduress
