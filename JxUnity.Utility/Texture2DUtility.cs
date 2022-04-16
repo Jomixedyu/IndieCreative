@@ -6,10 +6,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public static class Texture2DUtility
 {
-
     private class Texture2DUtilityMono : MonoBehaviour
     {
         private static Texture2DUtilityMono instance;
@@ -195,5 +195,93 @@ public static class Texture2DUtility
         }
         rc = rc / ((width / xstep) * (height / ystep));
         return rc;
+    }
+
+    public static void Fill(Texture2D src, Texture2D brush)
+    {
+        src.SetPixels(brush.GetPixels());
+    }
+    public static void Draw(Texture2D src, Texture2D brush, Vector2Int pos)
+    {
+        int width = brush.width;
+        int height = brush.height;
+
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                var destColor = brush.GetPixel(i, j);
+                var srcColor = src.GetPixel(pos.x + i, pos.y + j);
+                if (srcColor.a != 0)
+                {
+                    float alpha = srcColor.a + destColor.a;
+                    destColor = Color.Lerp(srcColor, destColor, destColor.a);
+                    if (alpha >= 1)
+                    {
+                        destColor.a = 1;
+                    }
+                }
+                src.SetPixel(pos.x + i, pos.y + j, destColor);
+            }
+        }
+    }
+    /// <summary>
+    /// 合并Texture2D
+    /// </summary>
+    /// <param name="objs"></param>
+    /// <param name="offset"></param>
+    /// <returns></returns>
+    public static Texture2D ComposeNew(Texture2D[] objs, Vector2Int[] offset)
+    {
+        Texture2D t1 = objs[0];
+        Texture2D tex = new Texture2D(t1.width, t1.height, t1.format, false);
+        Fill(tex, t1);
+        for (int i = 1; i < objs.Length; i++)
+        {
+            Draw(tex, objs[i], offset[i]);
+        }
+        tex.Apply();
+        return tex;
+    }
+
+    private static Vector2 TransformToCanvasLocalPosition(Transform current, Canvas canvas)
+    {
+        var screenPos = canvas.worldCamera.WorldToScreenPoint(current.transform.position);
+        Vector2 localPos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.GetComponent<RectTransform>(), screenPos,
+            canvas.worldCamera, out localPos);
+        return localPos;
+    }
+    /// <summary>
+    /// 以数组顺序从Ugui的Image组件中合并精灵
+    /// </summary>
+    /// <param name="transforms"></param>
+    /// <returns></returns>
+    public static Sprite ComposeNewSpriteFromUImage(Transform[] transforms, Canvas canvas)
+    {
+        Texture2D[] texArr = new Texture2D[transforms.Length];
+        Vector2Int[] offsetArr = new Vector2Int[transforms.Length];
+        var first = transforms[0];
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            var transform = transforms[i];
+            texArr[i] = transform.GetComponent<Image>().mainTexture as Texture2D;
+            if (i == 0)
+            {
+                offsetArr[i] = new Vector2Int(0, 0);
+            }
+            else
+            {
+                var fillRect = first.GetComponent<RectTransform>();
+                var transRect = transform.GetComponent<RectTransform>();
+
+                var offset = fillRect.sizeDelta * fillRect.pivot - transRect.sizeDelta / 2;
+                offset += TransformToCanvasLocalPosition(transform, canvas) - TransformToCanvasLocalPosition(first, canvas);
+
+                offsetArr[i] = new Vector2Int((int)offset.x, (int)offset.y);
+            }
+        }
+        var tex = ComposeNew(texArr, offsetArr);
+        return Texture2DUtility.Texture2dToSprite(tex);
     }
 }
