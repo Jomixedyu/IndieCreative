@@ -20,7 +20,8 @@ namespace JxUnity.Mods
         public ModScriptInfo Script { get; set; }
         public string Version { get; set; }
         public string Author { get; set; }
-        public int Order { get; set; }
+        public int Priority { get; set; }
+        public string[] Dependency { get; set; }
 
         public override string ToString()
         {
@@ -44,7 +45,7 @@ namespace JxUnity.Mods
                 Category = "Other",
                 Name = "TestMod",
                 Version = "0.0.0",
-                Order = 0,
+                Priority = 0,
                 URL = "www.imxqy.com",
                 Script = new ModScriptInfo()
                 {
