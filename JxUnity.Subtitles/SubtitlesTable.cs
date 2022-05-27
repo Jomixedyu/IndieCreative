@@ -26,7 +26,6 @@ namespace JxUnity.Subtitles
         {
 
         }
-
         public SubtitlesLocale(string locale, string special)
         {
             this.Locale = locale;

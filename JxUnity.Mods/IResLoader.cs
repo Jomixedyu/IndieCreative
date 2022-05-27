@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JxUnity.Platforms
+namespace JxUnity.Mods
 {
-    public interface IPlatform
+    public interface IResLoader
     {
-        void SetAchievement(string achievementName);
+        UnityEngine.Object Load(string assetPath);
     }
-
 }

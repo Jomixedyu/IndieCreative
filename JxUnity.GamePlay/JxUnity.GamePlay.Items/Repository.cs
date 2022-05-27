@@ -381,19 +381,16 @@ namespace JxUnity.Storage
                     if (clone[af].EqualsType(clone[i]))
                     {
                         int need = cfg.StackMaxCount - clone[i].Count;
-                        if (need > clone[af].Count)
+                        if (need >= clone[af].Count)
                         {
                             clone[i].Count += clone[af].Count;
                             clone[af].Count = 0;
+                            clone[af] = null;
                         }
                         else
                         {
                             clone[i].Count += need;
                             clone[af].Count -= need;
-                        }
-                        if (clone[af].Count == 0)
-                        {
-                            clone[af] = null;
                         }
                         if (clone[i].Count == cfg.StackMaxCount)
                         {

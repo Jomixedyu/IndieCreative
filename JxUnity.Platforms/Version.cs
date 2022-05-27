@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace JxUnity.Versions
+namespace JxUnity.Platforms
 {
     public class Version
     {

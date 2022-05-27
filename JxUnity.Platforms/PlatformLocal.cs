@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace JxUnity.Platforms
 {
-    public interface IPlatform
+    public class PlatformLocal
     {
-        void SetAchievement(string achievementName);
-    }
 
+    }
 }
