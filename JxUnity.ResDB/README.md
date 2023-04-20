@@ -1,2 +1,0 @@
-# JxUnity.ResDB
- resource database
