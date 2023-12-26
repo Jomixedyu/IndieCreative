@@ -1,4 +1,4 @@
-# JxUnity.Framework
+# IGC
  ![](https://img.shields.io/github/license/JomiXedYu/JxCode.CoreLib?style=for-the-badge)
 
 Unity3d开发库，每个模块可独立使用。
