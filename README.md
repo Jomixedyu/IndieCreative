@@ -1,6 +1,8 @@
 # IGC
  ![](https://img.shields.io/github/license/JomiXedYu/JxCode.CoreLib?style=for-the-badge)
 
+停止维护了！已经改用UE了！
+
 Unity3d开发库，每个模块可独立使用。
 
 ## Content
